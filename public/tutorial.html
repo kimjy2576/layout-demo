@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RL & Diffusion 통합 데모 (Light)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f8fafc;color:#1e293b;font-family:'Noto Sans KR',sans-serif;padding:8px}
+h1{font-size:16px;font-weight:900;text-align:center;
+  background:linear-gradient(135deg,#2563EB,#7C3AED,#DB2777);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{text-align:center;font-size:9px;color:#64748b;margin:2px 0 6px}
+.tabs{display:flex;gap:6px;justify-content:center;margin-bottom:6px}
+.tab{padding:6px 18px;border-radius:7px;border:1px solid #e2e8f0;background:#fff;color:#94a3b8;font-size:11px;font-weight:700;cursor:pointer}
+.tab.a{border-color:#3B82F6;background:#EFF6FF;color:#2563EB}
+.tab.b{border-color:#F59E0B;background:#FFFBEB;color:#D97706}
+.pn{display:none}.pn.on{display:block}
+canvas{display:block;border-radius:6px;border:1px solid #e2e8f0;background:#f1f5f9}
+.fx{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:4px 0}
+.bx{padding:5px;background:#fff;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:3px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.bt{font-size:8px;font-weight:700;color:#94a3b8;margin-bottom:2px;font-family:'JetBrains Mono',monospace}
+.ri{display:flex;justify-content:space-between;font-size:9px;padding:1px 0}
+.ri .l{color:#64748b}.ri .v{font-weight:700;font-family:'JetBrains Mono',monospace}
+.rt{display:flex;justify-content:space-between;font-size:11px;font-weight:900;padding:2px 0;margin-top:2px;border-top:1px solid #f1f5f9}
+.ss{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;margin:3px 0}
+.s{padding:2px 5px;background:#f8fafc;border-radius:4px;border:1px solid #e2e8f0;text-align:center;min-width:46px}
+.s .a{font-size:6px;color:#94a3b8}.s .b{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#1e293b}
+.btn{padding:4px 10px;border-radius:5px;border:1px solid #e2e8f0;background:#fff;color:#1e293b;
+  font-size:9px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.btn:hover{background:#f1f5f9}
+.b1{background:#EFF6FF;border-color:#93C5FD;color:#2563EB}
+.b2{background:#ECFDF5;border-color:#6EE7B7;color:#059669}
+.b3{background:#FFFBEB;border-color:#FCD34D;color:#D97706}
+.b4{background:#FEF2F2;border-color:#FCA5A5;color:#DC2626}
+.b5{background:#F5F3FF;border-color:#C4B5FD;color:#7C3AED}
+.log{max-height:55px;overflow-y:auto;padding:3px;background:#f8fafc;border-radius:4px;
+  border:1px solid #e2e8f0;font-size:7px;font-family:'JetBrains Mono',monospace;color:#94a3b8;line-height:1.3;margin-top:3px}
+.log .g{color:#059669}.log .r{color:#DC2626}.log .i{color:#2563EB}.log .y{color:#D97706}
+.desc{font-size:8px;color:#64748b;text-align:center;padding:3px;background:#f1f5f9;border-radius:4px;margin-bottom:4px;line-height:1.5;border:1px solid #e2e8f0}
+.desc b{color:#1e293b}
+.patterns{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin:3px 0}
+.pat{text-align:center;cursor:pointer;border-radius:4px;padding:1px;border:2px solid transparent;transition:.2s}
+.pat.nearest{border-color:#F59E0B}
+.pat canvas{border-radius:3px}
+.pat-label{font-size:6px;color:#94a3b8}
+.history{display:flex;gap:2px;justify-content:center;flex-wrap:wrap;margin:3px 0}
+.hist-item{border-radius:3px;border:1px solid #e2e8f0}
+.shape-legend{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin:3px 0}
+.shape-legend canvas{border-radius:3px;border:1px solid #e2e8f030}
+</style>
+</head>
+<body>
+<h1>RL & Diffusion 통합 데모</h1>
+<div class="sub">L·T·Z·□·+ 폴리오미노 5개 · 7×7 격자 · Hill Climbing RL + 다중 패턴 Diffusion</div>
+<div class="tabs">
+  <div class="tab a" id="t1" onclick="sw('rl')">🤖 RL (강화학습)</div>
+  <div class="tab" id="t2" onclick="sw('df')">🌀 Diffusion</div>
+</div>
+
+<div class="pn on" id="p-rl">
+<div class="desc"><b>Hill Climbing</b>: 도형 하나를 골라 모든 위치 평가 → 최고 위치 이동. 막히면 <b>랜덤 재시작</b>.</div>
+<div class="shape-legend" id="legend"></div>
+<div class="ss">
+  <div class="s"><div class="a">스텝</div><div class="b" id="rep">0</div></div>
+  <div class="s"><div class="a">현재</div><div class="b" id="rcr" style="color:#059669">-</div></div>
+  <div class="s"><div class="a">최고</div><div class="b" id="rbr" style="color:#D97706">-</div></div>
+  <div class="s"><div class="a">겹침</div><div class="b" id="rol" style="color:#DC2626">-</div></div>
+  <div class="s"><div class="a">재시작</div><div class="b" id="rrs">0</div></div>
+</div>
+<div class="fx">
+  <div><canvas id="rc1" width="270" height="270"></canvas></div>
+  <div style="min-width:170px;max-width:300px">
+    <canvas id="rc1g" width="280" height="105"></canvas>
+    <div class="bx">
+      <div class="bt">📊 보상 함수</div>
+      <div class="ri"><span class="l">🔴 겹침 (×-50)</span><span class="v" id="rs1" style="color:#DC2626">0</span></div>
+      <div class="ri"><span class="l">🔵 연결거리 (×-5)</span><span class="v" id="rs2" style="color:#2563EB">0</span></div>
+      <div class="ri"><span class="l">🟢 무겹침 보너스</span><span class="v" id="rs3" style="color:#059669">0</span></div>
+      <div class="rt"><span>총 보상</span><span id="rst" style="color:#D97706">0</span></div>
+    </div>
+    <div class="bx"><div class="bt">🔄 동작</div><div id="ract" style="font-size:8px;color:#1e293b;line-height:1.4">대기</div></div>
+  </div>
+</div>
+<div class="fx">
+  <button class="btn b1" onclick="RL.reset()">초기화</button>
+  <button class="btn" onclick="RL.step1()">1스텝</button>
+  <button class="btn b2" onclick="RL.run(80)">80스텝</button>
+  <button class="btn b3" onclick="RL.run(300)">300스텝</button>
+  <button class="btn b4" onclick="RL.stop()">정지</button>
+  <button class="btn b5" onclick="RL.exportToDiffusion()">→ Diffusion에 전달</button>
+</div>
+<div class="log" id="rlg"></div>
+</div>
+
+<div class="pn" id="p-df">
+<div class="desc"><b>학습 데이터</b>(아래 패턴)의 공통 패턴 학습 → 시작 노이즈 다르면 → <b>매번 다른 결과</b> 생성</div>
+<div class="bx">
+  <div class="bt">📚 학습 데이터 (RL 우수 배치) — 🟡테두리=현재 가장 가까운 패턴</div>
+  <div class="patterns" id="patterns"></div>
+</div>
+<div class="ss">
+  <div class="s"><div class="a">스텝</div><div class="b" id="dft">50</div></div>
+  <div class="s"><div class="a">노이즈</div><div class="b" id="dfn">100%</div></div>
+  <div class="s"><div class="a">점수</div><div class="b" id="dfs" style="color:#D97706">-</div></div>
+  <div class="s"><div class="a">가까운</div><div class="b" id="dfnr" style="color:#D97706">#?</div></div>
+  <div class="s"><div class="a">생성수</div><div class="b" id="dfgc" style="color:#7C3AED">0</div></div>
+</div>
+<div class="fx">
+  <div><canvas id="dc1" width="270" height="270"></canvas></div>
+  <div style="min-width:170px;max-width:300px">
+    <canvas id="dc1g" width="280" height="100"></canvas>
+    <div class="bx">
+      <div class="bt">📊 점수 분해</div>
+      <div class="ri"><span class="l">🔴 겹침</span><span class="v" id="df1" style="color:#DC2626">-</span></div>
+      <div class="ri"><span class="l">🔵 거리</span><span class="v" id="df2" style="color:#2563EB">-</span></div>
+      <div class="ri"><span class="l">🟢 보너스</span><span class="v" id="df3" style="color:#059669">-</span></div>
+      <div class="rt"><span>총점</span><span id="df4" style="color:#D97706">-</span></div>
+    </div>
+    <div class="bx"><div class="bt">🎨 생성 히스토리</div><div class="history" id="hist"></div>
+      <div id="hmsg" style="font-size:7px;color:#94a3b8;text-align:center">디노이징 완료 시 추가</div></div>
+  </div>
+</div>
+<div class="fx">
+  <button class="btn b3" onclick="DF.newNoise()">🎲 새 노이즈</button>
+  <button class="btn" onclick="DF.step(1)">1스텝</button>
+  <button class="btn" onclick="DF.step(5)">5스텝</button>
+  <button class="btn b2" onclick="DF.run()">자동</button>
+  <button class="btn b4" onclick="DF.stop()">정지</button>
+  <button class="btn b5" onclick="DF.gen5()">🚀 5개 연속</button>
+</div>
+<div class="log" id="dlg"></div>
+</div>
+
+<script>
+const GS=7,NS=5;
+const CW=270,CH=270,PD=11,BW=CW-PD*2,BH=CH-PD*2,CELL=BW/GS;
+const SH=[
+  {name:'L',color:'#2563EB',cells:[[0,0],[1,0],[2,0],[2,1]]},
+  {name:'T',color:'#059669',cells:[[0,0],[1,0],[2,0],[1,1]]},
+  {name:'Z',color:'#D97706',cells:[[0,0],[1,0],[1,1],[2,1]]},
+  {name:'□',color:'#DC2626',cells:[[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]]},
+  {name:'+',color:'#7C3AED',cells:[[1,0],[0,1],[1,1],[2,1],[1,2]]},
+];
+const LINKS=[[0,1,1.5],[1,2,1.2],[2,3,1.0],[3,4,1.3],[0,4,0.7]];
+
+SH.forEach(s=>{let mx=0,my=0;s.cells.forEach(([x,y])=>{mx=Math.max(mx,x);my=Math.max(my,y);});
+  s.bw=mx+1;s.bh=my+1;s.maxGx=GS-s.bw;s.maxGy=GS-s.bh;
+  let cx=0,cy=0;s.cells.forEach(([x,y])=>{cx+=x;cy+=y;});s.cx=cx/s.cells.length;s.cy=cy/s.cells.length;});
+
+function rn(a,b){return a+Math.random()*(b-a)}
+function cl(v,a,b){return Math.max(a,Math.min(b,v))}
+function rndPos(){return SH.map(s=>({gx:Math.floor(rn(0,s.maxGx+.99)),gy:Math.floor(rn(0,s.maxGy+.99))}));}
+function gridOv(pos){const g=Array.from({length:GS},()=>Array(GS).fill(0));let ov=0;
+  for(let i=0;i<pos.length;i++){SH[i].cells.forEach(([dx,dy])=>{const x=pos[i].gx+dx,y=pos[i].gy+dy;
+    if(x>=0&&x<GS&&y>=0&&y<GS){g[y][x]++;if(g[y][x]>1)ov++;}else ov++;});}return{ov,grid:g};}
+function calcDist(pos){let d=0;for(const[a,b,w]of LINKS){
+  d+=Math.sqrt((pos[a].gx+SH[a].cx-pos[b].gx-SH[b].cx)**2+(pos[a].gy+SH[a].cy-pos[b].gy-SH[b].cy)**2)*w;}return d;}
+function score(pos){const{ov}=gridOv(pos);const d=calcDist(pos);const bn=ov===0?100:0;
+  return{ov:-ov*50,dist:-d*5,bonus:bn,total:-ov*50-d*5+bn,rawOv:ov,rawDist:d.toFixed(1)};}
+function posD(a,b){let d=0;for(let i=0;i<NS;i++)d+=(a[i].gx-b[i].gx)**2+(a[i].gy-b[i].gy)**2;return Math.sqrt(d);}
+
+// LIGHT THEME drawing
+function drawG(ctx,cw,ch,pd,cell,pos,n,opts={}){
+  const bw=cw-pd*2,bh=ch-pd*2;ctx.clearRect(0,0,cw,ch);
+  ctx.fillStyle=opts.bg||'#f8fafc';ctx.fillRect(pd,pd,bw,bh);
+  ctx.strokeStyle='#cbd5e1';ctx.lineWidth=.5;ctx.strokeRect(pd,pd,bw,bh);
+  if(cell>4){ctx.strokeStyle='#e2e8f040';ctx.lineWidth=.5;for(let i=0;i<=GS;i++){
+    ctx.beginPath();ctx.moveTo(pd+i*cell,pd);ctx.lineTo(pd+i*cell,pd+bh);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pd,pd+i*cell);ctx.lineTo(pd+bw,pd+i*cell);ctx.stroke();}}
+  n=n!=null?n:pos.length;
+  if(cell>8){for(const[a,b,w]of LINKS){if(a<n&&b<n){
+    ctx.strokeStyle=`rgba(0,0,0,${cl(w*.06,.02,.12)})`;ctx.lineWidth=Math.max(1,w*cell/20);
+    ctx.beginPath();ctx.moveTo(pd+(pos[a].gx+SH[a].cx)*cell+cell/2,pd+(pos[a].gy+SH[a].cy)*cell+cell/2);
+    ctx.lineTo(pd+(pos[b].gx+SH[b].cx)*cell+cell/2,pd+(pos[b].gy+SH[b].cy)*cell+cell/2);ctx.stroke();}}}
+  if(cell>4){const{grid}=gridOv(pos.slice(0,n));for(let y=0;y<GS;y++)for(let x=0;x<GS;x++){
+    if(grid[y][x]>1){ctx.fillStyle=`rgba(220,38,38,${cl(grid[y][x]*.25,.15,.6)})`;ctx.fillRect(pd+x*cell+1,pd+y*cell+1,cell-2,cell-2);}}}
+  for(let i=0;i<n;i++){const s=SH[i],p=pos[i],al=opts.alphas?opts.alphas[i]:.75;
+    s.cells.forEach(([dx,dy])=>{const x=p.gx+dx,y=p.gy+dy;ctx.globalAlpha=al;ctx.fillStyle=s.color;
+      ctx.fillRect(pd+x*cell+1,pd+y*cell+1,cell-2,cell-2);ctx.globalAlpha=1;});
+    if(cell>6){ctx.strokeStyle=s.color;ctx.lineWidth=Math.max(1,cell/10);
+      const cs=new Set(s.cells.map(([dx,dy])=>`${p.gx+dx},${p.gy+dy}`));
+      s.cells.forEach(([dx,dy])=>{const x=p.gx+dx,y=p.gy+dy,px=pd+x*cell,py=pd+y*cell;
+        if(!cs.has(`${x},${y-1}`)){ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+cell,py);ctx.stroke();}
+        if(!cs.has(`${x},${y+1}`)){ctx.beginPath();ctx.moveTo(px,py+cell);ctx.lineTo(px+cell,py+cell);ctx.stroke();}
+        if(!cs.has(`${x-1},${y}`)){ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py+cell);ctx.stroke();}
+        if(!cs.has(`${x+1},${y}`)){ctx.beginPath();ctx.moveTo(px+cell,py);ctx.lineTo(px+cell,py+cell);ctx.stroke();}});}
+    if(cell>14){ctx.fillStyle='#fff';ctx.font=`bold ${Math.max(8,cell/3)}px "Noto Sans KR"`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(s.name,pd+(p.gx+s.cx)*cell+cell/2,pd+(p.gy+s.cy)*cell+cell/2);}}
+  if(opts.noise){ctx.fillStyle=`rgba(100,116,139,${opts.noise*.2})`;
+    for(let i=0;i<opts.noise*30;i++)ctx.fillRect(pd+rn(0,bw),pd+rn(0,bh),rn(1,2.5),rn(1,2.5));}
+  if(opts.hi!=null){const s=SH[opts.hi],p=pos[opts.hi];ctx.strokeStyle='#D97706';ctx.lineWidth=2.5;ctx.setLineDash([3,2]);
+    s.cells.forEach(([dx,dy])=>{ctx.strokeRect(pd+(p.gx+dx)*cell,pd+(p.gy+dy)*cell,cell,cell);});ctx.setLineDash([]);}
+}
+
+function drawChart(ctx,w,h,data,lbl,col,bd){
+  ctx.clearRect(0,0,w,h);ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,w,h);
+  if(data.length<2){ctx.fillStyle='#94a3b8';ctx.font='8px "JetBrains Mono"';ctx.textAlign='center';ctx.fillText('학습 후 표시',w/2,h/2);return;}
+  const pl=28,pr=8,pt=12,pb=10,cw=w-pl-pr,ch=h-pt-pb;
+  const all=bd?data.concat(bd):data;let mn=Infinity,mx=-Infinity;for(const v of all){mn=Math.min(mn,v);mx=Math.max(mx,v);}
+  if(mx-mn<5){mn-=3;mx+=3;}
+  ctx.fillStyle='#94a3b8';ctx.font='bold 7px "JetBrains Mono"';ctx.textAlign='left';ctx.fillText(lbl,pl,9);
+  ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pl,pt);ctx.lineTo(pl,h-pb);ctx.lineTo(w-pr,h-pb);ctx.stroke();
+  ctx.strokeStyle=col+'40';ctx.lineWidth=1;ctx.beginPath();
+  for(let i=0;i<data.length;i++){const x=pl+i/(data.length-1)*cw,y=pt+(1-(data[i]-mn)/(mx-mn))*ch;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+  if(bd&&bd.length>1){ctx.fillStyle=col+'18';ctx.beginPath();ctx.moveTo(pl,h-pb);
+    for(let i=0;i<bd.length;i++)ctx.lineTo(pl+i/(bd.length-1)*cw,pt+(1-(bd[i]-mn)/(mx-mn))*ch);
+    ctx.lineTo(pl+(bd.length-1)/(bd.length-1)*cw,h-pb);ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();
+    for(let i=0;i<bd.length;i++){const x=pl+i/(bd.length-1)*cw,y=pt+(1-(bd[i]-mn)/(mx-mn))*ch;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}
+  else{ctx.fillStyle=col+'18';ctx.beginPath();ctx.moveTo(pl,h-pb);
+    for(let i=0;i<data.length;i++)ctx.lineTo(pl+i/(data.length-1)*cw,pt+(1-(data[i]-mn)/(mx-mn))*ch);
+    ctx.lineTo(pl+(data.length-1)/(data.length-1)*cw,h-pb);ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();
+    for(let i=0;i<data.length;i++){const x=pl+i/(data.length-1)*cw,y=pt+(1-(data[i]-mn)/(mx-mn))*ch;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}
+  ctx.fillStyle='#1e293b';ctx.font='bold 8px "JetBrains Mono"';ctx.textAlign='right';
+  const last=bd?bd[bd.length-1]:data[data.length-1];ctx.fillText(last.toFixed(0),w-pr,pt+4);
+}
+
+function lg(id,m,c=''){const e=document.getElementById(id),d=document.createElement('div');
+  d.className=c;d.textContent=m;e.appendChild(d);e.scrollTop=e.scrollHeight;if(e.children.length>40)e.removeChild(e.firstChild);}
+function sw(t){document.querySelectorAll('.tab').forEach(e=>e.className='tab');
+  document.getElementById(t==='rl'?'t1':'t2').classList.add('tab',t==='rl'?'a':'b');
+  document.querySelectorAll('.pn').forEach(e=>e.classList.remove('on'));document.getElementById('p-'+t).classList.add('on');}
+
+(function(){const el=document.getElementById('legend');
+  SH.forEach(s=>{const cv=document.createElement('canvas');cv.width=42;cv.height=34;
+    const ctx=cv.getContext('2d');ctx.fillStyle='#f1f5f9';ctx.fillRect(0,0,42,34);const sz=8;
+    const ox=(42-s.bw*sz)/2,oy=(28-s.bh*sz)/2;
+    s.cells.forEach(([dx,dy])=>{ctx.fillStyle=s.color+'90';ctx.fillRect(ox+dx*sz+.5,oy+dy*sz+.5,sz-1,sz-1);});
+    ctx.fillStyle='#1e293b';ctx.font='bold 7px "Noto Sans KR"';ctx.textAlign='center';ctx.fillText(s.name,21,32);
+    el.appendChild(cv);});})();
+
+// ===== RL =====
+const RL={
+  pos:null,cur:null,bestR:-Infinity,bestP:null,step:0,restarts:0,stuck:0,
+  hist:[],bestH:[],tm:null,collectedPatterns:[],
+  hillClimb(pos,steps){let cur=score(pos);for(let st=0;st<steps;st++){const idx=Math.floor(rn(0,NS));const s=SH[idx];
+    let best=cur.total,bx=pos[idx].gx,by=pos[idx].gy;
+    for(let gy=0;gy<=s.maxGy;gy++)for(let gx=0;gx<=s.maxGx;gx++){pos[idx]={gx,gy};const r=score(pos);if(r.total>best){best=r.total;bx=gx;by=gy;}}
+    pos[idx]={gx:bx,gy:by};cur=score(pos);}return{pos,score:cur};},
+  reset(){this.stop();this.pos=rndPos();this.cur=score(this.pos);this.bestR=-Infinity;this.bestP=null;this.step=0;this.restarts=0;this.stuck=0;
+    this.hist=[];this.bestH=[];this.collectedPatterns=[];document.getElementById('rlg').innerHTML='';
+    lg('rlg','🔄 초기화','i');this.render();this.ui();drawChart(document.getElementById('rc1g').getContext('2d'),280,105,[],'학습곡선','#2563EB');},
+  step1(){const idx=Math.floor(rn(0,NS));const s=SH[idx];
+    let best=this.cur.total,bx=this.pos[idx].gx,by=this.pos[idx].gy;
+    for(let gy=0;gy<=s.maxGy;gy++)for(let gx=0;gx<=s.maxGx;gx++){this.pos[idx]={gx,gy};const r=score(this.pos);if(r.total>best){best=r.total;bx=gx;by=gy;}}
+    this.pos[idx]={gx:bx,gy:by};this.cur=score(this.pos);this.step++;
+    if(this.cur.total>this.bestR){this.bestR=this.cur.total;this.bestP=this.pos.map(p=>({...p}));this.stuck=0;
+      if(this.cur.rawOv===0)this.collectPattern();}else this.stuck++;
+    this.hist.push(this.cur.total);this.bestH.push(this.bestR);
+    if(this.stuck>NS*4){this.stuck=0;this.restarts++;
+      if(this.bestP&&rn(0,1)<.75){this.pos=this.bestP.map((p,i)=>({gx:cl(p.gx+Math.floor(rn(-2,3)),0,SH[i].maxGx),gy:cl(p.gy+Math.floor(rn(-2,3)),0,SH[i].maxGy)}));}
+      else this.pos=rndPos();this.cur=score(this.pos);lg('rlg',`🔄 재시작#${this.restarts}`,'y');}
+    document.getElementById('ract').innerHTML=`스텝${this.step}: <b>${s.name}</b>→(${bx},${by})`;
+    this.render(idx);this.ui();drawChart(document.getElementById('rc1g').getContext('2d'),280,105,this.hist,'현재/최고','#2563EB',this.bestH);
+    if(this.step%15===0)lg('rlg',`${this.step}스텝 | 겹침:${this.cur.rawOv} | 최고:${this.bestR.toFixed(0)}`,'g');},
+  run(n){this.stop();let c=0;this.tm=setInterval(()=>{if(c>=n){this.stop();
+    if(this.bestP){this.pos=this.bestP.map(p=>({...p}));this.cur=score(this.pos);this.render();this.ui();}
+    lg('rlg',`🏆 ${n}스텝 완료! 최고:${this.bestR.toFixed(0)}`,'i');return;}
+    for(let b=0;b<3&&c<n;b++){this.step1();c++;}},40);},
+  stop(){if(this.tm){clearInterval(this.tm);this.tm=null;}},
+  collectPattern(){const pos=this.pos.map(p=>({...p}));const tc=this.collectedPatterns.some(pp=>posD(pp,pos)<2.5);
+    if(!tc&&this.collectedPatterns.length<12)this.collectedPatterns.push(pos);},
+  exportToDiffusion(){if(this.collectedPatterns.length<3){for(let i=0;i<8;i++){let p=rndPos();const res=this.hillClimb(p,150);
+    if(res.score.rawOv===0){const tc=this.collectedPatterns.some(pp=>posD(pp,res.pos)<2.5);if(!tc)this.collectedPatterns.push(res.pos.map(x=>({...x})));}
+    if(this.collectedPatterns.length>=8)break;}}
+    diffPatterns=this.collectedPatterns.slice(0,8);
+    if(diffPatterns.length<4){for(let i=0;i<20&&diffPatterns.length<8;i++){let p=rndPos();const res=this.hillClimb(p,200);
+      if(res.score.rawOv===0){const tc=diffPatterns.some(pp=>posD(pp,res.pos)<2);if(!tc)diffPatterns.push(res.pos.map(x=>({...x})));}}}
+    drawPatterns();sw('df');DF.newNoise();lg('rlg',`📤 ${diffPatterns.length}개 → Diffusion`,'i');lg('dlg',`📥 ${diffPatterns.length}개 수신`,'i');},
+  render(hi){drawG(document.getElementById('rc1').getContext('2d'),CW,CH,PD,CELL,this.pos,NS,hi!=null?{hi}:{});},
+  ui(){const r=this.cur;document.getElementById('rep').textContent=this.step;
+    document.getElementById('rcr').textContent=r.total.toFixed(0);
+    document.getElementById('rbr').textContent=this.bestR>-Infinity?this.bestR.toFixed(0):'-';
+    document.getElementById('rol').textContent=r.rawOv;document.getElementById('rol').style.color=r.rawOv>0?'#DC2626':'#059669';
+    document.getElementById('rrs').textContent=this.restarts;document.getElementById('rs1').textContent=r.ov.toFixed(0);
+    document.getElementById('rs2').textContent=r.dist.toFixed(0);document.getElementById('rs3').textContent=r.bonus.toFixed(0);
+    document.getElementById('rst').textContent=r.total.toFixed(0);document.getElementById('rst').style.color=r.total>0?'#059669':r.total>-30?'#D97706':'#DC2626';}
+};
+
+let diffPatterns=[];
+function generateDefaultPatterns(){diffPatterns=[];for(let i=0;i<30&&diffPatterns.length<8;i++){let p=rndPos();const res=RL.hillClimb(p,200);
+  if(res.score.rawOv===0){const tc=diffPatterns.some(pp=>posD(pp,res.pos)<2.5);if(!tc)diffPatterns.push(res.pos.map(x=>({...x})));}}}
+function drawPatterns(){const el=document.getElementById('patterns');el.innerHTML='';
+  diffPatterns.forEach((pat,idx)=>{const div=document.createElement('div');div.className='pat';div.id='pat-'+idx;
+    const cv=document.createElement('canvas');cv.width=48;cv.height=48;
+    drawG(cv.getContext('2d'),48,48,2,44/GS,pat,NS,{bg:'#f1f5f9'});div.appendChild(cv);
+    const lb=document.createElement('div');lb.className='pat-label';lb.textContent=`#${idx+1}(${score(pat).total.toFixed(0)})`;
+    div.appendChild(lb);div.onclick=()=>{drawG(document.getElementById('dc1').getContext('2d'),CW,CH,PD,CELL,pat,NS);};el.appendChild(div);});}
+
+const DF={
+  cur:null,t:50,tot:50,tm:null,hist:[],gc:0,results:[],
+  nearest(pos){let m=Infinity,mi=0;diffPatterns.forEach((p,i)=>{const d=posD(pos,p);if(d<m){m=d;mi=i;}});return mi;},
+  newNoise(){this.stop();this.tot=50;this.t=this.tot;this.hist=[];
+    this.cur=SH.map(s=>({gx:rn(-.5,s.maxGx+.5),gy:rn(-.5,s.maxGy+.5)}));this.gc++;
+    const snap=this.snap(),r=score(snap);this.hist.push(r.total);const ni=this.nearest(snap);
+    document.querySelectorAll('.pat').forEach(e=>e.classList.remove('nearest'));
+    const pe=document.getElementById('pat-'+ni);if(pe)pe.classList.add('nearest');
+    document.getElementById('dfnr').textContent='#'+(ni+1);lg('dlg',`🎲 노이즈#${this.gc}`,'y');
+    this.draw();this.ui(r);drawChart(document.getElementById('dc1g').getContext('2d'),280,100,this.hist,'디노이징','#D97706');},
+  snap(){return this.cur.map((p,i)=>({gx:cl(Math.round(p.gx),0,SH[i].maxGx),gy:cl(Math.round(p.gy),0,SH[i].maxGy)}));},
+  dn(){if(this.t<=0||diffPatterns.length===0)return;this.t--;const pr=1-this.t/this.tot;const snap=this.snap();
+    const dists=diffPatterns.map(p=>posD(snap,p));const minD=Math.min(...dists);
+    const temp=Math.max(.5,3*(1-pr));const wts=dists.map(d=>Math.exp(-(d-minD)/temp));const wS=wts.reduce((a,b)=>a+b,0);
+    for(let i=0;i<NS;i++){let tx=0,ty=0;diffPatterns.forEach((p,pi)=>{tx+=p[i].gx*wts[pi]/wS;ty+=p[i].gy*wts[pi]/wS;});
+      const a=.08+pr*.2;this.cur[i].gx+=(tx-this.cur[i].gx)*a+rn(-.15,.15)*(1-pr);this.cur[i].gy+=(ty-this.cur[i].gy)*a+rn(-.15,.15)*(1-pr);}
+    const sn=this.snap();const r=score(sn);this.hist.push(r.total);const ni=this.nearest(sn);
+    document.querySelectorAll('.pat').forEach(e=>e.classList.remove('nearest'));
+    const pe=document.getElementById('pat-'+ni);if(pe)pe.classList.add('nearest');
+    document.getElementById('dfnr').textContent='#'+(ni+1);this.draw();this.ui(r);
+    drawChart(document.getElementById('dc1g').getContext('2d'),280,100,this.hist,'디노이징','#D97706');
+    if(this.t%10===0)lg('dlg',`t=${this.t} | ${r.total.toFixed(0)}점 →#${ni+1}`,'g');
+    if(this.t===0){lg('dlg',`🏆 #${this.gc} 완료! ${r.total.toFixed(0)}점`,'i');this.addHist(sn);}},
+  addHist(pos){const cv=document.createElement('canvas');cv.width=40;cv.height=40;cv.className='hist-item';
+    drawG(cv.getContext('2d'),40,40,1,38/GS,pos,NS,{bg:'#f1f5f9'});cv.title=`#${this.gc}`;
+    document.getElementById('hist').appendChild(cv);document.getElementById('hmsg').textContent=`${this.results.length+1}개 생성`;this.results.push(pos);},
+  step(n){for(let i=0;i<n;i++)this.dn();},
+  run(){this.stop();this.tm=setInterval(()=>{if(this.t<=0){this.stop();return;}this.dn();},70);},
+  stop(){if(this.tm){clearInterval(this.tm);this.tm=null;}},
+  showT(){if(diffPatterns.length===0)return;const i=Math.floor(rn(0,diffPatterns.length));
+    drawG(document.getElementById('dc1').getContext('2d'),CW,CH,PD,CELL,diffPatterns[i],NS);setTimeout(()=>this.draw(),2000);},
+  gen5(){this.stop();let c=0;const go=()=>{if(c>=5)return;this.newNoise();
+    this.tm=setInterval(()=>{if(this.t<=0){this.stop();c++;setTimeout(go,200);return;}for(let i=0;i<3;i++)this.dn();},30);};go();},
+  draw(){if(!this.cur)return;const nl=this.t/this.tot;
+    drawG(document.getElementById('dc1').getContext('2d'),CW,CH,PD,CELL,this.snap(),NS,{noise:nl,alphas:SH.map(()=>.3+.55*(1-nl))});},
+  ui(r){document.getElementById('dft').textContent=this.t;document.getElementById('dfn').textContent=Math.round(this.t/this.tot*100)+'%';
+    document.getElementById('dfs').textContent=r.total.toFixed(0);document.getElementById('dfgc').textContent=this.gc;
+    document.getElementById('df1').textContent=r.ov.toFixed(0);document.getElementById('df2').textContent=r.dist.toFixed(0);
+    document.getElementById('df3').textContent=r.bonus.toFixed(0);document.getElementById('df4').textContent=r.total.toFixed(0);}
+};
+
+generateDefaultPatterns();drawPatterns();RL.reset();DF.newNoise();
+</script>
+</body>
+</html>
