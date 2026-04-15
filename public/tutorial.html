@@ -170,6 +170,8 @@ canvas{display:block;border-radius:6px;border:1px solid #e2e8f0;background:#f1f5
       <div class="slider-row"><span>굴곡 페널티:</span><input type="range" min="0" max="50" value="15" id="sl-bend" oninput="PR.onSl()"><span class="sv" id="sv-bend">15</span></div>
       <div class="slider-row"><span>직관 마찰:</span><input type="range" min="1" max="20" value="3" id="sl-fric" oninput="PR.onSl()"><span class="sv" id="sv-fric">3</span></div>
       <div class="slider-row"><span>엘보 손실:</span><input type="range" min="5" max="50" value="15" id="sl-elbow" oninput="PR.onSl()"><span class="sv" id="sv-elbow">15</span></div>
+      <div class="slider-row"><span>꺾임 각도:</span><input type="range" min="0" max="2" value="2" id="sl-angle" oninput="PR.onSl()"><span class="sv" id="sv-angle">자유</span></div>
+      <div class="slider-row"><span>최소 직관길이:</span><input type="range" min="0" max="4" value="0" id="sl-minstr" oninput="PR.onSl()"><span class="sv" id="sv-minstr">0</span></div>
       <div class="slider-row"><span>연속굴곡 금지:</span><input type="range" min="0" max="1" value="1" id="sl-nocon" oninput="PR.onSl()"><span class="sv" id="sv-nocon">ON</span></div>
       <div class="slider-row"><span>열원 회피:</span><input type="range" min="0" max="4" value="2" id="sl-heat" oninput="PR.onSl()"><span class="sv" id="sv-heat">2</span></div>
     </div>
@@ -177,6 +179,7 @@ canvas{display:block;border-radius:6px;border:1px solid #e2e8f0;background:#f1f5
       <div class="bt">📊 경로 분석</div>
       <div class="ri"><span class="l">직관 구간</span><span class="v" id="an-str">-</span></div>
       <div class="ri"><span class="l">90° 엘보</span><span class="v" id="an-e90">-</span></div>
+      <div class="ri"><span class="l">45° 굴곡</span><span class="v" id="an-e45">-</span></div>
       <div class="ri"><span class="l">마찰 손실</span><span class="v" id="an-fric">-</span></div>
       <div class="ri"><span class="l">국부 손실</span><span class="v" id="an-loc">-</span></div>
       <div class="rt"><span>총 압손</span><span id="an-tot" style="color:#DC2626">-</span></div>
@@ -190,7 +193,8 @@ canvas{display:block;border-radius:6px;border:1px solid #e2e8f0;background:#f1f5
 <div class="fx">
   <button class="btn b1" onclick="PR.find()">🔍 경로 탐색</button>
   <button class="btn b2" onclick="PR.anim()">▶️ 애니메이션</button>
-  <button class="btn b3" onclick="PR.maze()">🧱 미로</button>
+  <button class="btn b3" onclick="PR.maze()">🧱 미로1</button>
+  <button class="btn b3" onclick="PR.maze2()">🧱 미로2</button>
   <button class="btn b4" onclick="PR.clear()">🗑️ 초기화</button>
 </div>
 <div class="log" id="plg"></div>
@@ -393,19 +397,34 @@ const PR={
   findBends(pth){const b=[];for(let i=1;i<pth.length-1;i++){const dx1=pth[i].x-pth[i-1].x,dy1=pth[i].y-pth[i-1].y,dx2=pth[i+1].x-pth[i].x,dy2=pth[i+1].y-pth[i].y;
     if(dx1!==dx2||dy1!==dy2){const cross=Math.abs(dx1*dy2-dy1*dx2);b.push({x:pth[i].x,y:pth[i].y,a:cross>.9?90:45});}}return b;},
   findPathAlgo(){const t0=performance.now();this.visited=[];this.path=[];const GS=this.GS;
-    const open=[{x:this.startPos.x,y:this.startPos.y,g:0,f:0,prev:null}];const closed=new Set();const gS={};const k=(x,y)=>y*GS+x;gS[k(this.startPos.x,this.startPos.y)]=0;
-    const dirs=[[0,-1],[1,0],[0,1],[-1,0],[-1,-1],[1,-1],[1,1],[-1,1]];
+    const open=[{x:this.startPos.x,y:this.startPos.y,g:0,f:0,prev:null,strLen:0}];const closed=new Map();const gS={};const k=(x,y)=>y*GS+x;gS[k(this.startPos.x,this.startPos.y)]=0;
+    const allDirs=[[0,-1],[1,0],[0,1],[-1,0],[-1,-1],[1,-1],[1,1],[-1,1]];
+    const orthDirs=[[0,-1],[1,0],[0,1],[-1,0]];
+    const angleMode=+document.getElementById('sl-angle').value; // 0=90only, 1=+45, 2=free
+    const dirs=angleMode===0?orthDirs:allDirs;
     const bendP=+document.getElementById('sl-bend').value,fricC=+document.getElementById('sl-fric').value,noCon=+document.getElementById('sl-nocon').value,hR=+document.getElementById('sl-heat').value;
+    const minStr=+document.getElementById('sl-minstr').value;
     while(open.length>0){let bi=0;for(let i=1;i<open.length;i++)if(open[i].f<open[bi].f)bi=i;const cur=open.splice(bi,1)[0];const ck=k(cur.x,cur.y);
       if(cur.x===this.endPos.x&&cur.y===this.endPos.y){let n=cur;while(n){this.path.unshift({x:n.x,y:n.y});n=n.prev;}return{found:true,time:(performance.now()-t0).toFixed(1),visited:this.visited.length};}
-      if(closed.has(ck))continue;closed.add(ck);this.visited.push({x:cur.x,y:cur.y});
+      if(closed.has(ck))continue;closed.set(ck,true);this.visited.push({x:cur.x,y:cur.y});
       for(const[ddx,ddy]of dirs){const nx=cur.x+ddx,ny=cur.y+ddy;if(nx<0||nx>=GS||ny<0||ny>=GS||this.grid[ny][nx]!==0)continue;const nk=k(nx,ny);if(closed.has(nk))continue;
-        const diag=ddx!==0&&ddy!==0;let cost=diag?fricC*1.414:fricC;
-        if(cur.prev){const dx1=cur.x-cur.prev.x,dy1=cur.y-cur.prev.y;if(dx1!==ddx||dy1!==ddy){cost+=bendP;if(noCon&&cur.prev.prev){const pdx=cur.prev.x-cur.prev.prev.x,pdy=cur.prev.y-cur.prev.prev.y;if(pdx!==dx1||pdy!==dy1)cost+=bendP*3;}}}
+        const diag=ddx!==0&&ddy!==0;
+        if(angleMode===0&&diag)continue; // 90° only: skip diagonals
+        let cost=diag?fricC*1.414:fricC;
+        let newStrLen=cur.strLen+1;
+        let isBend=false;
+        if(cur.prev){const dx1=cur.x-cur.prev.x,dy1=cur.y-cur.prev.y;
+          if(dx1!==ddx||dy1!==ddy){isBend=true;
+            // Angle check: in 45°-only mode, block 90° if from diagonal
+            if(angleMode===1){const cross=Math.abs(dx1*ddy-dy1*ddx);if(cross>1.1)continue;} // block 135° turns
+            // Min straight length constraint
+            if(minStr>0&&cur.strLen<minStr){cost+=bendP*5;} // heavy penalty if straight too short
+            cost+=bendP;newStrLen=0;
+            if(noCon&&cur.prev.prev){const pdx=cur.prev.x-cur.prev.prev.x,pdy=cur.prev.y-cur.prev.prev.y;if(pdx!==dx1||pdy!==dy1)cost+=bendP*3;}}}
         if(hR>0){for(const hs of this.heatSources){const d=Math.sqrt((nx-hs.x)**2+(ny-hs.y)**2);if(d<hR)cost+=20*(1-d/hR);}}
         const newG=cur.g+cost;if(gS[nk]===undefined||newG<gS[nk]){gS[nk]=newG;let f=newG;
           if(this.algo==='astar')f+=Math.sqrt((nx-this.endPos.x)**2+(ny-this.endPos.y)**2)*3;if(this.algo==='bfs')f=this.visited.length;
-          open.push({x:nx,y:ny,g:newG,f,prev:cur});}}}
+          open.push({x:nx,y:ny,g:newG,f,prev:cur,strLen:newStrLen});}}}
     return{found:false,time:(performance.now()-t0).toFixed(1),visited:this.visited.length};},
   find(){this.stopAnim();const r=this.findPathAlgo();this.draw();this.stats(r);addLog('plg',r.found?`✅ ${this.algo.toUpperCase()} | ${this.path.length}칸 | ${r.visited}탐색`:'❌ 경로 없음',r.found?'g':'r');},
   anim(){this.stopAnim();const r=this.findPathAlgo();if(!r.found){addLog('plg','❌ 경로 없음','r');return;}
@@ -419,6 +438,7 @@ const PR={
     const fL=sLen*fric,lL=e90*elb+e45*elb*.5,tDP=fL+lL;
     document.getElementById('pr-len').textContent=this.path.length-1;document.getElementById('pr-bends').textContent=bends.length;document.getElementById('pr-dp').textContent=tDP.toFixed(0);
     document.getElementById('an-str').textContent=sLen+'칸';document.getElementById('an-e90').textContent=e90+'개';
+    document.getElementById('an-e45').textContent=e45+'개';
     document.getElementById('an-fric').textContent=fL.toFixed(1)+' Pa';document.getElementById('an-loc').textContent=lL.toFixed(1)+' Pa';document.getElementById('an-tot').textContent=tDP.toFixed(1)+' Pa';
     // BOM
     const segs=[];let ss2=0;for(let i=1;i<this.path.length;i++){const dx1=this.path[i].x-this.path[i-1].x,dy1=this.path[i].y-this.path[i-1].y;
@@ -429,10 +449,42 @@ const PR={
   setAlgo(a){this.algo=a;document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('on'));document.getElementById('pt-'+a).classList.add('on');if(this.path.length>0)this.find();},
   onSl(){document.getElementById('sv-bend').textContent=document.getElementById('sl-bend').value;document.getElementById('sv-fric').textContent=document.getElementById('sl-fric').value;
     document.getElementById('sv-elbow').textContent=document.getElementById('sl-elbow').value;document.getElementById('sv-nocon').textContent=+document.getElementById('sl-nocon').value?'ON':'OFF';
-    document.getElementById('sv-heat').textContent=document.getElementById('sl-heat').value;if(this.path.length>0)this.find();},
+    document.getElementById('sv-heat').textContent=document.getElementById('sl-heat').value;
+    const am=+document.getElementById('sl-angle').value;document.getElementById('sv-angle').textContent=['90°만','90°+45°','자유'][am];
+    document.getElementById('sv-minstr').textContent=document.getElementById('sl-minstr').value;
+    if(this.path.length>0)this.find();},
   clear(){this.stopAnim();this.init();this.draw();addLog('plg','🗑️ 초기화','i');},
-  maze(){this.clear();const walls=[[3,1],[3,2],[3,3],[3,4],[3,5],[3,6],[3,7],[3,8],[7,3],[7,4],[7,5],[7,6],[7,7],[7,8],[7,9],[7,10],[11,1],[11,2],[11,3],[11,4],[11,5],[11,6],[11,7],[5,12],[6,12],[7,12],[8,12],[9,12],[10,12],[11,12]];
-    for(const[x,y]of walls)if(y<this.GS&&x<this.GS)this.grid[y][x]=1;this.startPos={x:1,y:1};this.endPos={x:13,y:13};this.draw();addLog('plg','🧱 미로 로드','i');}
+  maze(){this.clear();
+    const w=[[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6],
+      [4,2],[4,3],[4,4],[4,5],[4,6],[4,7],[4,8],[4,9],[4,10],
+      [6,0],[6,1],[6,2],[6,3],[6,4],[6,8],[6,9],[6,10],[6,11],[6,12],
+      [8,2],[8,3],[8,4],[8,5],[8,6],[8,7],[8,8],
+      [10,0],[10,1],[10,4],[10,5],[10,6],[10,7],[10,8],[10,9],[10,10],[10,11],[10,12],
+      [12,2],[12,3],[12,4],[12,5],[12,6],[12,7],[12,8],
+      [3,10],[3,11],[3,12],[5,6],[7,6],[9,10],[11,10],[11,11],[11,12],
+      [1,8],[0,8],[7,0],[7,1],[7,2],[13,6],[13,7],[13,8]];
+    for(const[x,y]of w)if(y<this.GS&&x<this.GS)this.grid[y][x]=1;
+    // heat sources
+    this.grid[3][9]=2;this.heatSources=[{x:9,y:3}];
+    this.startPos={x:0,y:0};this.endPos={x:14,y:14};this.draw();addLog('plg','🧱 미로1 로드 (열원 포함)','i');},
+  maze2(){this.clear();
+    // Spiral-like maze
+    const w=[];
+    // outer walls with gaps
+    for(let x=2;x<=12;x++)w.push([x,1]);w.push([12,2],[12,3],[12,4],[12,5]);
+    for(let x=4;x<=12;x++)w.push([x,5]);w.push([4,4],[4,3]);
+    for(let x=4;x<=10;x++)w.push([x,3]);w.push([10,4]);
+    // inner structure
+    for(let y=7;y<=12;y++)w.push([2,y]);w.push([3,12],[4,12],[5,12],[6,12]);
+    for(let y=7;y<=10;y++)w.push([6,y]);w.push([7,7],[8,7],[9,7],[10,7]);
+    for(let y=8;y<=12;y++)w.push([10,y]);w.push([11,12],[12,12]);
+    for(let y=8;y<=11;y++)w.push([8,y]);w.push([9,11]);
+    // extra obstacles
+    w.push([0,5],[1,5],[13,9],[13,10],[13,11],[14,11],[12,8],[12,9]);
+    for(const[x,y]of w)if(y>=0&&y<this.GS&&x>=0&&x<this.GS&&this.grid[y])this.grid[y][x]=1;
+    // heat sources
+    this.grid[9][5]=2;this.grid[6][11]=2;this.heatSources=[{x:5,y:9},{x:11,y:6}];
+    this.startPos={x:0,y:0};this.endPos={x:14,y:14};this.draw();addLog('plg','🧱 미로2 로드 (나선형 + 열원 2개)','i');}
 };
 
 // Pipe routing canvas click
