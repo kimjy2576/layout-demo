@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 레이아웃 최적화 개발 로드맵 v5</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css')}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#fff;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',system-ui,sans-serif;padding:0;overflow-x:auto}
+.page{min-width:1200px;max-width:1500px;margin:0 auto;padding:20px 28px}
+
+.header{margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end}
+.header h1{font-size:26px;font-weight:900;color:#1a1a2e;line-height:1.2}
+.header h1 span{color:#2563EB}
+.header-sub{font-size:10px;color:#64748b;margin-top:3px}
+
+.legend-bar{display:flex;gap:14px;align-items:center;margin-bottom:14px;padding:7px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600}
+.legend-dot{width:9px;height:9px;border-radius:50%}
+.legend-line{width:22px;height:4px;border-radius:2px}
+
+.phase-row{display:flex;margin-bottom:2px}
+.phase-label-area{width:125px;flex-shrink:0}
+.phase-timeline{flex:1;display:flex;position:relative}
+.phase-block{text-align:center;padding:5px 0;font-size:10px;font-weight:800;color:#fff;border-radius:6px}
+.phase-block.p1{background:linear-gradient(135deg,#2563EB,#3B82F6);flex:9}
+.phase-block.p2{background:linear-gradient(135deg,#7C3AED,#8B5CF6);flex:12;margin-left:2px}
+
+.timeline-header{display:flex;border-bottom:2px solid #1a1a2e;padding-bottom:3px}
+.tl-label{width:125px;flex-shrink:0}
+.tl-months{flex:1;display:flex}
+.tl-month{flex:1;text-align:center;font-size:9px;font-weight:600;color:#475569;padding:3px 0}
+.tl-month.q-start{border-left:1px solid #cbd5e1}
+
+.track{display:flex;min-height:32px;border-bottom:1px solid #f1f5f9;position:relative}
+.track:hover{background:#f8fafc}
+.track-label{width:125px;flex-shrink:0;display:flex;align-items:center;padding:3px 6px;font-size:10px;font-weight:700;gap:4px}
+.track-bars{flex:1;display:flex;position:relative;align-items:center;padding:3px 0}
+.cat{font-size:7px;padding:2px 3px;border-radius:2px;color:#fff}
+
+.bar{position:absolute;height:20px;border-radius:10px;display:flex;align-items:center;padding:0 9px;font-size:9px;font-weight:700;color:#fff;white-space:nowrap;transition:filter .15s;overflow:hidden}
+.bar:hover{filter:brightness(1.1);z-index:3}
+.bar .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);margin-right:5px;flex-shrink:0}
+.bar .dot.solid{background:#fff}
+
+.c-blue{background:linear-gradient(90deg,#2563EB,#3B82F6)}
+.c-blue-l{background:linear-gradient(90deg,#60A5FA,#93C5FD)}
+.c-green{background:linear-gradient(90deg,#059669,#10B981)}
+.c-green-l{background:linear-gradient(90deg,#34D399,#6EE7B7)}
+.c-amber{background:linear-gradient(90deg,#D97706,#F59E0B)}
+.c-amber-l{background:linear-gradient(90deg,#FBBF24,#FCD34D)}
+.c-purple{background:linear-gradient(90deg,#7C3AED,#8B5CF6)}
+.c-purple-l{background:linear-gradient(90deg,#A78BFA,#C4B5FD)}
+.c-red{background:linear-gradient(90deg,#DC2626,#EF4444)}
+.c-red-l{background:linear-gradient(90deg,#F87171,#FCA5A5)}
+.c-teal{background:linear-gradient(90deg,#0D9488,#14B8A6)}
+.c-teal-l{background:linear-gradient(90deg,#2DD4BF,#5EEAD4)}
+.c-pink{background:linear-gradient(90deg,#DB2777,#EC4899)}
+.c-slate{background:linear-gradient(90deg,#475569,#64748b)}
+.c-indigo{background:linear-gradient(90deg,#4338CA,#6366F1)}
+
+/* Meeting recurring patterns */
+.c-meet-w{background:repeating-linear-gradient(90deg,#059669 0,#059669 3px,#10B981 3px,#10B981 6px)}
+.c-meet-b{background:repeating-linear-gradient(90deg,#2563EB 0,#2563EB 6px,#3B82F6 6px,#3B82F6 12px)}
+.c-meet-m{background:repeating-linear-gradient(90deg,#7C3AED 0,#7C3AED 12px,#8B5CF6 12px,#8B5CF6 24px)}
+.c-gate{background:linear-gradient(90deg,#DC2626,#EF4444);border:2px solid #fff;box-shadow:0 0 0 1px #DC2626}
+
+.milestone{position:absolute;width:12px;height:12px;transform:rotate(45deg);border:2px solid;border-radius:2px;top:50%;margin-top:-6px;z-index:2}
+.ms-blue{border-color:#2563EB;background:#DBEAFE}
+.ms-green{border-color:#059669;background:#D1FAE5}
+.ms-purple{border-color:#7C3AED;background:#EDE9FE}
+.ms-red{border-color:#DC2626;background:#FEE2E2}
+
+.section-div{display:flex;min-height:22px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;align-items:center}
+.section-div .track-label{font-size:9px;font-weight:800;color:#64748b;letter-spacing:.5px}
+
+.dashboard{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0}
+.dash-card{padding:8px 9px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;text-align:center}
+.dash-card .d-label{font-size:8px;font-weight:700;color:#94a3b8;letter-spacing:.5px;margin-bottom:3px}
+.dash-card .d-value{font-size:13px;font-weight:900;margin-bottom:2px}
+.dash-card .d-desc{font-size:8px;color:#64748b;line-height:1.4}
+.d-green{color:#059669}.d-amber{color:#D97706}.d-red{color:#DC2626}.d-blue{color:#2563EB}.d-purple{color:#7C3AED}
+
+.cat-sllm{background:#2563EB}.cat-phys{background:#059669}.cat-phys2{background:#10B981}
+.cat-db{background:#D97706}.cat-ai{background:#7C3AED}.cat-route{background:#0D9488}
+.cat-ui{background:#DC2626}.cat-kpi{background:#475569}
+
+.footer{text-align:center;font-size:9px;color:#94a3b8;margin-top:14px;font-family:'JetBrains Mono',monospace}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header">
+  <div>
+    <h1>AI <span>LAYOUT OPTIMIZATION</span> ROADMAP v5</h1>
+    <div class="header-sub">전 물리 도메인 Lv1 · 외부 API→자체 sLLM 전환 전략 · 21개월</div>
+  </div>
+  <div style="text-align:right">
+    <div class="header-sub">건조기선행연구팀 · 2026</div>
+  </div>
+</div>
+
+<div class="legend-bar">
+  <div class="legend-item"><div class="legend-dot" style="background:#2563EB"></div>sLLM</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#059669"></div>물리 Lv1</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#10B981"></div>물리 Lv2+</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#D97706"></div>DB</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7C3AED"></div>AI 모델</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#0D9488"></div>경로</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#DC2626"></div>UI</div>
+  <div class="legend-item">
+    <svg width="13" height="13" viewBox="0 0 14 14"><rect x="3" y="3" width="8" height="8" rx="1" transform="rotate(45 7 7)" fill="#fff" stroke="#1a1a2e" stroke-width="1.5"/></svg>마일스톤
+  </div>
+  <div style="flex:1"></div>
+  <div class="legend-item"><div class="legend-line c-blue"></div>핵심</div>
+  <div class="legend-item"><div class="legend-line" style="background:#93C5FD"></div>확장</div>
+</div>
+
+<div class="phase-row">
+  <div class="phase-label-area"></div>
+  <div class="phase-timeline">
+    <div class="phase-block p1">PHASE 1 — 기존 모델 개선 (9개월, Case A)</div>
+    <div class="phase-block p2">PHASE 2 — 신규 모델 설계 (12개월, Case B)</div>
+  </div>
+</div>
+
+<div class="timeline-header">
+  <div class="tl-label" style="font-size:10px;font-weight:800;color:#1a1a2e;padding-left:6px">TRACK</div>
+  <div class="tl-months" id="months"></div>
+</div>
+
+<div id="tracks"></div>
+
+<div class="dashboard">
+  <div class="dash-card">
+    <div class="d-label">PHASE 1 (9개월)</div>
+    <div class="d-value d-blue">Case A</div>
+    <div class="d-desc">기존 모델 개선<br>전 도메인 Level 1<br>자연어 질의응답</div>
+  </div>
+  <div class="dash-card">
+    <div class="d-label">PHASE 2 (12개월)</div>
+    <div class="d-value d-purple">Case B</div>
+    <div class="d-desc">신규 모델 설계<br>RL+Diffusion 배치<br>E2E 파이프라인</div>
+  </div>
+  <div class="dash-card">
+    <div class="d-label">물리 도메인</div>
+    <div class="d-value d-green">5개</div>
+    <div class="d-desc">열유체·진동/소음<br>구조·제어·전장<br>모두 Lv1 이상</div>
+  </div>
+  <div class="dash-card">
+    <div class="d-label">핵심 AI</div>
+    <div class="d-value d-purple">4종</div>
+    <div class="d-desc">sLLM·RL+GNN<br>Diffusion+Transformer<br>Surrogate AI</div>
+  </div>
+  <div class="dash-card">
+    <div class="d-label">인력 피크</div>
+    <div class="d-value d-amber">6~7명</div>
+    <div class="d-desc">P1: 5~6명<br>P2: 6~7명<br>물리 전문가 5명 필수</div>
+  </div>
+  <div class="dash-card">
+    <div class="d-label">총 기간</div>
+    <div class="d-value d-red">21개월</div>
+    <div class="d-desc">P1: 9개월 (MVP)<br>P2: +12개월 (Full)<br>2026 Q2 → 2028 Q1</div>
+  </div>
+  <div class="dash-card">
+    <div class="d-label">거버넌스</div>
+    <div class="d-value d-green">3+2</div>
+    <div class="d-desc">주1회 + 격주 + 월1회<br>+ Phase Gate 2회<br>(M9, M21)</div>
+  </div>
+</div>
+
+<div style="margin-top:12px;padding:12px 14px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0">
+  <div style="font-size:10px;font-weight:800;color:#1a1a2e;margin-bottom:8px;letter-spacing:.5px">📋 거버넌스 상세</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+    <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #059669;background:#fff">
+      <div style="font-size:10px;font-weight:800;color:#059669;margin-bottom:3px">Weekly Sync · 주 1회 (1h)</div>
+      <div style="font-size:9px;color:#475569;line-height:1.5">전체 인원 진행상황 공유 + 다음 주 계획 + <b>도메인 간 의존성 체크</b>. 잘못된 방향 조기 발견. <b>필수</b>.</div>
+    </div>
+    <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #2563EB;background:#fff">
+      <div style="font-size:10px;font-weight:800;color:#2563EB;margin-bottom:3px">Deep Dive · 격주 (2h)</div>
+      <div style="font-size:9px;color:#475569;line-height:1.5">특정 주제 집중 리뷰. 보상함수 설계, DB 스키마, 물리 모델 검증 등 기술 주제 심화 논의.</div>
+    </div>
+    <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #7C3AED;background:#fff">
+      <div style="font-size:10px;font-weight:800;color:#7C3AED;margin-bottom:3px">Milestone · 월 1회 (3h)</div>
+      <div style="font-size:9px;color:#475569;line-height:1.5">스테이크홀더 포함. 진행률 점검, 리스크 식별, 주요 의사결정. Go/No-Go 판단.</div>
+    </div>
+    <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #DC2626;background:#fff">
+      <div style="font-size:10px;font-weight:800;color:#DC2626;margin-bottom:3px">Phase Gate · M9, M21</div>
+      <div style="font-size:9px;color:#475569;line-height:1.5">전면 리뷰. Phase 1 완료(M9), Phase 2 완료(M21) 시점. 전체 성과 평가 + 다음 단계 진입 승인.</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">AI 기반 세탁건조기 레이아웃 최적화 로드맵 v5.0 · 외부 API→자체 sLLM 전환 전략 · 2026-04</div>
+</div>
+
+<script>
+const MONTHS=21;
+const monthNames=[];
+for(let i=1;i<=MONTHS;i++)monthNames.push('M'+i);
+
+const mEl=document.getElementById('months');
+for(let i=0;i<MONTHS;i++){
+  const d=document.createElement('div');d.className='tl-month'+(i%3===0?' q-start':'');
+  d.textContent=monthNames[i];mEl.appendChild(d);
+}
+
+const P1_END=9; // Phase 1 = M1~M9
+
+const tracks=[
+  {type:'section',label:'PHASE 1 — 기존 모델 개선 (Case A, 9개월)'},
+
+  {label:'sLLM (외부 API)',icon:'🗣️',cat:'cat-sllm',bars:[
+    {s:0,e:2,c:'c-blue',t:'Claude/GPT API + RAG 설계'},
+    {s:2,e:5,c:'c-blue',t:'Tool-use 에이전트'},
+    {s:5,e:7,c:'c-blue',t:'멀티도메인 질의 + 로그 수집'},
+    {s:7,e:9,c:'c-blue',t:'Case A 완성 + 학습데이터 축적'},
+  ],ms:[{m:3,c:'ms-blue'},{m:9,c:'ms-blue'}]},
+
+  {label:'열유체 Lv1',icon:'🌡️',cat:'cat-phys',bars:[
+    {s:0,e:1,c:'c-green',t:'기존 HPWD 연결'},
+    {s:1,e:4,c:'c-green',t:'통합 사이클 1D'},
+    {s:4,e:7,c:'c-green',t:'실험 데이터 보정'},
+    {s:7,e:9,c:'c-green-l',t:'감도분석 자동화'},
+  ],ms:[{m:4,c:'ms-green'}]},
+
+  {label:'진동/소음 Lv1',icon:'🔊',cat:'cat-phys',bars:[
+    {s:1,e:3,c:'c-green',t:'1D 전달 모델'},
+    {s:3,e:6,c:'c-green',t:'가진원 데이터 구축'},
+    {s:6,e:9,c:'c-green',t:'소음 경험식 + 보정'},
+  ],ms:[{m:6,c:'ms-green'}]},
+
+  {label:'구조 Lv1',icon:'🔩',cat:'cat-phys',bars:[
+    {s:1,e:4,c:'c-green',t:'마운트 응력 1D'},
+    {s:4,e:7,c:'c-green',t:'FEA 기반 ROM'},
+    {s:7,e:9,c:'c-green-l',t:'운송하중 체크'},
+  ],ms:[]},
+
+  {label:'제어 Lv1',icon:'🎛️',cat:'cat-phys',bars:[
+    {s:2,e:5,c:'c-green',t:'운전점 최적화'},
+    {s:5,e:8,c:'c-green',t:'건조 종점 판단 로직'},
+    {s:8,e:9,c:'c-green-l',t:'인버터/팬/EEV 제어'},
+  ],ms:[]},
+
+  {label:'전장 Lv1',icon:'⚡',cat:'cat-phys',bars:[
+    {s:2,e:4,c:'c-green',t:'전류/전력 체크 룰'},
+    {s:4,e:7,c:'c-green',t:'EMC 간이 모델'},
+    {s:7,e:9,c:'c-green-l',t:'하네스 용량 검증'},
+  ],ms:[]},
+
+  {label:'DB / 데이터',icon:'📦',cat:'cat-db',bars:[
+    {s:0,e:2,c:'c-amber',t:'컴포넌트 DB 스키마'},
+    {s:2,e:5,c:'c-amber',t:'기존 모델 + 실험 데이터'},
+    {s:5,e:7,c:'c-amber',t:'설계 룰 DB (LLM 추출)'},
+    {s:7,e:9,c:'c-amber-l',t:'도메인 간 연결 그래프'},
+  ],ms:[]},
+
+  {label:'UI / 시각화',icon:'🖥️',cat:'cat-ui',bars:[
+    {s:1,e:3,c:'c-red',t:'챗 UI + 3D 뷰어'},
+    {s:3,e:6,c:'c-red',t:'멀티도메인 대시보드'},
+    {s:6,e:9,c:'c-red',t:'리포트 자동 생성'},
+  ],ms:[{m:9,c:'ms-red'}]},
+
+  {type:'section',label:'PHASE 2 — 신규 모델 설계 (Case B, 12개월)'},
+
+  {label:'sLLM (자체 구축)',icon:'🗣️',cat:'cat-sllm',bars:[
+    {s:9,e:12,c:'c-blue',t:'학습 데이터셋 구축 + Base 모델 선정'},
+    {s:12,e:15,c:'c-blue',t:'LoRA 파인튜닝 + 서빙 인프라'},
+    {s:15,e:18,c:'c-blue',t:'API vs 자체 sLLM A/B 테스트'},
+    {s:18,e:21,c:'c-blue-l',t:'자체 sLLM 전환 + E2E 자동화'},
+  ],ms:[{m:15,c:'ms-blue'},{m:21,c:'ms-blue'}]},
+
+  {label:'RL + GNN',icon:'🧠',cat:'cat-ai',bars:[
+    {s:9,e:11,c:'c-purple',t:'GNN 그래프 인코더'},
+    {s:11,e:14,c:'c-purple',t:'PPO 배치 에이전트'},
+    {s:14,e:16,c:'c-purple',t:'멀티피직스 보상 통합'},
+    {s:16,e:18,c:'c-purple-l',t:'전이 학습'},
+  ],ms:[{m:14,c:'ms-purple'}]},
+
+  {label:'Diffusion',icon:'🌀',cat:'cat-ai',bars:[
+    {s:15,e:17,c:'c-purple',t:'RL 데이터 수집'},
+    {s:17,e:19,c:'c-purple',t:'DiT 학습'},
+    {s:19,e:21,c:'c-purple',t:'Diff→RL Fine-tune 루프'},
+  ],ms:[{m:19,c:'ms-purple'}]},
+
+  {label:'경로 최적화',icon:'🔧',cat:'cat-route',bars:[
+    {s:11,e:13,c:'c-teal',t:'A* 덕트/배관'},
+    {s:13,e:15,c:'c-teal',t:'제조 제약 (엘보/곡률)'},
+    {s:15,e:18,c:'c-teal-l',t:'배치-경로 동시 최적화'},
+  ],ms:[{m:15,c:'ms-green'}]},
+
+  {label:'물리 Lv2 (Surrogate)',icon:'⚡',cat:'cat-phys2',bars:[
+    {s:9,e:12,c:'c-green',t:'열유체 Surrogate'},
+    {s:12,e:15,c:'c-green',t:'진동/구조 Surrogate'},
+    {s:15,e:18,c:'c-green',t:'모델 자동 보정 (BO)'},
+    {s:18,e:21,c:'c-green-l',t:'풀 3D 검증 (CFD/FEA)'},
+  ],ms:[{m:12,c:'ms-green'},{m:18,c:'ms-green'}]},
+
+  {label:'Co-design',icon:'📐',cat:'cat-ai',bars:[
+    {s:13,e:16,c:'c-indigo',t:'Bayesian Opt (스펙)'},
+    {s:16,e:19,c:'c-indigo',t:'스펙+배치 동시 최적화'},
+  ],ms:[]},
+
+  {label:'DB 확장',icon:'📦',cat:'cat-db',bars:[
+    {s:9,e:12,c:'c-amber',t:'학습 데이터 파이프라인'},
+    {s:15,e:19,c:'c-amber-l',t:'모델 레지스트리 (MLOps)'},
+  ],ms:[]},
+
+  {label:'전문가 검토',icon:'👨‍🔬',cat:'cat-ui',bars:[
+    {s:13,e:16,c:'c-red',t:'RLHF 검토 UI'},
+    {s:16,e:19,c:'c-red',t:'3D 배치 리뷰'},
+    {s:19,e:21,c:'c-red-l',t:'통합 플랫폼'},
+  ],ms:[{m:21,c:'ms-red'}]},
+
+  {type:'section',label:'거버넌스 / 미팅 체계'},
+
+  {label:'Weekly Sync',icon:'📅',cat:'cat-phys',bars:[
+    {s:0,e:21,c:'c-meet-w',t:'주 1회 · 1시간 · 전체 인원 진행상황 + 의존성 체크 (총 ~84회)'},
+  ],ms:[]},
+
+  {label:'Bi-weekly Deep Dive',icon:'🔬',cat:'cat-sllm',bars:[
+    {s:0,e:21,c:'c-meet-b',t:'격주 · 2시간 · 기술 주제 집중 리뷰 (총 ~42회)'},
+  ],ms:[]},
+
+  {label:'Monthly Milestone',icon:'📊',cat:'cat-ai',bars:[
+    {s:0,e:21,c:'c-meet-m',t:'월 1회 · 3시간 · 스테이크홀더 포함, Go/No-Go 결정 (총 21회)'},
+  ],ms:[]},
+
+  {label:'Phase Gate Review',icon:'🚪',cat:'cat-ui',bars:[
+    {s:8.8,e:9.2,c:'c-gate',t:'P1 게이트'},
+    {s:20.8,e:21,c:'c-gate',t:'P2 게이트'},
+  ],ms:[{m:9,c:'ms-red'},{m:21,c:'ms-red'}]},
+
+  {type:'section',label:'KPI / 인력'},
+
+  {label:'KPI 마일스톤',icon:'🎯',cat:'cat-kpi',bars:[
+    {s:2.5,e:3.5,c:'c-slate',t:'MVP Demo'},
+    {s:8.5,e:9.5,c:'c-blue',t:'Case A 완성'},
+    {s:13.5,e:14.5,c:'c-purple',t:'RL 자동배치'},
+    {s:18.5,e:19.5,c:'c-purple',t:'Diffusion 생성'},
+    {s:20.5,e:21,c:'c-green',t:'Full 플랫폼'},
+  ],ms:[{m:3,c:'ms-blue'},{m:9,c:'ms-blue'},{m:14,c:'ms-purple'},{m:19,c:'ms-purple'},{m:21,c:'ms-green'}]},
+
+  {label:'인력 투입',icon:'👥',cat:'cat-kpi',bars:[
+    {s:0,e:3,c:'c-slate',t:'2~3명 (초기 세팅)'},
+    {s:3,e:9,c:'c-slate',t:'5~6명 (전 도메인 전문가 + AI + SW)'},
+    {s:9,e:18,c:'c-slate',t:'6~7명 (피크, AI 집중)'},
+    {s:18,e:21,c:'c-slate',t:'4~5명 (통합/검증)'},
+  ],ms:[]},
+];
+
+const tEl=document.getElementById('tracks');
+
+tracks.forEach(tr=>{
+  if(tr.type==='section'){
+    const row=document.createElement('div');row.className='section-div';
+    row.innerHTML=`<div class="track-label" style="font-size:9px;font-weight:800;color:#64748b;letter-spacing:.5px">${tr.label}</div><div style="flex:1"></div>`;
+    tEl.appendChild(row);return;
+  }
+  const row=document.createElement('div');row.className='track';
+  const labelDiv=document.createElement('div');labelDiv.className='track-label';
+  labelDiv.innerHTML=`<span class="cat ${tr.cat}">${tr.icon}</span><span style="font-size:9px">${tr.label}</span>`;
+  row.appendChild(labelDiv);
+
+  const barsDiv=document.createElement('div');barsDiv.className='track-bars';
+
+  (tr.bars||[]).forEach(b=>{
+    const bar=document.createElement('div');bar.className=`bar ${b.c}`;
+    bar.style.left=(b.s/MONTHS*100)+'%';
+    bar.style.width=((b.e-b.s)/MONTHS*100)+'%';
+    bar.innerHTML=`<span class="dot${b.e<=P1_END?' solid':''}"></span>${b.t}`;
+    bar.title=`M${b.s+1}~M${b.e}: ${b.t}`;
+    barsDiv.appendChild(bar);
+  });
+
+  (tr.ms||[]).forEach(m=>{
+    const ms=document.createElement('div');ms.className=`milestone ${m.c}`;
+    ms.style.left=`calc(${m.m/MONTHS*100}% - 6px)`;
+    ms.title=`M${m.m} 마일스톤`;
+    barsDiv.appendChild(ms);
+  });
+
+  for(let i=0;i<MONTHS;i++){
+    const line=document.createElement('div');
+    const isPhase=i===P1_END;
+    line.style.cssText=`position:absolute;left:${(i/MONTHS*100)}%;top:0;bottom:0;width:${isPhase?2:1}px;background:${isPhase?'#2563EB50':i%3===0?'#e2e8f0':'#f1f5f9'};z-index:${isPhase?1:0}`;
+    barsDiv.appendChild(line);
+  }
+
+  row.appendChild(barsDiv);
+  tEl.appendChild(row);
+});
+</script>
+</body>
+</html>

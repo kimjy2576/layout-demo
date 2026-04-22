@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<title>Phase 1 LLM 상세 로드맵 · Mobile</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --ink:#1a1a2e;
+  --paper:#fff;
+  --line:#e2e8f0;
+  --line-l:#f1f5f9;
+  --mute:#64748b;
+  --mute-l:#94a3b8;
+  --bg:#f8fafc;
+
+  /* Progressive blues for 4 stages */
+  --s1:#60A5FA; --s1-bg:#EFF6FF; --s1-dk:#2563EB;
+  --s2:#3B82F6; --s2-bg:#DBEAFE; --s2-dk:#1D4ED8;
+  --s3:#2563EB; --s3-bg:#BFDBFE; --s3-dk:#1E40AF;
+  --s4:#1D4ED8; --s4-bg:#93C5FD; --s4-dk:#1E3A8A;
+
+  --accent:#F59E0B;
+  --success:#059669;
+  --warn:#DC2626;
+}
+html,body{max-width:100vw;overflow-x:hidden}
+body{background:var(--paper);color:var(--ink);font-family:'Pretendard','Noto Sans KR',system-ui,-apple-system,sans-serif;line-height:1.55;padding-bottom:40px}
+
+/* ===== Header ===== */
+.hdr{padding:18px 16px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);z-index:50}
+.hdr-tag{display:inline-block;font-size:9px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--s1-dk),var(--s4-dk));padding:3px 8px;border-radius:10px;letter-spacing:.5px;margin-bottom:6px}
+.hdr-title{font-size:20px;font-weight:900;line-height:1.2;letter-spacing:-.02em}
+.hdr-sub{font-size:11px;color:var(--mute);margin-top:4px;font-weight:500}
+.hdr-meta{display:flex;gap:6px;margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--mute-l);letter-spacing:.5px}
+.hdr-meta span{padding:3px 6px;background:var(--bg);border-radius:4px}
+
+/* ===== Stage Nav (sticky) ===== */
+.stage-nav{display:flex;gap:4px;padding:10px 12px;background:var(--bg);border-bottom:1px solid var(--line);position:sticky;top:88px;z-index:49;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.snav{flex-shrink:0;padding:7px 12px;border-radius:18px;border:1px solid var(--line);background:#fff;font-size:11px;font-weight:700;color:var(--mute);text-decoration:none;white-space:nowrap;transition:all .15s}
+.snav.s1.active{background:var(--s1-dk);color:#fff;border-color:var(--s1-dk)}
+.snav.s2.active{background:var(--s2-dk);color:#fff;border-color:var(--s2-dk)}
+.snav.s3.active{background:var(--s3-dk);color:#fff;border-color:var(--s3-dk)}
+.snav.s4.active{background:var(--s4-dk);color:#fff;border-color:var(--s4-dk)}
+
+/* ===== Overview ===== */
+.overview{padding:18px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+.ov-title{font-size:11px;font-weight:800;color:var(--mute);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ov-title::before{content:'';width:3px;height:12px;background:var(--ink);border-radius:2px}
+.ov-goal{padding:14px;background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:12px}
+.ov-goal-label{font-size:10px;font-weight:800;color:var(--s2-dk);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+.ov-goal-text{font-size:14px;font-weight:700;line-height:1.5}
+.ov-goal-desc{font-size:12px;color:var(--mute);margin-top:8px;line-height:1.6}
+
+/* Overview timeline */
+.ov-timeline{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+.ov-tl-title{font-size:11px;font-weight:800;color:var(--mute);margin-bottom:10px}
+.ov-tl-bar{display:flex;height:28px;border-radius:6px;overflow:hidden;margin-bottom:8px}
+.ov-tl-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;position:relative}
+.ov-tl-seg.s1{background:var(--s1);flex:2}
+.ov-tl-seg.s2{background:var(--s2);flex:3}
+.ov-tl-seg.s3{background:var(--s3);flex:2}
+.ov-tl-seg.s4{background:var(--s4);flex:2}
+.ov-tl-labels{display:flex;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--mute)}
+.ov-tl-labels span{flex:1;text-align:center}
+
+/* ===== Stage Card ===== */
+.stage{padding:20px 16px;border-bottom:8px solid var(--bg)}
+.stage-header{margin-bottom:16px}
+.stage-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px}
+.stage-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;color:#fff;font-size:11px;font-weight:900}
+.stage-num.s1{background:var(--s1-dk)}
+.stage-num.s2{background:var(--s2-dk)}
+.stage-num.s3{background:var(--s3-dk)}
+.stage-num.s4{background:var(--s4-dk)}
+.stage-period{color:var(--mute);text-transform:uppercase}
+.stage-duration{margin-left:auto;padding:3px 8px;background:var(--bg);border-radius:10px;color:var(--mute)}
+.stage-title{font-size:18px;font-weight:900;line-height:1.25;letter-spacing:-.01em}
+.stage-title.s1{color:var(--s1-dk)}
+.stage-title.s2{color:var(--s2-dk)}
+.stage-title.s3{color:var(--s3-dk)}
+.stage-title.s4{color:var(--s4-dk)}
+.stage-oneliner{font-size:13px;color:var(--mute);margin-top:6px;font-weight:500;line-height:1.5}
+
+/* Section inside stage */
+.sub-section{margin-top:18px}
+.sub-title{font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sub-title .ico{font-size:14px}
+
+/* Goal box */
+.goal-box{padding:12px 14px;background:var(--s1-bg);border-left:3px solid var(--s1-dk);border-radius:8px;font-size:13px;font-weight:600;line-height:1.6}
+.goal-box.s2{background:var(--s2-bg);border-color:var(--s2-dk)}
+.goal-box.s3{background:var(--s3-bg);border-color:var(--s3-dk)}
+.goal-box.s4{background:#E0E7FF;border-color:var(--s4-dk)}
+
+/* Concept card */
+.concept{padding:14px;background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
+.concept-term{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.concept-name{font-size:14px;font-weight:800;color:var(--ink)}
+.concept-en{font-size:10px;font-weight:600;color:var(--mute);font-family:'JetBrains Mono',monospace;padding:2px 6px;background:var(--bg);border-radius:4px}
+.concept-desc{font-size:12.5px;color:var(--ink);line-height:1.65;margin-bottom:6px}
+.concept-example{font-size:11.5px;color:var(--mute);line-height:1.6;padding:8px 10px;background:var(--bg);border-radius:6px;margin-top:8px;border-left:2px solid var(--line)}
+.concept-example b{color:var(--ink)}
+
+/* Todo list */
+.todo-list{list-style:none;padding:0}
+.todo-item{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line-l);font-size:12.5px;line-height:1.55}
+.todo-item:last-child{border-bottom:none}
+.todo-num{font-size:10px;font-weight:800;color:var(--mute);font-family:'JetBrains Mono',monospace;padding-top:2px}
+.todo-text{color:var(--ink)}
+.todo-text b{color:var(--s2-dk);font-weight:700}
+
+/* Deliverable */
+.deliverable{padding:14px;background:#F0FDF4;border-left:3px solid var(--success);border-radius:8px;margin-top:4px}
+.deliv-label{font-size:9px;font-weight:800;color:var(--success);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.deliv-text{font-size:13px;font-weight:600;line-height:1.6;color:var(--ink)}
+.deliv-text b{color:var(--success)}
+
+/* Example flow box */
+.flow-box{padding:14px;background:var(--ink);color:#E2E8F0;border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;margin-top:10px;overflow-x:auto}
+.flow-box .q{color:#93C5FD}
+.flow-box .arrow{color:#F59E0B}
+.flow-box .tool{color:#6EE7B7}
+.flow-box .result{color:#FDE68A}
+.flow-box .comment{color:#64748b}
+
+/* Milestone end */
+.ms-row{padding:10px 12px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;display:flex;align-items:center;gap:8px;margin-top:10px}
+.ms-icon{font-size:16px}
+.ms-text{font-size:12px;font-weight:700;color:#92400E}
+
+/* Final section */
+.final{padding:20px 16px;background:linear-gradient(135deg,var(--s4-dk),var(--s3-dk));color:#fff}
+.final-label{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;opacity:.8;margin-bottom:8px}
+.final-title{font-size:18px;font-weight:900;line-height:1.3;margin-bottom:12px}
+.final-list{list-style:none;padding:0}
+.final-item{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.15);font-size:13px;line-height:1.6;display:grid;grid-template-columns:24px 1fr;gap:10px}
+.final-item:last-child{border-bottom:none}
+.final-item b{font-weight:800}
+.final-next{margin-top:16px;padding:12px;background:rgba(255,255,255,.12);border-radius:10px;font-size:12px;line-height:1.6}
+.final-next-label{font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;opacity:.85;margin-bottom:6px}
+
+/* Footer */
+.footer{text-align:center;padding:20px 16px;font-size:10px;color:var(--mute-l);font-family:'JetBrains Mono',monospace}
+
+/* Anchor offset */
+section{scroll-margin-top:140px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-tag">PHASE 1 · LLM 상세</div>
+  <div class="hdr-title">sLLM 구축 로드맵</div>
+  <div class="hdr-sub">외부 API + RAG 기반 · 9개월 · 4단계</div>
+  <div class="hdr-meta">
+    <span>M1~M9</span>
+    <span>Case A</span>
+    <span>비전공자 가이드</span>
+  </div>
+</div>
+
+<nav class="stage-nav" id="stageNav">
+  <a href="#s1" class="snav s1">① M1~M2 기초</a>
+  <a href="#s2" class="snav s2">② M2~M5 에이전트</a>
+  <a href="#s3" class="snav s3">③ M5~M7 멀티도메인</a>
+  <a href="#s4" class="snav s4">④ M7~M9 완성</a>
+</nav>
+
+<!-- ========== Overview ========== -->
+<div class="overview">
+  <div class="ov-title">Phase 1 목표</div>
+  <div class="ov-goal">
+    <div class="ov-goal-label">9개월 후 손에 쥐는 것</div>
+    <div class="ov-goal-text">설계자가 채팅창에 자연어로 물어보면, AI가 문서 검색 + 시뮬레이션 + 최적화를 알아서 돌려서 근거 있는 답변을 주는 시스템</div>
+    <div class="ov-goal-desc">처음부터 AI를 만들지 않고 Claude/GPT를 빌려 써서 <b>빠르게 동작하는 시스템</b>을 만듦. 동시에 9개월 동안 대화 로그를 쌓아서 <b>Phase 2에서 자체 AI 훈련 재료</b>로 사용.</div>
+  </div>
+
+  <div class="ov-timeline">
+    <div class="ov-tl-title">4단계 타임라인 (M = 개월)</div>
+    <div class="ov-tl-bar">
+      <div class="ov-tl-seg s1">① 기초</div>
+      <div class="ov-tl-seg s2">② 에이전트</div>
+      <div class="ov-tl-seg s3">③ 멀티</div>
+      <div class="ov-tl-seg s4">④ 완성</div>
+    </div>
+    <div class="ov-tl-labels">
+      <span>M1~M2</span>
+      <span>M2~M5</span>
+      <span>M5~M7</span>
+      <span>M7~M9</span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Stage 1 ========== -->
+<section id="s1" class="stage">
+  <div class="stage-header">
+    <div class="stage-meta">
+      <span class="stage-num s1">1</span>
+      <span class="stage-period">M1~M2 · 2개월</span>
+      <span class="stage-duration">기초</span>
+    </div>
+    <div class="stage-title s1">질문 이해하는 기본 시스템 만들기</div>
+    <div class="stage-oneliner">규격 문서를 검색해서 근거 있는 답변을 주는 최소 기능 시스템(MVP) 구축</div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">🎯</span>이 단계의 목표</div>
+    <div class="goal-box">
+      "R290 냉매로 바꾸면 안전 규격 뭐 지켜야 해?" 같은 질문에 관련 규격 문서를 찾아서 근거 있는 답변을 주는 시스템
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">📚</span>먼저 이해해야 할 용어 3개</div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">Claude/GPT API</div>
+        <div class="concept-en">외부 AI 빌려쓰기</div>
+      </div>
+      <div class="concept-desc">Anthropic의 Claude나 OpenAI의 GPT 같은 <b>이미 만들어진 AI를 돈 내고 쓰는 것</b>. 직접 AI를 만들려면 수억~수십억 원 + 수개월 걸리지만 API는 바로 사용 가능.</div>
+      <div class="concept-example"><b>비유:</b> 택시 잡아타는 것과 같음. 차 살 필요 없이 돈 내면 목적지까지 태워줌.</div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">RAG</div>
+        <div class="concept-en">Retrieval-Augmented Generation</div>
+      </div>
+      <div class="concept-desc">AI가 답하기 전에 <b>관련 문서를 먼저 찾아서 참고하게 하는 방식</b>. 회사 내부 문서(규격·실험 데이터)는 AI가 원래 모르니까, 질문 들어오면 관련 문서를 찾아서 "이거 보고 답해"라고 넘겨주는 것.</div>
+      <div class="concept-example"><b>비유:</b> 시험 볼 때 오픈북 허용하는 것. AI가 "외워서 답하기"가 아니라 "책 찾아보고 답하기"로 바뀜. → <b>환각(지어내기) 감소</b>.</div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">벡터 DB</div>
+        <div class="concept-en">의미 기반 검색 DB</div>
+      </div>
+      <div class="concept-desc">문서를 AI가 검색하기 좋은 형태로 저장하는 <b>특수 데이터베이스</b>. 일반 검색은 "단어 일치"로 찾지만, 벡터 DB는 "의미가 비슷한 것"으로 찾음.</div>
+      <div class="concept-example"><b>예:</b> "냉매 누설" 검색 → 단어가 정확히 없어도 "가스 새는 현상", "refrigerant leak" 같이 <b>의미 유사 문서도 찾아냄</b>.</div>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">🔨</span>구체적으로 만드는 것</div>
+    <ol class="todo-list">
+      <li class="todo-item">
+        <span class="todo-num">01</span>
+        <span class="todo-text"><b>규격 문서 수집</b> — IEC 61121, EN 60335 등 PDF 수백 페이지 확보</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">02</span>
+        <span class="todo-text"><b>청킹(Chunking)</b> — 긴 문서를 500~1000자 단위로 잘게 쪼갬 (AI가 한 번에 읽을 수 있게)</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">03</span>
+        <span class="todo-text"><b>임베딩(Embedding)</b> — 잘게 쪼갠 텍스트를 숫자 벡터로 변환해서 벡터 DB에 저장</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">04</span>
+        <span class="todo-text"><b>벡터 DB 선정</b> — Pinecone / Qdrant / Chroma 중 선택 (사내 보안/비용 고려)</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">05</span>
+        <span class="todo-text"><b>해석기 프롬프트 설계</b> — 자연어 질문 → JSON 공학 목표로 변환</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">06</span>
+        <span class="todo-text"><b>보안 프록시</b> — API 호출 전에 회사 기밀 정보(모델명·치수 등) 마스킹</span>
+      </li>
+    </ol>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">⚙️</span>동작 흐름 예시</div>
+    <div class="flow-box">
+<span class="q">질문:</span> "R290 규격 요건?"
+<span class="arrow">↓</span>
+<span class="comment">[1] 벡터 DB에서 "R290" 관련 문서 Top 5 검색</span>
+<span class="tool">→ IEC 60335-2-11 §7.3 페이지 찾음</span>
+<span class="arrow">↓</span>
+<span class="comment">[2] Claude API에 검색 결과 + 질문 전달</span>
+<span class="arrow">↓</span>
+<span class="result">답변:</span> "R290 충전량 150g 이하...
+        근거: [IEC 60335-2-11]"
+    </div>
+  </div>
+
+  <div class="deliverable">
+    <div class="deliv-label">✓ 산출물 (M2 완료 시점)</div>
+    <div class="deliv-text"><b>MVP 시스템</b> — 규격 관련 질문에 답변 가능. 아직 시뮬레이션이나 최적화는 못 함.</div>
+  </div>
+</section>
+
+<!-- ========== Stage 2 ========== -->
+<section id="s2" class="stage">
+  <div class="stage-header">
+    <div class="stage-meta">
+      <span class="stage-num s2">2</span>
+      <span class="stage-period">M2~M5 · 3개월</span>
+      <span class="stage-duration">에이전트</span>
+    </div>
+    <div class="stage-title s2">스스로 일 처리하는 AI 에이전트</div>
+    <div class="stage-oneliner">AI가 여러 도구(DB·시뮬·최적화)를 스스로 꺼내 쓰면서 답변 생성</div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">🎯</span>이 단계의 목표</div>
+    <div class="goal-box s2">
+      "A모델 건조시간 30분 단축 방법은?" 같은 복잡한 질문에 DB 조회 → 시뮬 → 최적화를 알아서 순서대로 실행하고 결과를 자연어로 설명
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">📚</span>먼저 이해해야 할 용어 3개</div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">에이전트</div>
+        <div class="concept-en">Agent</div>
+      </div>
+      <div class="concept-desc">단순히 "답만 하는 AI"가 아니라 <b>스스로 판단하고 행동하는 AI</b>. 질문을 이해하고 → 뭘 해야 하는지 계획하고 → 도구를 써서 실행하고 → 결과를 정리하는 일을 스스로 함.</div>
+      <div class="concept-example"><b>비유:</b> "검색엔진"과 "비서"의 차이. 검색엔진은 링크만 주지만, 비서는 내용을 이해하고 알아서 일을 처리해줌.</div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">Tool-use</div>
+        <div class="concept-en">도구 사용</div>
+      </div>
+      <div class="concept-desc">AI에게 <b>여러 도구(Tool)를 쥐어주고 필요할 때 꺼내 쓰게 하는 방식</b>. 각 도구는 특정 일을 할 수 있는 프로그램(함수). AI가 질문 맥락 보고 어떤 도구를 어떤 순서로 쓸지 판단.</div>
+      <div class="concept-example"><b>이 프로젝트의 Tool:</b> ① DB 조회 ② 열유체 시뮬 ③ 최적화 ④ 3D 뷰어 ⑤ 리포트 생성기</div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">LangGraph</div>
+        <div class="concept-en">에이전트 프레임워크</div>
+      </div>
+      <div class="concept-desc">AI 에이전트를 <b>쉽게 만들게 해주는 도구</b>. 워크플로우를 레고 블록처럼 조립할 수 있음. 분기·반복·에러 복구 같은 복잡한 로직도 그래프로 표현.</div>
+      <div class="concept-example"><b>비유:</b> PowerPoint의 "도형 그리기"처럼 AI 워크플로우를 그림으로 그려서 만들 수 있음.</div>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">🔨</span>구체적으로 만드는 것</div>
+    <ol class="todo-list">
+      <li class="todo-item">
+        <span class="todo-num">01</span>
+        <span class="todo-text"><b>오케스트레이터 구현</b> — AI가 어떤 도구를 어떤 순서로 쓸지 판단하는 두뇌</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">02</span>
+        <span class="todo-text"><b>Tool 5개 등록</b> — DB 조회 / 물리 시뮬 / 최적화 / 3D 뷰어 / 리포트</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">03</span>
+        <span class="todo-text"><b>LangGraph 상태 그래프</b> — 분기·반복·에러 복구 로직 설계</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">04</span>
+        <span class="todo-text"><b>설명가(Explainer)</b> — 시뮬 결과(숫자·그래프)를 사람 말로 번역</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">05</span>
+        <span class="todo-text"><b>애매함 감지 + 역질문</b> — 질문이 부족하면 AI가 먼저 되물음</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">06</span>
+        <span class="todo-text"><b>에러 복구</b> — 시뮬이 실패해도 다른 방법으로 재시도</span>
+      </li>
+    </ol>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">⚙️</span>동작 흐름 예시</div>
+    <div class="flow-box">
+<span class="q">질문:</span> "A모델 건조시간 30분 줄이려면?"
+<span class="arrow">↓</span>
+<span class="comment">[AI의 속마음]</span>
+  "먼저 A모델 스펙부터 알아야겠다"
+<span class="tool">→ Tool 1: DB 조회 실행</span>
+  "건조시간은 열유체 문제네"
+<span class="tool">→ Tool 2: 열유체 시뮬 실행</span>
+  "어느 파라미터가 민감한지?"
+<span class="tool">→ Tool 3: 최적화 실행</span>
+  "결과를 정리해야지"
+<span class="tool">→ Tool 5: 리포트 생성</span>
+<span class="arrow">↓</span>
+<span class="result">답변:</span> "팬 RPM 1800→2100, EEV 개도 +5%
+        → 28분 단축 가능"
+    </div>
+  </div>
+
+  <div class="ms-row">
+    <span class="ms-icon">🎯</span>
+    <span class="ms-text">M3 마일스톤: MVP 데모 (내부 시연)</span>
+  </div>
+
+  <div class="deliverable">
+    <div class="deliv-label">✓ 산출물 (M5 완료 시점)</div>
+    <div class="deliv-text"><b>Tool-use 에이전트</b> — 복잡한 공학 질문을 여러 도구를 조합해서 자동으로 해결</div>
+  </div>
+</section>
+
+<!-- ========== Stage 3 ========== -->
+<section id="s3" class="stage">
+  <div class="stage-header">
+    <div class="stage-meta">
+      <span class="stage-num s3">3</span>
+      <span class="stage-period">M5~M7 · 2개월</span>
+      <span class="stage-duration">멀티도메인</span>
+    </div>
+    <div class="stage-title s3">여러 분야 동시에 다루기 + 로그 수집</div>
+    <div class="stage-oneliner">열유체뿐 아니라 진동·구조·제어까지 통합 + 미래 학습용 데이터 축적 시작</div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">🎯</span>이 단계의 목표</div>
+    <div class="goal-box s3">
+      "소음 규격 지키면서 COP 최대화" 같은 <b>여러 분야가 얽힌 질문</b>에 AI가 trade-off(절충)를 스스로 찾아서 답변. 동시에 모든 대화를 구조화해서 저장 (Phase 2 재료)
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">📚</span>먼저 이해해야 할 용어 3개</div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">멀티도메인</div>
+        <div class="concept-en">Multi-Domain</div>
+      </div>
+      <div class="concept-desc">세탁건조기는 <b>여러 공학 분야가 얽혀있는 제품</b>. 하나 바꾸면 다른 게 따라 움직임. 현실의 설계 질문은 대부분 여러 분야를 동시에 봐야 함.</div>
+      <div class="concept-example"><b>5개 분야:</b> ① 열유체 (냉매·공기) ② 진동/소음 ③ 구조 ④ 제어 ⑤ 전장</div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">Trade-off</div>
+        <div class="concept-en">절충/맞교환</div>
+      </div>
+      <div class="concept-desc">하나를 좋게 하면 다른 게 나빠지는 <b>상충 관계</b>. 공학 설계는 거의 항상 trade-off 연속.</div>
+      <div class="concept-example"><b>예:</b> 팬 RPM ↑ → COP(효율) ↑ 👍 / 소음 ↑ 👎 / 진동 ↑ 👎 → <b>최적점 찾기</b>가 핵심.</div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">구조화된 로그</div>
+        <div class="concept-en">Structured Logging</div>
+      </div>
+      <div class="concept-desc">사용자 질문·AI 답변·쓴 도구·결과·피드백을 <b>정해진 형식(JSON)</b>으로 저장하는 것. 나중에 Phase 2에서 자체 AI를 훈련시킬 재료가 됨.</div>
+      <div class="concept-example"><b>저장 항목:</b> 질문, 답변, 호출한 Tool 순서, 실행 결과, 소요 시간, 사용자 👍/👎</div>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">🔨</span>구체적으로 만드는 것</div>
+    <ol class="todo-list">
+      <li class="todo-item">
+        <span class="todo-num">01</span>
+        <span class="todo-text"><b>5개 도메인 Tool 통합</b> — 열유체 외 진동·구조·제어·전장 시뮬 모두 연결</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">02</span>
+        <span class="todo-text"><b>Trade-off 판단 로직</b> — AI가 여러 목적함수를 비교해서 절충안 찾게 함</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">03</span>
+        <span class="todo-text"><b>로그 수집 파이프라인</b> — 모든 대화를 JSON으로 자동 저장</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">04</span>
+        <span class="todo-text"><b>피드백 UI</b> — 사용자가 👍/👎 누르면 자동 기록</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">05</span>
+        <span class="todo-text"><b>품질 필터</b> — 저품질 대화(오류·무의미) 자동 제외</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">06</span>
+        <span class="todo-text"><b>도메인 간 연결 그래프</b> — "팬 RPM → 소음·COP·진동" 같은 인과 관계 DB화</span>
+      </li>
+    </ol>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">⚙️</span>동작 흐름 예시</div>
+    <div class="flow-box">
+<span class="q">질문:</span> "소음 50dB 이하 + COP 최대화"
+<span class="arrow">↓</span>
+<span class="comment">[AI가 3개 도메인 동시 고려]</span>
+<span class="tool">→ 열유체 시뮬: COP = f(팬 RPM)</span>
+<span class="tool">→ 소음 시뮬: dB = g(팬 RPM)</span>
+<span class="tool">→ 구조 시뮬: 진동 = h(팬 RPM)</span>
+<span class="arrow">↓</span>
+<span class="comment">[최적화: 소음 50dB 제약 하에서</span>
+<span class="comment">       COP 최대 지점 탐색]</span>
+<span class="arrow">↓</span>
+<span class="result">답변:</span> "팬 RPM 1950이 최적점
+       COP 3.2 / 소음 49.8dB / 진동 OK"
+
+<span class="comment">[동시에 이 대화 전체를 JSON 로그로 저장]</span>
+    </div>
+  </div>
+
+  <div class="ms-row">
+    <span class="ms-icon">🎯</span>
+    <span class="ms-text">M6 마일스톤: 진동/소음 도메인 검증</span>
+  </div>
+
+  <div class="deliverable">
+    <div class="deliv-label">✓ 산출물 (M7 완료 시점)</div>
+    <div class="deliv-text"><b>멀티도메인 에이전트</b> + <b>로그 DB</b> (약 1000~3000건 축적)</div>
+  </div>
+</section>
+
+<!-- ========== Stage 4 ========== -->
+<section id="s4" class="stage">
+  <div class="stage-header">
+    <div class="stage-meta">
+      <span class="stage-num s4">4</span>
+      <span class="stage-period">M7~M9 · 2개월</span>
+      <span class="stage-duration">완성</span>
+    </div>
+    <div class="stage-title s4">Case A 완성 + 학습 데이터셋 확보</div>
+    <div class="stage-oneliner">기존 모델 개선 시나리오 완전 커버 + Phase 2 준비 완료</div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">🎯</span>이 단계의 목표</div>
+    <div class="goal-box s4">
+      현재 양산 중인 모델의 개선 질문을 모두 대응 가능. 9개월간 쌓인 로그를 정제해서 <b>Phase 2 파인튜닝용 데이터셋 초안</b> 확보
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">📚</span>먼저 이해해야 할 용어 3개</div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">Case A</div>
+        <div class="concept-en">기존 모델 개선 시나리오</div>
+      </div>
+      <div class="concept-desc">이미 양산 중인 제품을 개선하는 경우. <b>기준점이 있어서 Case B(새 제품 설계)보다 훨씬 쉬움</b>. 기준 모델에서 얼마나 좋아졌는지만 비교하면 됨.</div>
+      <div class="concept-example"><b>Case A 질문 예:</b> "A모델 소음 3dB ↓", "R290 전환 시 변경점?", "원가 5000원 절감"</div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">학습 데이터셋</div>
+        <div class="concept-en">Training Dataset</div>
+      </div>
+      <div class="concept-desc">AI를 훈련시킬 때 쓰는 <b>"문제-정답" 쌍의 모음집</b>. 수천~수만 건 필요. Phase 2에서 자체 sLLM을 만들 때 이걸로 학습시킴.</div>
+      <div class="concept-example"><b>형식:</b> { 질문: "건조시간 단축 방법?", 정답: "팬 RPM 조정 + EEV 제어..." }</div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-term">
+        <div class="concept-name">Gold 데이터</div>
+        <div class="concept-en">검증된 고품질 데이터</div>
+      </div>
+      <div class="concept-desc">전문가가 검증한 <b>신뢰할 수 있는 학습 데이터</b>. 그냥 로그는 틀린 답도 있으니까, 전문가가 리뷰해서 "이건 맞다"고 확인한 것만 Gold로 분류.</div>
+      <div class="concept-example"><b>비유:</b> 시험 문제집에서 "정답지"가 제대로 맞는지 선생님이 검수한 것.</div>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title"><span class="ico">🔨</span>구체적으로 만드는 것</div>
+    <ol class="todo-list">
+      <li class="todo-item">
+        <span class="todo-num">01</span>
+        <span class="todo-text"><b>Case A 시나리오 100+ 커버</b> — 실제 설계자가 자주 묻는 질문 유형 완전 대응</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">02</span>
+        <span class="todo-text"><b>리포트 자동 생성</b> — PDF로 최적화 결과 + 근거 + 3D 이미지 포함</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">03</span>
+        <span class="todo-text"><b>로그 정제</b> — 9개월치 대화 로그를 학습 포맷으로 변환</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">04</span>
+        <span class="todo-text"><b>전문가 리뷰 + Gold 라벨링</b> — 고품질 답변만 골라서 Gold 데이터로 지정</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">05</span>
+        <span class="todo-text"><b>Synthetic 데이터 증강</b> — Claude로 유사 질문 자동 생성해서 데이터 양 늘리기</span>
+      </li>
+      <li class="todo-item">
+        <span class="todo-num">06</span>
+        <span class="todo-text"><b>Phase Gate 준비</b> — M9 전면 리뷰 자료, Phase 2 진입 승인 요청</span>
+      </li>
+    </ol>
+  </div>
+
+  <div class="ms-row">
+    <span class="ms-icon">🎯</span>
+    <span class="ms-text">M9 마일스톤: Phase 1 완료 · Phase Gate Review</span>
+  </div>
+
+  <div class="deliverable">
+    <div class="deliv-label">✓ 최종 산출물 (M9 완료 시점)</div>
+    <div class="deliv-text">
+      ① <b>Case A 완전 동작 시스템</b> (양산 모델 개선 시나리오 대응)<br>
+      ② <b>Gold 데이터셋 초안</b> (수천 건, Phase 2 파인튜닝용)<br>
+      ③ <b>Phase 2 진입 승인</b>
+    </div>
+  </div>
+</section>
+
+<!-- ========== Final: 9개월 후 ========== -->
+<div class="final">
+  <div class="final-label">🎯 Phase 1 종료 시점 (M9)</div>
+  <div class="final-title">9개월 후 손에 쥐는 것</div>
+  <ul class="final-list">
+    <li class="final-item">
+      <span>💬</span>
+      <span><b>자연어 기반 설계 도우미</b> — 설계자가 채팅으로 물어보면 AI가 알아서 답변</span>
+    </li>
+    <li class="final-item">
+      <span>🔧</span>
+      <span><b>5개 도메인 통합 자동화</b> — 열유체·진동·구조·제어·전장 동시 처리</span>
+    </li>
+    <li class="final-item">
+      <span>📄</span>
+      <span><b>자동 리포트</b> — PDF로 분석 결과 + 3D 뷰 + 근거 문서 자동 생성</span>
+    </li>
+    <li class="final-item">
+      <span>📊</span>
+      <span><b>학습 데이터셋</b> — 수천 건의 Gold 품질 데이터 (Phase 2 재료)</span>
+    </li>
+    <li class="final-item">
+      <span>⚠️</span>
+      <span><b>한계</b> — 외부 API 비용 발생, 회사 민감 데이터 외부 전송 우려, 세탁건조기 도메인 지식은 얕음</span>
+    </li>
+  </ul>
+
+  <div class="final-next">
+    <div class="final-next-label">→ Phase 2 예고</div>
+    Phase 1의 한계를 극복하기 위해 <b>자체 sLLM 구축</b>으로 전환. 쌓인 데이터셋으로 파인튜닝 → 외부 API 대체 → 비용 ↓ + 보안 ↑ + 도메인 성능 ↑
+  </div>
+</div>
+
+<div class="footer">
+  Phase 1 LLM 상세 로드맵 · 건조기선행연구팀 · 2026-04<br>
+  Mobile v1.0
+</div>
+
+<script>
+// Active stage nav based on scroll
+const snavs = document.querySelectorAll('.snav');
+const sections = document.querySelectorAll('.stage');
+
+function updateActive() {
+  let current = null;
+  const scrollY = window.scrollY + 200;
+  sections.forEach((s, i) => {
+    if (s.offsetTop <= scrollY) current = i;
+  });
+  snavs.forEach((n, i) => {
+    n.classList.toggle('active', i === current);
+  });
+}
+
+window.addEventListener('scroll', updateActive);
+updateActive();
+
+// Smooth scroll
+snavs.forEach(n => {
+  n.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(n.getAttribute('href'));
+    if (target) {
+      const offset = 140;
+      const top = target.offsetTop - offset;
+      window.scrollTo({top, behavior: 'smooth'});
+    }
+  });
+});
+</script>
+
+</body>
+</html>
