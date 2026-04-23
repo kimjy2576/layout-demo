@@ -3,24 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 레이아웃 최적화 개발 로드맵 v5</title>
+<title>AI 레이아웃 최적화 개발 로드맵 v5 · Editable</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-@font-face{font-family:'Pretendard';src:url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css')}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#fff;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',system-ui,sans-serif;padding:0;overflow-x:auto}
-.page{min-width:1200px;max-width:1500px;margin:0 auto;padding:20px 28px}
+.page{min-width:1200px;max-width:1500px;margin:0 auto;padding:20px 28px;transition:padding-right .25s}
+body.panel-open .page{padding-right:440px}
 
-.header{margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end}
+/* ===== Header ===== */
+.header{margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px}
 .header h1{font-size:26px;font-weight:900;color:#1a1a2e;line-height:1.2}
 .header h1 span{color:#2563EB}
 .header-sub{font-size:10px;color:#64748b;margin-top:3px}
 
+/* ===== Toolbar ===== */
+.toolbar{display:flex;gap:6px;align-items:center}
+.tbtn{padding:6px 10px;border:1px solid #e2e8f0;background:#fff;border-radius:6px;font-size:11px;font-weight:700;color:#475569;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.tbtn:hover{background:#f8fafc;border-color:#cbd5e1}
+.tbtn.primary{background:#1a1a2e;color:#fff;border-color:#1a1a2e}
+.tbtn.primary:hover{background:#2d2d4a}
+.tbtn.active{background:#DC2626;color:#fff;border-color:#DC2626}
+.tbtn.active:hover{background:#B91C1C}
+.tbtn.danger{color:#DC2626;border-color:#FCA5A5}
+.tbtn.danger:hover{background:#FEE2E2}
+.tbtn-icon{font-size:13px}
+
+.status-chip{font-size:9px;font-weight:700;color:#059669;background:#D1FAE5;padding:3px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace}
+.status-chip.dirty{color:#D97706;background:#FEF3C7}
+
+/* ===== Legend ===== */
 .legend-bar{display:flex;gap:14px;align-items:center;margin-bottom:14px;padding:7px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600}
 .legend-dot{width:9px;height:9px;border-radius:50%}
 .legend-line{width:22px;height:4px;border-radius:2px}
 
+/* ===== Phase Header ===== */
 .phase-row{display:flex;margin-bottom:2px}
 .phase-label-area{width:125px;flex-shrink:0}
 .phase-timeline{flex:1;display:flex;position:relative}
@@ -28,23 +46,49 @@ body{background:#fff;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',syste
 .phase-block.p1{background:linear-gradient(135deg,#2563EB,#3B82F6);flex:9}
 .phase-block.p2{background:linear-gradient(135deg,#7C3AED,#8B5CF6);flex:12;margin-left:2px}
 
+/* ===== Timeline Header ===== */
 .timeline-header{display:flex;border-bottom:2px solid #1a1a2e;padding-bottom:3px}
 .tl-label{width:125px;flex-shrink:0}
 .tl-months{flex:1;display:flex}
 .tl-month{flex:1;text-align:center;font-size:9px;font-weight:600;color:#475569;padding:3px 0}
 .tl-month.q-start{border-left:1px solid #cbd5e1}
 
+/* ===== Tracks ===== */
 .track{display:flex;min-height:32px;border-bottom:1px solid #f1f5f9;position:relative}
 .track:hover{background:#f8fafc}
-.track-label{width:125px;flex-shrink:0;display:flex;align-items:center;padding:3px 6px;font-size:10px;font-weight:700;gap:4px}
+.track-label{width:125px;flex-shrink:0;display:flex;align-items:center;padding:3px 6px;font-size:10px;font-weight:700;gap:4px;position:relative}
 .track-bars{flex:1;display:flex;position:relative;align-items:center;padding:3px 0}
-.cat{font-size:7px;padding:2px 3px;border-radius:2px;color:#fff}
+.cat{font-size:7px;padding:2px 3px;border-radius:2px;color:#fff;display:inline-flex;align-items:center;justify-content:center}
 
-.bar{position:absolute;height:20px;border-radius:10px;display:flex;align-items:center;padding:0 9px;font-size:9px;font-weight:700;color:#fff;white-space:nowrap;transition:filter .15s;overflow:hidden}
+/* ===== Bars ===== */
+.bar{position:absolute;height:20px;border-radius:10px;display:flex;align-items:center;padding:0 9px;font-size:9px;font-weight:700;color:#fff;white-space:nowrap;transition:filter .15s,transform .15s;overflow:hidden}
 .bar:hover{filter:brightness(1.1);z-index:3}
 .bar .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);margin-right:5px;flex-shrink:0}
 .bar .dot.solid{background:#fff}
 
+/* Edit mode: bar handles */
+body.edit-mode .bar{cursor:move;padding-left:14px;padding-right:14px}
+body.edit-mode .bar::before,body.edit-mode .bar::after{content:'';position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize;background:rgba(255,255,255,.25);transition:background .15s}
+body.edit-mode .bar::before{left:0;border-top-left-radius:10px;border-bottom-left-radius:10px}
+body.edit-mode .bar::after{right:0;border-top-right-radius:10px;border-bottom-right-radius:10px}
+body.edit-mode .bar:hover::before,body.edit-mode .bar:hover::after{background:rgba(255,255,255,.5)}
+body.edit-mode .bar.selected{outline:2px solid #1a1a2e;outline-offset:1px;z-index:4}
+body.edit-mode .track-label{cursor:pointer}
+body.edit-mode .track-label:hover{background:#fef3c7;border-radius:4px}
+body.edit-mode .track-label.selected{background:#FEF3C7;outline:1px solid #F59E0B;border-radius:4px}
+body.edit-mode .milestone{cursor:pointer}
+body.edit-mode .milestone.selected{outline:2px solid #1a1a2e;outline-offset:2px;z-index:5}
+body.edit-mode .section-div{cursor:pointer}
+body.edit-mode .section-div:hover{background:#FEF3C7}
+body.edit-mode .section-div.selected{background:#FDE68A}
+
+/* Dragging feedback */
+body.dragging *{user-select:none !important;pointer-events:none}
+body.dragging .bar{transition:none}
+body.dragging .drag-overlay{display:block;pointer-events:auto}
+.drag-overlay{display:none;position:fixed;inset:0;z-index:100;cursor:inherit}
+
+/* ===== Bar colors ===== */
 .c-blue{background:linear-gradient(90deg,#2563EB,#3B82F6)}
 .c-blue-l{background:linear-gradient(90deg,#60A5FA,#93C5FD)}
 .c-green{background:linear-gradient(90deg,#059669,#10B981)}
@@ -61,21 +105,28 @@ body{background:#fff;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',syste
 .c-slate{background:linear-gradient(90deg,#475569,#64748b)}
 .c-indigo{background:linear-gradient(90deg,#4338CA,#6366F1)}
 
-/* Meeting recurring patterns */
 .c-meet-w{background:repeating-linear-gradient(90deg,#059669 0,#059669 3px,#10B981 3px,#10B981 6px)}
 .c-meet-b{background:repeating-linear-gradient(90deg,#2563EB 0,#2563EB 6px,#3B82F6 6px,#3B82F6 12px)}
 .c-meet-m{background:repeating-linear-gradient(90deg,#7C3AED 0,#7C3AED 12px,#8B5CF6 12px,#8B5CF6 24px)}
 .c-gate{background:linear-gradient(90deg,#DC2626,#EF4444);border:2px solid #fff;box-shadow:0 0 0 1px #DC2626}
 
+/* ===== Milestones ===== */
 .milestone{position:absolute;width:12px;height:12px;transform:rotate(45deg);border:2px solid;border-radius:2px;top:50%;margin-top:-6px;z-index:2}
 .ms-blue{border-color:#2563EB;background:#DBEAFE}
 .ms-green{border-color:#059669;background:#D1FAE5}
 .ms-purple{border-color:#7C3AED;background:#EDE9FE}
 .ms-red{border-color:#DC2626;background:#FEE2E2}
 
+/* ===== Section Dividers ===== */
 .section-div{display:flex;min-height:22px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;align-items:center}
 .section-div .track-label{font-size:9px;font-weight:800;color:#64748b;letter-spacing:.5px}
 
+/* ===== Categories ===== */
+.cat-sllm{background:#2563EB}.cat-phys{background:#059669}.cat-phys2{background:#10B981}
+.cat-db{background:#D97706}.cat-ai{background:#7C3AED}.cat-route{background:#0D9488}
+.cat-ui{background:#DC2626}.cat-kpi{background:#475569}
+
+/* ===== Dashboard ===== */
 .dashboard{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0}
 .dash-card{padding:8px 9px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;text-align:center}
 .dash-card .d-label{font-size:8px;font-weight:700;color:#94a3b8;letter-spacing:.5px;margin-bottom:3px}
@@ -83,14 +134,72 @@ body{background:#fff;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',syste
 .dash-card .d-desc{font-size:8px;color:#64748b;line-height:1.4}
 .d-green{color:#059669}.d-amber{color:#D97706}.d-red{color:#DC2626}.d-blue{color:#2563EB}.d-purple{color:#7C3AED}
 
-.cat-sllm{background:#2563EB}.cat-phys{background:#059669}.cat-phys2{background:#10B981}
-.cat-db{background:#D97706}.cat-ai{background:#7C3AED}.cat-route{background:#0D9488}
-.cat-ui{background:#DC2626}.cat-kpi{background:#475569}
-
 .footer{text-align:center;font-size:9px;color:#94a3b8;margin-top:14px;font-family:'JetBrains Mono',monospace}
+
+/* ===== Add Track Button ===== */
+.add-track-btn{display:none;margin:8px auto;padding:6px 12px;border:1px dashed #cbd5e1;background:#f8fafc;color:#64748b;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;transition:all .15s}
+.add-track-btn:hover{border-color:#2563EB;color:#2563EB;background:#EFF6FF}
+body.edit-mode .add-track-btn{display:block}
+
+/* ===== Side Panel ===== */
+.side-panel{position:fixed;top:0;right:-440px;width:420px;height:100vh;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,.08);z-index:200;transition:right .25s ease;display:flex;flex-direction:column;border-left:1px solid #e2e8f0}
+body.panel-open .side-panel{right:0}
+
+.sp-head{padding:14px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;background:#f8fafc}
+.sp-head-title{flex:1;min-width:0}
+.sp-head-type{font-size:9px;font-weight:800;color:#64748b;letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px;font-family:'JetBrains Mono',monospace}
+.sp-head-name{font-size:14px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-close{width:28px;height:28px;border-radius:14px;border:1px solid #e2e8f0;background:#fff;font-size:14px;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.sp-close:hover{background:#f1f5f9;color:#1a1a2e}
+
+.sp-body{flex:1;overflow-y:auto;padding:16px}
+
+.sp-group{margin-bottom:18px}
+.sp-group-title{font-size:10px;font-weight:800;color:#64748b;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.sp-group-title::before{content:'';width:3px;height:10px;background:#1a1a2e;border-radius:2px}
+
+.sp-field{margin-bottom:10px}
+.sp-label{display:block;font-size:10px;font-weight:700;color:#475569;margin-bottom:4px}
+.sp-input,.sp-select{width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;font-family:inherit;color:#1a1a2e;background:#fff;transition:border-color .15s}
+.sp-input:focus,.sp-select:focus{outline:none;border-color:#2563EB}
+.sp-input-group{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sp-input-group label{display:block;font-size:9px;font-weight:700;color:#64748b;margin-bottom:3px}
+.sp-input-group input{width:100%}
+.sp-help{font-size:9px;color:#94a3b8;margin-top:3px;line-height:1.4}
+
+.sp-color-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.sp-color-opt{height:28px;border-radius:5px;cursor:pointer;border:2px solid transparent;position:relative;transition:transform .1s}
+.sp-color-opt:hover{transform:scale(1.05)}
+.sp-color-opt.selected{border-color:#1a1a2e;box-shadow:0 0 0 2px #fff,0 0 0 3px #1a1a2e}
+.sp-color-opt::after{content:attr(data-label);position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);font-size:8px;color:#64748b;white-space:nowrap;opacity:0;transition:opacity .1s}
+.sp-color-opt:hover::after{opacity:1}
+
+.sp-list{border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
+.sp-list-item{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;padding:6px 8px;border-bottom:1px solid #f1f5f9;font-size:11px;align-items:center;cursor:pointer;transition:background .1s}
+.sp-list-item:last-child{border-bottom:none}
+.sp-list-item:hover{background:#f8fafc}
+.sp-list-bar{width:40px;height:14px;border-radius:7px}
+.sp-list-text{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1a1a2e}
+.sp-list-range{font-size:9px;color:#64748b;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.sp-list-del{background:none;border:none;color:#DC2626;cursor:pointer;font-size:14px;padding:0 3px;opacity:.4}
+.sp-list-del:hover{opacity:1}
+
+.sp-add-btn{width:100%;padding:8px;border:1px dashed #cbd5e1;background:#f8fafc;color:#64748b;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;transition:all .15s}
+.sp-add-btn:hover{border-color:#2563EB;color:#2563EB;background:#EFF6FF}
+
+.sp-footer{padding:12px 16px;border-top:1px solid #e2e8f0;background:#f8fafc;display:flex;gap:6px}
+.sp-footer .tbtn{flex:1;justify-content:center}
+
+.sp-empty{text-align:center;color:#94a3b8;padding:60px 20px;font-size:12px}
+.sp-empty-ico{font-size:32px;margin-bottom:10px;opacity:.5}
+
+/* ===== Toast ===== */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:#1a1a2e;color:#fff;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:300;transition:transform .2s;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
+
 <div class="page">
 
 <div class="header">
@@ -98,8 +207,13 @@ body{background:#fff;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',syste
     <h1>AI <span>LAYOUT OPTIMIZATION</span> ROADMAP v5</h1>
     <div class="header-sub">전 물리 도메인 Lv1 · 외부 API→자체 sLLM 전환 전략 · 21개월</div>
   </div>
-  <div style="text-align:right">
-    <div class="header-sub">건조기선행연구팀 · 2026</div>
+  <div class="toolbar">
+    <span class="status-chip" id="statusChip">saved</span>
+    <button class="tbtn" id="btnEdit"><span class="tbtn-icon">✏️</span>편집 모드</button>
+    <button class="tbtn" id="btnExport" title="현재 데이터 JSON 내보내기"><span class="tbtn-icon">📥</span>Export</button>
+    <button class="tbtn" id="btnImport" title="JSON 불러오기"><span class="tbtn-icon">📤</span>Import</button>
+    <button class="tbtn danger" id="btnReset" title="기본값으로 복원"><span class="tbtn-icon">↻</span>초기화</button>
+    <input type="file" id="fileInput" accept=".json" style="display:none">
   </div>
 </div>
 
@@ -134,42 +248,16 @@ body{background:#fff;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',syste
 
 <div id="tracks"></div>
 
+<button class="add-track-btn" id="addTrackBtn">+ 트랙 추가</button>
+
 <div class="dashboard">
-  <div class="dash-card">
-    <div class="d-label">PHASE 1 (9개월)</div>
-    <div class="d-value d-blue">Case A</div>
-    <div class="d-desc">기존 모델 개선<br>전 도메인 Level 1<br>자연어 질의응답</div>
-  </div>
-  <div class="dash-card">
-    <div class="d-label">PHASE 2 (12개월)</div>
-    <div class="d-value d-purple">Case B</div>
-    <div class="d-desc">신규 모델 설계<br>RL+Diffusion 배치<br>E2E 파이프라인</div>
-  </div>
-  <div class="dash-card">
-    <div class="d-label">물리 도메인</div>
-    <div class="d-value d-green">5개</div>
-    <div class="d-desc">열유체·진동/소음<br>구조·제어·전장<br>모두 Lv1 이상</div>
-  </div>
-  <div class="dash-card">
-    <div class="d-label">핵심 AI</div>
-    <div class="d-value d-purple">4종</div>
-    <div class="d-desc">sLLM·RL+GNN<br>Diffusion+Transformer<br>Surrogate AI</div>
-  </div>
-  <div class="dash-card">
-    <div class="d-label">인력 피크</div>
-    <div class="d-value d-amber">6~7명</div>
-    <div class="d-desc">P1: 5~6명<br>P2: 6~7명<br>물리 전문가 5명 필수</div>
-  </div>
-  <div class="dash-card">
-    <div class="d-label">총 기간</div>
-    <div class="d-value d-red">21개월</div>
-    <div class="d-desc">P1: 9개월 (MVP)<br>P2: +12개월 (Full)<br>2026 Q2 → 2028 Q1</div>
-  </div>
-  <div class="dash-card">
-    <div class="d-label">거버넌스</div>
-    <div class="d-value d-green">3+2</div>
-    <div class="d-desc">주1회 + 격주 + 월1회<br>+ Phase Gate 2회<br>(M9, M21)</div>
-  </div>
+  <div class="dash-card"><div class="d-label">PHASE 1 (9개월)</div><div class="d-value d-blue">Case A</div><div class="d-desc">기존 모델 개선<br>전 도메인 Level 1<br>자연어 질의응답</div></div>
+  <div class="dash-card"><div class="d-label">PHASE 2 (12개월)</div><div class="d-value d-purple">Case B</div><div class="d-desc">신규 모델 설계<br>RL+Diffusion 배치<br>E2E 파이프라인</div></div>
+  <div class="dash-card"><div class="d-label">물리 도메인</div><div class="d-value d-green">5개</div><div class="d-desc">열유체·진동/소음<br>구조·제어·전장<br>모두 Lv1 이상</div></div>
+  <div class="dash-card"><div class="d-label">핵심 AI</div><div class="d-value d-purple">4종</div><div class="d-desc">sLLM·RL+GNN<br>Diffusion+Transformer<br>Surrogate AI</div></div>
+  <div class="dash-card"><div class="d-label">인력 피크</div><div class="d-value d-amber">6~7명</div><div class="d-desc">P1: 5~6명<br>P2: 6~7명<br>물리 전문가 5명 필수</div></div>
+  <div class="dash-card"><div class="d-label">총 기간</div><div class="d-value d-red">21개월</div><div class="d-desc">P1: 9개월 (MVP)<br>P2: +12개월 (Full)<br>2026 Q2 → 2028 Q1</div></div>
+  <div class="dash-card"><div class="d-label">거버넌스</div><div class="d-value d-green">3+2</div><div class="d-desc">주1회 + 격주 + 월1회<br>+ Phase Gate 2회<br>(M9, M21)</div></div>
 </div>
 
 <div style="margin-top:12px;padding:12px 14px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0">
@@ -177,165 +265,151 @@ body{background:#fff;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',syste
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
     <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #059669;background:#fff">
       <div style="font-size:10px;font-weight:800;color:#059669;margin-bottom:3px">Weekly Sync · 주 1회 (1h)</div>
-      <div style="font-size:9px;color:#475569;line-height:1.5">전체 인원 진행상황 공유 + 다음 주 계획 + <b>도메인 간 의존성 체크</b>. 잘못된 방향 조기 발견. <b>필수</b>.</div>
+      <div style="font-size:9px;color:#64748b;line-height:1.5">전체 인원 진행상황 + 도메인 간 의존성 체크. 필수. 총 ~84회</div>
     </div>
     <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #2563EB;background:#fff">
       <div style="font-size:10px;font-weight:800;color:#2563EB;margin-bottom:3px">Deep Dive · 격주 (2h)</div>
-      <div style="font-size:9px;color:#475569;line-height:1.5">특정 주제 집중 리뷰. 보상함수 설계, DB 스키마, 물리 모델 검증 등 기술 주제 심화 논의.</div>
+      <div style="font-size:9px;color:#64748b;line-height:1.5">기술 주제 집중 리뷰 (보상함수, DB 스키마 등). 총 ~42회</div>
     </div>
     <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #7C3AED;background:#fff">
       <div style="font-size:10px;font-weight:800;color:#7C3AED;margin-bottom:3px">Milestone · 월 1회 (3h)</div>
-      <div style="font-size:9px;color:#475569;line-height:1.5">스테이크홀더 포함. 진행률 점검, 리스크 식별, 주요 의사결정. Go/No-Go 판단.</div>
+      <div style="font-size:9px;color:#64748b;line-height:1.5">스테이크홀더 포함. 진행률, 리스크, Go/No-Go. 총 21회</div>
     </div>
     <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #DC2626;background:#fff">
       <div style="font-size:10px;font-weight:800;color:#DC2626;margin-bottom:3px">Phase Gate · M9, M21</div>
-      <div style="font-size:9px;color:#475569;line-height:1.5">전면 리뷰. Phase 1 완료(M9), Phase 2 완료(M21) 시점. 전체 성과 평가 + 다음 단계 진입 승인.</div>
+      <div style="font-size:9px;color:#64748b;line-height:1.5">전면 리뷰. Phase 완료 시점 성과 평가 + 다음 단계 승인</div>
     </div>
   </div>
 </div>
 
-<div class="footer">AI 기반 세탁건조기 레이아웃 최적화 로드맵 v5.0 · 외부 API→자체 sLLM 전환 전략 · 2026-04</div>
+<div class="footer">AI 기반 세탁건조기 레이아웃 최적화 v5.0 · 외부 API → 자체 sLLM 전환 전략 · Editable v1.0</div>
+
 </div>
 
+<!-- Side Panel -->
+<aside class="side-panel" id="sidePanel">
+  <div class="sp-head">
+    <div class="sp-head-title">
+      <div class="sp-head-type" id="spType">선택된 항목 없음</div>
+      <div class="sp-head-name" id="spName">-</div>
+    </div>
+    <button class="sp-close" id="spClose">✕</button>
+  </div>
+  <div class="sp-body" id="spBody"></div>
+</aside>
+
+<div class="drag-overlay" id="dragOverlay"></div>
+<div class="toast" id="toast"></div>
+
 <script>
+// ==============================================
+// DEFAULT DATA
+// ==============================================
 const MONTHS=21;
-const monthNames=[];
-for(let i=1;i<=MONTHS;i++)monthNames.push('M'+i);
+const P1_END=9;
 
-const mEl=document.getElementById('months');
-for(let i=0;i<MONTHS;i++){
-  const d=document.createElement('div');d.className='tl-month'+(i%3===0?' q-start':'');
-  d.textContent=monthNames[i];mEl.appendChild(d);
-}
-
-const P1_END=9; // Phase 1 = M1~M9
-
-const tracks=[
+const DEFAULT_TRACKS=[
   {type:'section',label:'PHASE 1 — 기존 모델 개선 (Case A, 9개월)'},
-
   {label:'sLLM (외부 API)',icon:'🗣️',cat:'cat-sllm',bars:[
     {s:0,e:2,c:'c-blue',t:'Claude/GPT API + RAG 설계'},
     {s:2,e:5,c:'c-blue',t:'Tool-use 에이전트'},
     {s:5,e:7,c:'c-blue',t:'멀티도메인 질의 + 로그 수집'},
     {s:7,e:9,c:'c-blue',t:'Case A 완성 + 학습데이터 축적'},
   ],ms:[{m:3,c:'ms-blue'},{m:9,c:'ms-blue'}]},
-
   {label:'열유체 Lv1',icon:'🌡️',cat:'cat-phys',bars:[
     {s:0,e:1,c:'c-green',t:'기존 HPWD 연결'},
     {s:1,e:4,c:'c-green',t:'통합 사이클 1D'},
     {s:4,e:7,c:'c-green',t:'실험 데이터 보정'},
     {s:7,e:9,c:'c-green-l',t:'감도분석 자동화'},
   ],ms:[{m:4,c:'ms-green'}]},
-
   {label:'진동/소음 Lv1',icon:'🔊',cat:'cat-phys',bars:[
     {s:1,e:3,c:'c-green',t:'1D 전달 모델'},
     {s:3,e:6,c:'c-green',t:'가진원 데이터 구축'},
     {s:6,e:9,c:'c-green',t:'소음 경험식 + 보정'},
   ],ms:[{m:6,c:'ms-green'}]},
-
   {label:'구조 Lv1',icon:'🔩',cat:'cat-phys',bars:[
     {s:1,e:4,c:'c-green',t:'마운트 응력 1D'},
     {s:4,e:7,c:'c-green',t:'FEA 기반 ROM'},
     {s:7,e:9,c:'c-green-l',t:'운송하중 체크'},
   ],ms:[]},
-
   {label:'제어 Lv1',icon:'🎛️',cat:'cat-phys',bars:[
     {s:2,e:5,c:'c-green',t:'운전점 최적화'},
     {s:5,e:8,c:'c-green',t:'건조 종점 판단 로직'},
     {s:8,e:9,c:'c-green-l',t:'인버터/팬/EEV 제어'},
   ],ms:[]},
-
   {label:'전장 Lv1',icon:'⚡',cat:'cat-phys',bars:[
     {s:2,e:4,c:'c-green',t:'전류/전력 체크 룰'},
     {s:4,e:7,c:'c-green',t:'EMC 간이 모델'},
     {s:7,e:9,c:'c-green-l',t:'하네스 용량 검증'},
   ],ms:[]},
-
   {label:'DB / 데이터',icon:'📦',cat:'cat-db',bars:[
     {s:0,e:2,c:'c-amber',t:'컴포넌트 DB 스키마'},
     {s:2,e:5,c:'c-amber',t:'기존 모델 + 실험 데이터'},
     {s:5,e:7,c:'c-amber',t:'설계 룰 DB (LLM 추출)'},
     {s:7,e:9,c:'c-amber-l',t:'도메인 간 연결 그래프'},
   ],ms:[]},
-
   {label:'UI / 시각화',icon:'🖥️',cat:'cat-ui',bars:[
     {s:1,e:3,c:'c-red',t:'챗 UI + 3D 뷰어'},
     {s:3,e:6,c:'c-red',t:'멀티도메인 대시보드'},
     {s:6,e:9,c:'c-red',t:'리포트 자동 생성'},
   ],ms:[{m:9,c:'ms-red'}]},
-
   {type:'section',label:'PHASE 2 — 신규 모델 설계 (Case B, 12개월)'},
-
   {label:'sLLM (자체 구축)',icon:'🗣️',cat:'cat-sllm',bars:[
     {s:9,e:12,c:'c-blue',t:'학습 데이터셋 구축 + Base 모델 선정'},
     {s:12,e:15,c:'c-blue',t:'LoRA 파인튜닝 + 서빙 인프라'},
     {s:15,e:18,c:'c-blue',t:'API vs 자체 sLLM A/B 테스트'},
     {s:18,e:21,c:'c-blue-l',t:'자체 sLLM 전환 + E2E 자동화'},
   ],ms:[{m:15,c:'ms-blue'},{m:21,c:'ms-blue'}]},
-
   {label:'RL + GNN',icon:'🧠',cat:'cat-ai',bars:[
     {s:9,e:11,c:'c-purple',t:'GNN 그래프 인코더'},
     {s:11,e:14,c:'c-purple',t:'PPO 배치 에이전트'},
     {s:14,e:16,c:'c-purple',t:'멀티피직스 보상 통합'},
     {s:16,e:18,c:'c-purple-l',t:'전이 학습'},
   ],ms:[{m:14,c:'ms-purple'}]},
-
   {label:'Diffusion',icon:'🌀',cat:'cat-ai',bars:[
     {s:15,e:17,c:'c-purple',t:'RL 데이터 수집'},
     {s:17,e:19,c:'c-purple',t:'DiT 학습'},
     {s:19,e:21,c:'c-purple',t:'Diff→RL Fine-tune 루프'},
   ],ms:[{m:19,c:'ms-purple'}]},
-
   {label:'경로 최적화',icon:'🔧',cat:'cat-route',bars:[
     {s:11,e:13,c:'c-teal',t:'A* 덕트/배관'},
     {s:13,e:15,c:'c-teal',t:'제조 제약 (엘보/곡률)'},
     {s:15,e:18,c:'c-teal-l',t:'배치-경로 동시 최적화'},
   ],ms:[{m:15,c:'ms-green'}]},
-
   {label:'물리 Lv2 (Surrogate)',icon:'⚡',cat:'cat-phys2',bars:[
     {s:9,e:12,c:'c-green',t:'열유체 Surrogate'},
     {s:12,e:15,c:'c-green',t:'진동/구조 Surrogate'},
     {s:15,e:18,c:'c-green',t:'모델 자동 보정 (BO)'},
     {s:18,e:21,c:'c-green-l',t:'풀 3D 검증 (CFD/FEA)'},
   ],ms:[{m:12,c:'ms-green'},{m:18,c:'ms-green'}]},
-
   {label:'Co-design',icon:'📐',cat:'cat-ai',bars:[
     {s:13,e:16,c:'c-indigo',t:'Bayesian Opt (스펙)'},
     {s:16,e:19,c:'c-indigo',t:'스펙+배치 동시 최적화'},
   ],ms:[]},
-
   {label:'DB 확장',icon:'📦',cat:'cat-db',bars:[
     {s:9,e:12,c:'c-amber',t:'학습 데이터 파이프라인'},
     {s:15,e:19,c:'c-amber-l',t:'모델 레지스트리 (MLOps)'},
   ],ms:[]},
-
   {label:'전문가 검토',icon:'👨‍🔬',cat:'cat-ui',bars:[
     {s:13,e:16,c:'c-red',t:'RLHF 검토 UI'},
     {s:16,e:19,c:'c-red',t:'3D 배치 리뷰'},
     {s:19,e:21,c:'c-red-l',t:'통합 플랫폼'},
   ],ms:[{m:21,c:'ms-red'}]},
-
   {type:'section',label:'거버넌스 / 미팅 체계'},
-
   {label:'Weekly Sync',icon:'📅',cat:'cat-phys',bars:[
     {s:0,e:21,c:'c-meet-w',t:'주 1회 · 1시간 · 전체 인원 진행상황 + 의존성 체크 (총 ~84회)'},
   ],ms:[]},
-
   {label:'Bi-weekly Deep Dive',icon:'🔬',cat:'cat-sllm',bars:[
     {s:0,e:21,c:'c-meet-b',t:'격주 · 2시간 · 기술 주제 집중 리뷰 (총 ~42회)'},
   ],ms:[]},
-
   {label:'Monthly Milestone',icon:'📊',cat:'cat-ai',bars:[
     {s:0,e:21,c:'c-meet-m',t:'월 1회 · 3시간 · 스테이크홀더 포함, Go/No-Go 결정 (총 21회)'},
   ],ms:[]},
-
   {label:'Phase Gate Review',icon:'🚪',cat:'cat-ui',bars:[
     {s:8.8,e:9.2,c:'c-gate',t:'P1 게이트'},
     {s:20.8,e:21,c:'c-gate',t:'P2 게이트'},
   ],ms:[{m:9,c:'ms-red'},{m:21,c:'ms-red'}]},
-
   {type:'section',label:'KPI / 인력'},
-
   {label:'KPI 마일스톤',icon:'🎯',cat:'cat-kpi',bars:[
     {s:2.5,e:3.5,c:'c-slate',t:'MVP Demo'},
     {s:8.5,e:9.5,c:'c-blue',t:'Case A 완성'},
@@ -343,7 +417,6 @@ const tracks=[
     {s:18.5,e:19.5,c:'c-purple',t:'Diffusion 생성'},
     {s:20.5,e:21,c:'c-green',t:'Full 플랫폼'},
   ],ms:[{m:3,c:'ms-blue'},{m:9,c:'ms-blue'},{m:14,c:'ms-purple'},{m:19,c:'ms-purple'},{m:21,c:'ms-green'}]},
-
   {label:'인력 투입',icon:'👥',cat:'cat-kpi',bars:[
     {s:0,e:3,c:'c-slate',t:'2~3명 (초기 세팅)'},
     {s:3,e:9,c:'c-slate',t:'5~6명 (전 도메인 전문가 + AI + SW)'},
@@ -352,47 +425,639 @@ const tracks=[
   ],ms:[]},
 ];
 
-const tEl=document.getElementById('tracks');
+// ==============================================
+// CONSTANTS FOR EDITOR
+// ==============================================
+const BAR_COLORS = [
+  {v:'c-blue', l:'Blue'},      {v:'c-blue-l', l:'Blue L'},
+  {v:'c-green', l:'Green'},    {v:'c-green-l', l:'Green L'},
+  {v:'c-amber', l:'Amber'},    {v:'c-amber-l', l:'Amber L'},
+  {v:'c-purple', l:'Purple'},  {v:'c-purple-l', l:'Purple L'},
+  {v:'c-red', l:'Red'},        {v:'c-red-l', l:'Red L'},
+  {v:'c-teal', l:'Teal'},      {v:'c-teal-l', l:'Teal L'},
+  {v:'c-pink', l:'Pink'},      {v:'c-slate', l:'Slate'},
+  {v:'c-indigo', l:'Indigo'},
+  {v:'c-meet-w', l:'Meet W'},  {v:'c-meet-b', l:'Meet B'},
+  {v:'c-meet-m', l:'Meet M'},  {v:'c-gate', l:'Gate'},
+];
+const CATEGORIES = [
+  {v:'cat-sllm', l:'sLLM'},
+  {v:'cat-phys', l:'물리 Lv1'},
+  {v:'cat-phys2', l:'물리 Lv2'},
+  {v:'cat-db', l:'DB'},
+  {v:'cat-ai', l:'AI'},
+  {v:'cat-route', l:'경로'},
+  {v:'cat-ui', l:'UI'},
+  {v:'cat-kpi', l:'KPI/인력'},
+];
+const MS_COLORS = [
+  {v:'ms-blue', l:'Blue'},
+  {v:'ms-green', l:'Green'},
+  {v:'ms-purple', l:'Purple'},
+  {v:'ms-red', l:'Red'},
+];
 
-tracks.forEach(tr=>{
-  if(tr.type==='section'){
-    const row=document.createElement('div');row.className='section-div';
-    row.innerHTML=`<div class="track-label" style="font-size:9px;font-weight:800;color:#64748b;letter-spacing:.5px">${tr.label}</div><div style="flex:1"></div>`;
-    tEl.appendChild(row);return;
+// ==============================================
+// STATE
+// ==============================================
+const STORAGE_KEY = 'roadmap-v5-data';
+let tracks = loadTracks();
+let editMode = false;
+let selection = null; // {type:'bar'|'track'|'milestone'|'section', trackIdx, barIdx?, msIdx?}
+
+function loadTracks() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_TRACKS));
+}
+
+function saveTracks() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tracks));
+    setStatus('saved');
+  } catch(e) {
+    console.error('Save failed:', e);
+    setStatus('error');
   }
-  const row=document.createElement('div');row.className='track';
-  const labelDiv=document.createElement('div');labelDiv.className='track-label';
-  labelDiv.innerHTML=`<span class="cat ${tr.cat}">${tr.icon}</span><span style="font-size:9px">${tr.label}</span>`;
-  row.appendChild(labelDiv);
+}
 
-  const barsDiv=document.createElement('div');barsDiv.className='track-bars';
+function setStatus(state) {
+  const chip = document.getElementById('statusChip');
+  if (state === 'saved') {
+    chip.textContent = '✓ saved';
+    chip.classList.remove('dirty');
+  } else if (state === 'dirty') {
+    chip.textContent = '● unsaved';
+    chip.classList.add('dirty');
+  } else if (state === 'error') {
+    chip.textContent = '⚠ error';
+    chip.classList.add('dirty');
+  }
+}
 
-  (tr.bars||[]).forEach(b=>{
-    const bar=document.createElement('div');bar.className=`bar ${b.c}`;
-    bar.style.left=(b.s/MONTHS*100)+'%';
-    bar.style.width=((b.e-b.s)/MONTHS*100)+'%';
-    bar.innerHTML=`<span class="dot${b.e<=P1_END?' solid':''}"></span>${b.t}`;
-    bar.title=`M${b.s+1}~M${b.e}: ${b.t}`;
-    barsDiv.appendChild(bar);
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ==============================================
+// RENDER: Timeline
+// ==============================================
+function renderTimeline() {
+  const mEl = document.getElementById('months');
+  mEl.innerHTML = '';
+  for (let i = 0; i < MONTHS; i++) {
+    const d = document.createElement('div');
+    d.className = 'tl-month' + (i % 3 === 0 ? ' q-start' : '');
+    d.textContent = 'M' + (i + 1);
+    mEl.appendChild(d);
+  }
+}
+
+function renderTracks() {
+  const tEl = document.getElementById('tracks');
+  tEl.innerHTML = '';
+
+  tracks.forEach((tr, tIdx) => {
+    if (tr.type === 'section') {
+      const row = document.createElement('div');
+      row.className = 'section-div';
+      row.dataset.trackIdx = tIdx;
+      row.innerHTML = `<div class="track-label" style="font-size:9px;font-weight:800;color:#64748b;letter-spacing:.5px">${tr.label}</div><div style="flex:1"></div>`;
+      if (selection && selection.type === 'section' && selection.trackIdx === tIdx) row.classList.add('selected');
+      row.addEventListener('click', (e) => {
+        if (!editMode) return;
+        e.stopPropagation();
+        selectItem({type:'section', trackIdx: tIdx});
+      });
+      tEl.appendChild(row);
+      return;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'track';
+    row.dataset.trackIdx = tIdx;
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'track-label';
+    labelDiv.innerHTML = `<span class="cat ${tr.cat}">${tr.icon}</span><span style="font-size:9px">${tr.label}</span>`;
+    if (selection && selection.type === 'track' && selection.trackIdx === tIdx) labelDiv.classList.add('selected');
+    labelDiv.addEventListener('click', (e) => {
+      if (!editMode) return;
+      e.stopPropagation();
+      selectItem({type:'track', trackIdx: tIdx});
+    });
+    row.appendChild(labelDiv);
+
+    const barsDiv = document.createElement('div');
+    barsDiv.className = 'track-bars';
+
+    (tr.bars || []).forEach((b, bIdx) => {
+      const bar = document.createElement('div');
+      bar.className = `bar ${b.c}`;
+      bar.style.left = (b.s / MONTHS * 100) + '%';
+      bar.style.width = ((b.e - b.s) / MONTHS * 100) + '%';
+      bar.innerHTML = `<span class="dot${b.e <= P1_END ? ' solid' : ''}"></span>${b.t}`;
+      bar.title = `M${b.s+1}~M${b.e}: ${b.t}`;
+      bar.dataset.trackIdx = tIdx;
+      bar.dataset.barIdx = bIdx;
+      if (selection && selection.type === 'bar' && selection.trackIdx === tIdx && selection.barIdx === bIdx) {
+        bar.classList.add('selected');
+      }
+      attachBarInteractions(bar, tIdx, bIdx, barsDiv);
+      barsDiv.appendChild(bar);
+    });
+
+    (tr.ms || []).forEach((m, mIdx) => {
+      const ms = document.createElement('div');
+      ms.className = `milestone ${m.c}`;
+      ms.style.left = `calc(${m.m / MONTHS * 100}% - 6px)`;
+      ms.title = `M${m.m} 마일스톤`;
+      ms.dataset.trackIdx = tIdx;
+      ms.dataset.msIdx = mIdx;
+      if (selection && selection.type === 'milestone' && selection.trackIdx === tIdx && selection.msIdx === mIdx) {
+        ms.classList.add('selected');
+      }
+      ms.addEventListener('click', (e) => {
+        if (!editMode) return;
+        e.stopPropagation();
+        selectItem({type:'milestone', trackIdx: tIdx, msIdx: mIdx});
+      });
+      barsDiv.appendChild(ms);
+    });
+
+    for (let i = 0; i < MONTHS; i++) {
+      const line = document.createElement('div');
+      const isPhase = i === P1_END;
+      line.style.cssText = `position:absolute;left:${(i / MONTHS * 100)}%;top:0;bottom:0;width:${isPhase ? 2 : 1}px;background:${isPhase ? '#2563EB50' : i % 3 === 0 ? '#e2e8f0' : '#f1f5f9'};z-index:0;pointer-events:none`;
+      barsDiv.appendChild(line);
+    }
+
+    row.appendChild(barsDiv);
+    tEl.appendChild(row);
+  });
+}
+
+// ==============================================
+// DRAG: Bar editing
+// ==============================================
+function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
+  bar.addEventListener('click', (e) => {
+    if (!editMode) return;
+    if (bar.dataset.justDragged) { delete bar.dataset.justDragged; return; }
+    e.stopPropagation();
+    selectItem({type:'bar', trackIdx: tIdx, barIdx: bIdx});
   });
 
-  (tr.ms||[]).forEach(m=>{
-    const ms=document.createElement('div');ms.className=`milestone ${m.c}`;
-    ms.style.left=`calc(${m.m/MONTHS*100}% - 6px)`;
-    ms.title=`M${m.m} 마일스톤`;
-    barsDiv.appendChild(ms);
-  });
+  bar.addEventListener('pointerdown', (e) => {
+    if (!editMode) return;
+    e.stopPropagation();
 
-  for(let i=0;i<MONTHS;i++){
-    const line=document.createElement('div');
-    const isPhase=i===P1_END;
-    line.style.cssText=`position:absolute;left:${(i/MONTHS*100)}%;top:0;bottom:0;width:${isPhase?2:1}px;background:${isPhase?'#2563EB50':i%3===0?'#e2e8f0':'#f1f5f9'};z-index:${isPhase?1:0}`;
-    barsDiv.appendChild(line);
+    const rect = bar.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const EDGE = 8;
+    let mode;
+    if (x < EDGE) mode = 'resize-start';
+    else if (x > rect.width - EDGE) mode = 'resize-end';
+    else mode = 'move';
+
+    const barsRect = barsDiv.getBoundingClientRect();
+    const pxPerMonth = barsRect.width / MONTHS;
+    const startMouseX = e.clientX;
+    const orig = { ...tracks[tIdx].bars[bIdx] };
+
+    document.body.classList.add('dragging');
+
+    function onMove(ev) {
+      const dx = ev.clientX - startMouseX;
+      const dm = dx / pxPerMonth;
+      const snap = (v) => Math.max(0, Math.min(MONTHS, Math.round(v * 10) / 10));
+
+      const b = tracks[tIdx].bars[bIdx];
+      if (mode === 'resize-start') {
+        const newS = snap(orig.s + dm);
+        if (newS < b.e - 0.1) b.s = newS;
+      } else if (mode === 'resize-end') {
+        const newE = snap(orig.e + dm);
+        if (newE > b.s + 0.1) b.e = newE;
+      } else {
+        const len = orig.e - orig.s;
+        let newS = snap(orig.s + dm);
+        if (newS + len > MONTHS) newS = MONTHS - len;
+        if (newS < 0) newS = 0;
+        b.s = newS;
+        b.e = newS + len;
+      }
+      bar.style.left = (b.s / MONTHS * 100) + '%';
+      bar.style.width = ((b.e - b.s) / MONTHS * 100) + '%';
+      bar.dataset.justDragged = '1';
+      setStatus('dirty');
+      if (selection && selection.type === 'bar' && selection.trackIdx === tIdx && selection.barIdx === bIdx) {
+        updateSidePanelValues();
+      }
+    }
+
+    function onUp() {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.body.classList.remove('dragging');
+      saveTracks();
+    }
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  });
+}
+
+// ==============================================
+// SIDE PANEL
+// ==============================================
+function selectItem(sel) {
+  selection = sel;
+  renderTracks();
+  openPanel();
+  renderPanel();
+}
+
+function openPanel() {
+  document.body.classList.add('panel-open');
+}
+
+function closePanel() {
+  document.body.classList.remove('panel-open');
+  selection = null;
+  renderTracks();
+}
+
+function renderPanel() {
+  const typeEl = document.getElementById('spType');
+  const nameEl = document.getElementById('spName');
+  const bodyEl = document.getElementById('spBody');
+
+  if (!selection) {
+    typeEl.textContent = '선택된 항목 없음';
+    nameEl.textContent = '-';
+    bodyEl.innerHTML = '<div class="sp-empty"><div class="sp-empty-ico">👆</div>요소를 클릭해서 편집하세요</div>';
+    return;
   }
 
-  row.appendChild(barsDiv);
-  tEl.appendChild(row);
+  const { type, trackIdx } = selection;
+  const tr = tracks[trackIdx];
+
+  if (type === 'section') {
+    typeEl.textContent = 'SECTION';
+    nameEl.textContent = tr.label;
+    bodyEl.innerHTML = `
+      <div class="sp-group">
+        <div class="sp-group-title">섹션 라벨</div>
+        <div class="sp-field">
+          <input class="sp-input" id="fSecLabel" value="${esc(tr.label)}" placeholder="섹션 이름">
+          <div class="sp-help">예: PHASE 1 — 기존 모델 개선 (9개월)</div>
+        </div>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-title">작업</div>
+        <button class="tbtn danger" style="width:100%;justify-content:center" id="btnDelSec">🗑 섹션 삭제</button>
+      </div>
+    `;
+    document.getElementById('fSecLabel').addEventListener('input', (e) => {
+      tr.label = e.target.value;
+      renderTracks();
+      nameEl.textContent = tr.label;
+      setStatus('dirty');
+      saveTracks();
+    });
+    document.getElementById('btnDelSec').addEventListener('click', () => {
+      if (!confirm('이 섹션을 삭제합니다.')) return;
+      tracks.splice(trackIdx, 1);
+      closePanel();
+      renderTracks();
+      saveTracks();
+      showToast('섹션 삭제됨');
+    });
+  } else if (type === 'track') {
+    typeEl.textContent = 'TRACK';
+    nameEl.textContent = tr.label;
+
+    const catOptions = CATEGORIES.map(c => `<option value="${c.v}" ${c.v === tr.cat ? 'selected' : ''}>${c.l}</option>`).join('');
+    const barsListHtml = (tr.bars || []).map((b, i) => `
+      <div class="sp-list-item" data-bar-idx="${i}">
+        <div class="sp-list-bar ${b.c}"></div>
+        <div class="sp-list-text">${esc(b.t)}</div>
+        <div class="sp-list-range">M${(b.s + 1).toFixed(b.s % 1 === 0 ? 0 : 1)}~M${b.e.toFixed(b.e % 1 === 0 ? 0 : 1)}</div>
+        <button class="sp-list-del" data-del-bar="${i}">✕</button>
+      </div>
+    `).join('');
+    const msListHtml = (tr.ms || []).map((m, i) => `
+      <div class="sp-list-item" data-ms-idx="${i}">
+        <div class="sp-list-bar milestone ${m.c}" style="position:static;transform:rotate(45deg);width:12px;height:12px"></div>
+        <div class="sp-list-text">${m.c.replace('ms-','')} 마일스톤</div>
+        <div class="sp-list-range">M${m.m}</div>
+        <button class="sp-list-del" data-del-ms="${i}">✕</button>
+      </div>
+    `).join('');
+
+    bodyEl.innerHTML = `
+      <div class="sp-group">
+        <div class="sp-group-title">기본 정보</div>
+        <div class="sp-field">
+          <label class="sp-label">라벨</label>
+          <input class="sp-input" id="fLabel" value="${esc(tr.label)}">
+        </div>
+        <div class="sp-field">
+          <label class="sp-label">아이콘 (이모지)</label>
+          <input class="sp-input" id="fIcon" value="${esc(tr.icon || '')}" placeholder="예: 🗣️ 🧠 📦">
+        </div>
+        <div class="sp-field">
+          <label class="sp-label">카테고리</label>
+          <select class="sp-select" id="fCat">${catOptions}</select>
+        </div>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-title">Bar 목록 (${(tr.bars || []).length}개)</div>
+        <div class="sp-list">${barsListHtml || '<div style="padding:12px;font-size:11px;color:#94a3b8;text-align:center">bar 없음</div>'}</div>
+        <button class="sp-add-btn" id="btnAddBar">+ Bar 추가</button>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-title">마일스톤 (${(tr.ms || []).length}개)</div>
+        <div class="sp-list">${msListHtml || '<div style="padding:12px;font-size:11px;color:#94a3b8;text-align:center">마일스톤 없음</div>'}</div>
+        <button class="sp-add-btn" id="btnAddMs">+ 마일스톤 추가</button>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-title">작업</div>
+        <button class="tbtn danger" style="width:100%;justify-content:center" id="btnDelTrack">🗑 트랙 삭제</button>
+      </div>
+    `;
+
+    document.getElementById('fLabel').addEventListener('input', (e) => { tr.label = e.target.value; nameEl.textContent = tr.label; renderTracks(); setStatus('dirty'); saveTracks(); });
+    document.getElementById('fIcon').addEventListener('input', (e) => { tr.icon = e.target.value; renderTracks(); setStatus('dirty'); saveTracks(); });
+    document.getElementById('fCat').addEventListener('change', (e) => { tr.cat = e.target.value; renderTracks(); setStatus('dirty'); saveTracks(); });
+
+    bodyEl.querySelectorAll('[data-bar-idx]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        if (e.target.dataset.delBar !== undefined) return;
+        const idx = parseInt(el.dataset.barIdx);
+        selectItem({type:'bar', trackIdx, barIdx: idx});
+      });
+    });
+    bodyEl.querySelectorAll('[data-del-bar]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.delBar);
+        if (!confirm(`Bar "${tr.bars[idx].t}" 삭제?`)) return;
+        tr.bars.splice(idx, 1);
+        renderTracks();
+        renderPanel();
+        saveTracks();
+      });
+    });
+    bodyEl.querySelectorAll('[data-ms-idx]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        if (e.target.dataset.delMs !== undefined) return;
+        const idx = parseInt(el.dataset.msIdx);
+        selectItem({type:'milestone', trackIdx, msIdx: idx});
+      });
+    });
+    bodyEl.querySelectorAll('[data-del-ms]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.delMs);
+        tr.ms.splice(idx, 1);
+        renderTracks();
+        renderPanel();
+        saveTracks();
+      });
+    });
+    document.getElementById('btnAddBar').addEventListener('click', () => {
+      if (!tr.bars) tr.bars = [];
+      const lastEnd = tr.bars.length ? tr.bars[tr.bars.length - 1].e : 0;
+      tr.bars.push({s: lastEnd, e: Math.min(lastEnd + 2, MONTHS), c: 'c-blue', t: '새 작업'});
+      renderTracks();
+      selectItem({type:'bar', trackIdx, barIdx: tr.bars.length - 1});
+    });
+    document.getElementById('btnAddMs').addEventListener('click', () => {
+      if (!tr.ms) tr.ms = [];
+      tr.ms.push({m: Math.floor(MONTHS / 2), c: 'ms-blue'});
+      renderTracks();
+      selectItem({type:'milestone', trackIdx, msIdx: tr.ms.length - 1});
+    });
+    document.getElementById('btnDelTrack').addEventListener('click', () => {
+      if (!confirm(`트랙 "${tr.label}" 삭제?`)) return;
+      tracks.splice(trackIdx, 1);
+      closePanel();
+      renderTracks();
+      saveTracks();
+      showToast('트랙 삭제됨');
+    });
+  } else if (type === 'bar') {
+    const b = tr.bars[selection.barIdx];
+    typeEl.textContent = `BAR · ${tr.label}`;
+    nameEl.textContent = b.t;
+
+    const colorGrid = BAR_COLORS.map(c => `
+      <div class="sp-color-opt ${c.v} ${c.v === b.c ? 'selected' : ''}" data-color="${c.v}" data-label="${c.l}" title="${c.l}"></div>
+    `).join('');
+
+    bodyEl.innerHTML = `
+      <div class="sp-group">
+        <div class="sp-group-title">텍스트</div>
+        <div class="sp-field">
+          <input class="sp-input" id="fBarText" value="${esc(b.t)}" placeholder="작업 이름">
+        </div>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-title">기간 (M1~M${MONTHS})</div>
+        <div class="sp-input-group">
+          <div>
+            <label>시작 월</label>
+            <input class="sp-input" type="number" id="fBarS" value="${b.s}" min="0" max="${MONTHS}" step="0.1">
+          </div>
+          <div>
+            <label>종료 월</label>
+            <input class="sp-input" type="number" id="fBarE" value="${b.e}" min="0" max="${MONTHS}" step="0.1">
+          </div>
+        </div>
+        <div class="sp-help">💡 드래그로도 조정 가능 (양 끝: 크기, 가운데: 이동)</div>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-title">색상</div>
+        <div class="sp-color-grid">${colorGrid}</div>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-title">작업</div>
+        <button class="tbtn danger" style="width:100%;justify-content:center" id="btnDelBar">🗑 Bar 삭제</button>
+      </div>
+    `;
+
+    document.getElementById('fBarText').addEventListener('input', (e) => { b.t = e.target.value; nameEl.textContent = b.t; renderTracks(); setStatus('dirty'); saveTracks(); });
+    document.getElementById('fBarS').addEventListener('input', (e) => {
+      const v = Math.max(0, Math.min(MONTHS, parseFloat(e.target.value) || 0));
+      if (v < b.e - 0.1) { b.s = v; renderTracks(); setStatus('dirty'); saveTracks(); }
+    });
+    document.getElementById('fBarE').addEventListener('input', (e) => {
+      const v = Math.max(0, Math.min(MONTHS, parseFloat(e.target.value) || 0));
+      if (v > b.s + 0.1) { b.e = v; renderTracks(); setStatus('dirty'); saveTracks(); }
+    });
+    bodyEl.querySelectorAll('.sp-color-opt').forEach(el => {
+      el.addEventListener('click', () => {
+        b.c = el.dataset.color;
+        bodyEl.querySelectorAll('.sp-color-opt').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        renderTracks();
+        setStatus('dirty');
+        saveTracks();
+      });
+    });
+    document.getElementById('btnDelBar').addEventListener('click', () => {
+      if (!confirm(`Bar "${b.t}" 삭제?`)) return;
+      tr.bars.splice(selection.barIdx, 1);
+      closePanel();
+      renderTracks();
+      saveTracks();
+    });
+  } else if (type === 'milestone') {
+    const m = tr.ms[selection.msIdx];
+    typeEl.textContent = `MILESTONE · ${tr.label}`;
+    nameEl.textContent = `M${m.m} 마일스톤`;
+
+    const colorOpts = MS_COLORS.map(c => `<option value="${c.v}" ${c.v === m.c ? 'selected' : ''}>${c.l}</option>`).join('');
+
+    bodyEl.innerHTML = `
+      <div class="sp-group">
+        <div class="sp-group-title">위치</div>
+        <div class="sp-field">
+          <label class="sp-label">월 (0~${MONTHS})</label>
+          <input class="sp-input" type="number" id="fMsM" value="${m.m}" min="0" max="${MONTHS}" step="0.5">
+        </div>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-title">색상</div>
+        <select class="sp-select" id="fMsC">${colorOpts}</select>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-title">작업</div>
+        <button class="tbtn danger" style="width:100%;justify-content:center" id="btnDelMs">🗑 마일스톤 삭제</button>
+      </div>
+    `;
+
+    document.getElementById('fMsM').addEventListener('input', (e) => {
+      const v = Math.max(0, Math.min(MONTHS, parseFloat(e.target.value) || 0));
+      m.m = v; renderTracks(); nameEl.textContent = `M${v} 마일스톤`; setStatus('dirty'); saveTracks();
+    });
+    document.getElementById('fMsC').addEventListener('change', (e) => { m.c = e.target.value; renderTracks(); setStatus('dirty'); saveTracks(); });
+    document.getElementById('btnDelMs').addEventListener('click', () => {
+      if (!confirm('마일스톤 삭제?')) return;
+      tr.ms.splice(selection.msIdx, 1);
+      closePanel();
+      renderTracks();
+      saveTracks();
+    });
+  }
+}
+
+function updateSidePanelValues() {
+  if (!selection || selection.type !== 'bar') return;
+  const b = tracks[selection.trackIdx].bars[selection.barIdx];
+  const s = document.getElementById('fBarS');
+  const e = document.getElementById('fBarE');
+  if (s) s.value = b.s;
+  if (e) e.value = b.e;
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+// ==============================================
+// TOOLBAR ACTIONS
+// ==============================================
+document.getElementById('btnEdit').addEventListener('click', () => {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  const btn = document.getElementById('btnEdit');
+  btn.classList.toggle('active', editMode);
+  btn.innerHTML = editMode
+    ? '<span class="tbtn-icon">✕</span>편집 종료'
+    : '<span class="tbtn-icon">✏️</span>편집 모드';
+  if (!editMode) closePanel();
+  showToast(editMode ? '편집 모드 ON · 요소 클릭하여 수정' : '편집 모드 OFF');
 });
+
+document.getElementById('btnExport').addEventListener('click', () => {
+  const data = JSON.stringify(tracks, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `roadmap-v5-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('JSON 다운로드 완료');
+});
+
+document.getElementById('btnImport').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!Array.isArray(imported)) throw new Error('Array expected');
+      tracks = imported;
+      saveTracks();
+      renderTracks();
+      showToast('Import 완료');
+    } catch(err) {
+      alert('JSON 파싱 실패: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (!confirm('기본값으로 복원합니다. 모든 편집 내용이 사라집니다.')) return;
+  tracks = JSON.parse(JSON.stringify(DEFAULT_TRACKS));
+  saveTracks();
+  renderTracks();
+  closePanel();
+  showToast('초기화 완료');
+});
+
+document.getElementById('spClose').addEventListener('click', closePanel);
+
+document.getElementById('addTrackBtn').addEventListener('click', () => {
+  const newTrack = {
+    label: '새 트랙',
+    icon: '✨',
+    cat: 'cat-sllm',
+    bars: [{s:0, e:2, c:'c-blue', t:'새 작업'}],
+    ms: []
+  };
+  tracks.push(newTrack);
+  renderTracks();
+  saveTracks();
+  selectItem({type:'track', trackIdx: tracks.length - 1});
+  showToast('트랙 추가됨');
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && selection) closePanel();
+});
+
+// ==============================================
+// INIT
+// ==============================================
+renderTimeline();
+renderTracks();
+setStatus('saved');
 </script>
 </body>
 </html>
