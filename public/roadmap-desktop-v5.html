@@ -110,8 +110,8 @@ body.edit-mode .section-div.selected{background:#FDE68A}
 /* Dragging feedback */
 body.dragging *{user-select:none !important}
 body.dragging .bar{transition:none;pointer-events:none}
-body.dragging .drag-overlay{display:block;pointer-events:auto}
-.drag-overlay{display:none;position:fixed;inset:0;z-index:100;cursor:inherit}
+body.dragging .drag-overlay{display:block;pointer-events:none}
+.drag-overlay{display:none;position:fixed;inset:0;z-index:100;cursor:inherit;pointer-events:none}
 
 /* Track reorder (drag handle on track label) */
 body.edit-mode .track-label{cursor:pointer}
@@ -961,11 +961,10 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
 // ==============================================
 function attachTrackReorder(labelDiv, rowEl, tIdx) {
   labelDiv.addEventListener('pointerdown', (e) => {
-    if (!editMode) { console.log('[reorder] blocked: not edit mode'); return; }
-    if (e.button !== 0) { console.log('[reorder] blocked: button', e.button); return; }
-    console.log('[reorder] pointerdown on track', tIdx, tracks[tIdx]?.label);
+    if (!editMode) return;
+    if (e.button !== 0) return;
     e.preventDefault();
-    try { labelDiv.setPointerCapture(e.pointerId); } catch(err) { console.log('[reorder] capture failed', err); }
+    try { labelDiv.setPointerCapture(e.pointerId); } catch(err) {}
 
     const startX = e.clientX;
     const startY = e.clientY;
@@ -991,13 +990,11 @@ function attachTrackReorder(labelDiv, rowEl, tIdx) {
         document.body.classList.add('dragging');
         rowEl.classList.add('track-dragging');
         labelDiv.dataset.justDragged = '1';
-        console.log('[reorder] drag started');
       }
 
       clearDropIndicators();
       const hoverEl = document.elementFromPoint(ev.clientX, ev.clientY);
       const targetRow = hoverEl && (hoverEl.closest('.track') || hoverEl.closest('.section-div'));
-      console.log('[reorder] y:', ev.clientY, 'hover:', hoverEl?.tagName, hoverEl?.className?.slice?.(0,40), '→ row idx:', targetRow?.dataset.trackIdx);
       if (targetRow && targetRow.dataset.trackIdx != null) {
         const targetIdx = parseInt(targetRow.dataset.trackIdx);
         if (targetIdx !== tIdx) {
@@ -1011,10 +1008,8 @@ function attachTrackReorder(labelDiv, rowEl, tIdx) {
             dropPosition = 'below';
           }
           dropTargetIdx = targetIdx;
-          console.log('[reorder] drop target set:', targetIdx, dropPosition);
         } else {
           dropTargetIdx = null;
-          console.log('[reorder] same track, ignoring');
         }
       } else {
         dropTargetIdx = null;
