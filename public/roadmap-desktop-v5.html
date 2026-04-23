@@ -21,6 +21,8 @@ body.panel-open .page{padding-right:440px}
 .toolbar{display:flex;gap:6px;align-items:center}
 .tbtn{padding:6px 10px;border:1px solid #e2e8f0;background:#fff;border-radius:6px;font-size:11px;font-weight:700;color:#475569;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
 .tbtn:hover{background:#f8fafc;border-color:#cbd5e1}
+.tbtn:disabled{opacity:.4;cursor:not-allowed}
+.tbtn:disabled:hover{background:#fff;border-color:#e2e8f0}
 .tbtn.primary{background:#1a1a2e;color:#fff;border-color:#1a1a2e}
 .tbtn.primary:hover{background:#2d2d4a}
 .tbtn.active{background:#DC2626;color:#fff;border-color:#DC2626}
@@ -209,6 +211,8 @@ body.panel-open .side-panel{right:0}
   </div>
   <div class="toolbar">
     <span class="status-chip" id="statusChip">saved</span>
+    <button class="tbtn" id="btnUndo" title="실행 취소 (Ctrl+Z)" disabled><span class="tbtn-icon">↶</span>Undo</button>
+    <button class="tbtn" id="btnRedo" title="다시 실행 (Ctrl+Y)" disabled><span class="tbtn-icon">↷</span>Redo</button>
     <button class="tbtn" id="btnEdit"><span class="tbtn-icon">✏️</span>편집 모드</button>
     <button class="tbtn" id="btnExport" title="현재 데이터 JSON 내보내기"><span class="tbtn-icon">📥</span>Export</button>
     <button class="tbtn" id="btnImport" title="JSON 불러오기"><span class="tbtn-icon">📤</span>Import</button>
@@ -461,9 +465,82 @@ const MS_COLORS = [
 // STATE
 // ==============================================
 const STORAGE_KEY = 'roadmap-v5-data';
+const HISTORY_LIMIT = 80;
 let tracks = loadTracks();
 let editMode = false;
 let selection = null; // {type:'bar'|'track'|'milestone'|'section', trackIdx, barIdx?, msIdx?}
+
+// History + Clipboard
+const history = { past: [], future: [] };
+let clipboard = null; // {kind:'bar'|'milestone'|'track'|'section', data:{...}}
+
+function deepClone(x) { return JSON.parse(JSON.stringify(x)); }
+
+function snapshotState() {
+  return { tracks: deepClone(tracks), selection: selection ? {...selection} : null };
+}
+
+// Any edit goes through mutate(). It captures a snapshot BEFORE the change.
+function mutate(fn, opts = {}) {
+  // opts.coalesce: string key - if last history entry has same key, don't push a new snapshot
+  const snap = snapshotState();
+  fn();
+  // Only record if state actually changed
+  if (JSON.stringify(history.past[history.past.length - 1]?.tracks) === JSON.stringify(tracks)) {
+    // no-op
+  } else {
+    if (opts.coalesce && history.past.length && history.past[history.past.length - 1]._coalesce === opts.coalesce) {
+      // keep existing snapshot (from start of coalesce session)
+    } else {
+      history.past.push({ ...snap, _coalesce: opts.coalesce || null });
+      if (history.past.length > HISTORY_LIMIT) history.past.shift();
+    }
+    history.future.length = 0;
+    saveTracks();
+    renderTracks();
+    renderPanel();
+    updateUndoRedoButtons();
+  }
+}
+
+function undo() {
+  if (!history.past.length) return;
+  const current = snapshotState();
+  const prev = history.past.pop();
+  history.future.push(current);
+  tracks.length = 0;
+  prev.tracks.forEach(t => tracks.push(t));
+  selection = prev.selection;
+  saveTracks();
+  renderTracks();
+  if (selection) openPanel(); else closePanel(false);
+  renderPanel();
+  updateUndoRedoButtons();
+  showToast('↶ 되돌림');
+}
+
+function redo() {
+  if (!history.future.length) return;
+  const current = snapshotState();
+  const next = history.future.pop();
+  history.past.push(current);
+  tracks.length = 0;
+  next.tracks.forEach(t => tracks.push(t));
+  selection = next.selection;
+  saveTracks();
+  renderTracks();
+  if (selection) openPanel(); else closePanel(false);
+  renderPanel();
+  updateUndoRedoButtons();
+  showToast('↷ 다시 실행');
+}
+
+function updateUndoRedoButtons() {
+  const u = document.getElementById('btnUndo');
+  const r = document.getElementById('btnRedo');
+  if (u) u.disabled = history.past.length === 0;
+  if (r) r.disabled = history.future.length === 0;
+}
 
 function loadTracks() {
   try {
@@ -501,7 +578,105 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ==============================================
+// CLIPBOARD (Copy / Cut / Paste)
+// ==============================================
+function copySelection() {
+  if (!selection) return false;
+  const tr = tracks[selection.trackIdx];
+  if (!tr) return false;
+
+  if (selection.type === 'bar') {
+    clipboard = { kind: 'bar', data: deepClone(tr.bars[selection.barIdx]) };
+    showToast('📋 Bar 복사됨');
+  } else if (selection.type === 'milestone') {
+    clipboard = { kind: 'milestone', data: deepClone(tr.ms[selection.msIdx]) };
+    showToast('📋 마일스톤 복사됨');
+  } else if (selection.type === 'track') {
+    clipboard = { kind: 'track', data: deepClone(tr) };
+    showToast('📋 트랙 복사됨');
+  } else if (selection.type === 'section') {
+    clipboard = { kind: 'section', data: deepClone(tr) };
+    showToast('📋 섹션 복사됨');
+  }
+  return true;
+}
+
+function cutSelection() {
+  if (!selection) return false;
+  if (!copySelection()) return false;
+  deleteSelection();
+  return true;
+}
+
+function pasteClipboard() {
+  if (!clipboard) { showToast('📋 클립보드 비어있음'); return; }
+  mutate(() => {
+    const k = clipboard.kind;
+
+    if (k === 'bar') {
+      // Paste into currently selected track (or selected bar's track)
+      const tIdx = selection && (tracks[selection.trackIdx]?.type !== 'section')
+        ? selection.trackIdx
+        : tracks.findIndex(t => !t.type);
+      if (tIdx < 0) { showToast('❗ 트랙을 먼저 선택하세요'); return; }
+      const tr = tracks[tIdx];
+      if (!tr.bars) tr.bars = [];
+      const newBar = deepClone(clipboard.data);
+      // Offset slightly so it's visible
+      const len = newBar.e - newBar.s;
+      newBar.s = Math.min(MONTHS - len, newBar.s + 0.5);
+      newBar.e = newBar.s + len;
+      tr.bars.push(newBar);
+      selection = { type: 'bar', trackIdx: tIdx, barIdx: tr.bars.length - 1 };
+      showToast('📋 Bar 붙여넣음');
+    }
+    else if (k === 'milestone') {
+      const tIdx = selection && (tracks[selection.trackIdx]?.type !== 'section')
+        ? selection.trackIdx
+        : tracks.findIndex(t => !t.type);
+      if (tIdx < 0) { showToast('❗ 트랙을 먼저 선택하세요'); return; }
+      const tr = tracks[tIdx];
+      if (!tr.ms) tr.ms = [];
+      const newMs = deepClone(clipboard.data);
+      tr.ms.push(newMs);
+      selection = { type: 'milestone', trackIdx: tIdx, msIdx: tr.ms.length - 1 };
+      showToast('📋 마일스톤 붙여넣음');
+    }
+    else if (k === 'track' || k === 'section') {
+      // Insert after current selection, or at end
+      const insertIdx = selection ? selection.trackIdx + 1 : tracks.length;
+      const newTr = deepClone(clipboard.data);
+      if (k === 'track' && newTr.label) newTr.label = newTr.label + ' (복사)';
+      if (k === 'section' && newTr.label) newTr.label = newTr.label + ' (복사)';
+      tracks.splice(insertIdx, 0, newTr);
+      selection = { type: k === 'section' ? 'section' : 'track', trackIdx: insertIdx };
+      showToast(`📋 ${k === 'section' ? '섹션' : '트랙'} 붙여넣음`);
+    }
+  });
+}
+
+function deleteSelection() {
+  if (!selection) return;
+  mutate(() => {
+    const tr = tracks[selection.trackIdx];
+    if (!tr) return;
+    if (selection.type === 'bar') {
+      tr.bars.splice(selection.barIdx, 1);
+      selection = null;
+    } else if (selection.type === 'milestone') {
+      tr.ms.splice(selection.msIdx, 1);
+      selection = null;
+    } else if (selection.type === 'track' || selection.type === 'section') {
+      tracks.splice(selection.trackIdx, 1);
+      selection = null;
+    }
+  });
+  closePanel(false);
 }
 
 // ==============================================
@@ -630,6 +805,10 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
     const startMouseX = e.clientX;
     const orig = { ...tracks[tIdx].bars[bIdx] };
 
+    // Snapshot BEFORE drag starts so one undo reverts the whole drag
+    const preDragSnap = snapshotState();
+    let didChange = false;
+
     document.body.classList.add('dragging');
 
     function onMove(ev) {
@@ -640,17 +819,16 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
       const b = tracks[tIdx].bars[bIdx];
       if (mode === 'resize-start') {
         const newS = snap(orig.s + dm);
-        if (newS < b.e - 0.1) b.s = newS;
+        if (newS < b.e - 0.1 && newS !== b.s) { b.s = newS; didChange = true; }
       } else if (mode === 'resize-end') {
         const newE = snap(orig.e + dm);
-        if (newE > b.s + 0.1) b.e = newE;
+        if (newE > b.s + 0.1 && newE !== b.e) { b.e = newE; didChange = true; }
       } else {
         const len = orig.e - orig.s;
         let newS = snap(orig.s + dm);
         if (newS + len > MONTHS) newS = MONTHS - len;
         if (newS < 0) newS = 0;
-        b.s = newS;
-        b.e = newS + len;
+        if (newS !== b.s) { b.s = newS; b.e = newS + len; didChange = true; }
       }
       bar.style.left = (b.s / MONTHS * 100) + '%';
       bar.style.width = ((b.e - b.s) / MONTHS * 100) + '%';
@@ -665,7 +843,14 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
       document.body.classList.remove('dragging');
-      saveTracks();
+      if (didChange) {
+        // Record the drag as a single history entry
+        history.past.push(preDragSnap);
+        if (history.past.length > HISTORY_LIMIT) history.past.shift();
+        history.future.length = 0;
+        saveTracks();
+        updateUndoRedoButtons();
+      }
     }
 
     document.addEventListener('pointermove', onMove);
@@ -687,10 +872,12 @@ function openPanel() {
   document.body.classList.add('panel-open');
 }
 
-function closePanel() {
+function closePanel(clearSelection = true) {
   document.body.classList.remove('panel-open');
-  selection = null;
-  renderTracks();
+  if (clearSelection) {
+    selection = null;
+    renderTracks();
+  }
 }
 
 function renderPanel() {
@@ -708,6 +895,15 @@ function renderPanel() {
   const { type, trackIdx } = selection;
   const tr = tracks[trackIdx];
 
+  // Safety: if selection became invalid (e.g. after undo)
+  if (!tr) {
+    selection = null;
+    typeEl.textContent = '선택된 항목 없음';
+    nameEl.textContent = '-';
+    bodyEl.innerHTML = '<div class="sp-empty"><div class="sp-empty-ico">👆</div>요소를 클릭해서 편집하세요</div>';
+    return;
+  }
+
   if (type === 'section') {
     typeEl.textContent = 'SECTION';
     nameEl.textContent = tr.label;
@@ -721,23 +917,25 @@ function renderPanel() {
       </div>
       <div class="sp-group">
         <div class="sp-group-title">작업</div>
-        <button class="tbtn danger" style="width:100%;justify-content:center" id="btnDelSec">🗑 섹션 삭제</button>
+        <button class="tbtn danger" style="width:100%;justify-content:center" id="btnDelSec">🗑 섹션 삭제 (Delete)</button>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-title">키보드 단축키</div>
+        <div class="sp-help" style="font-size:10px;line-height:1.8">
+          <b>Ctrl+C</b> 복사 · <b>Ctrl+X</b> 잘라내기<br>
+          <b>Ctrl+V</b> 붙여넣기 · <b>Del</b> 삭제<br>
+          <b>Ctrl+Z</b> 실행 취소 · <b>Ctrl+Y</b> 다시 실행
+        </div>
       </div>
     `;
     document.getElementById('fSecLabel').addEventListener('input', (e) => {
-      tr.label = e.target.value;
-      renderTracks();
+      const val = e.target.value;
+      mutate(() => { tr.label = val; }, {coalesce: `sec-label-${trackIdx}`});
       nameEl.textContent = tr.label;
-      setStatus('dirty');
-      saveTracks();
     });
     document.getElementById('btnDelSec').addEventListener('click', () => {
       if (!confirm('이 섹션을 삭제합니다.')) return;
-      tracks.splice(trackIdx, 1);
-      closePanel();
-      renderTracks();
-      saveTracks();
-      showToast('섹션 삭제됨');
+      deleteSelection();
     });
   } else if (type === 'track') {
     typeEl.textContent = 'TRACK';
@@ -793,9 +991,19 @@ function renderPanel() {
       </div>
     `;
 
-    document.getElementById('fLabel').addEventListener('input', (e) => { tr.label = e.target.value; nameEl.textContent = tr.label; renderTracks(); setStatus('dirty'); saveTracks(); });
-    document.getElementById('fIcon').addEventListener('input', (e) => { tr.icon = e.target.value; renderTracks(); setStatus('dirty'); saveTracks(); });
-    document.getElementById('fCat').addEventListener('change', (e) => { tr.cat = e.target.value; renderTracks(); setStatus('dirty'); saveTracks(); });
+    document.getElementById('fLabel').addEventListener('input', (e) => {
+      const val = e.target.value;
+      mutate(() => { tr.label = val; }, {coalesce: `tr-label-${trackIdx}`});
+      nameEl.textContent = tr.label;
+    });
+    document.getElementById('fIcon').addEventListener('input', (e) => {
+      const val = e.target.value;
+      mutate(() => { tr.icon = val; }, {coalesce: `tr-icon-${trackIdx}`});
+    });
+    document.getElementById('fCat').addEventListener('change', (e) => {
+      const val = e.target.value;
+      mutate(() => { tr.cat = val; });
+    });
 
     bodyEl.querySelectorAll('[data-bar-idx]').forEach(el => {
       el.addEventListener('click', (e) => {
@@ -809,10 +1017,7 @@ function renderPanel() {
         e.stopPropagation();
         const idx = parseInt(btn.dataset.delBar);
         if (!confirm(`Bar "${tr.bars[idx].t}" 삭제?`)) return;
-        tr.bars.splice(idx, 1);
-        renderTracks();
-        renderPanel();
-        saveTracks();
+        mutate(() => { tr.bars.splice(idx, 1); });
       });
     });
     bodyEl.querySelectorAll('[data-ms-idx]').forEach(el => {
@@ -826,32 +1031,27 @@ function renderPanel() {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const idx = parseInt(btn.dataset.delMs);
-        tr.ms.splice(idx, 1);
-        renderTracks();
-        renderPanel();
-        saveTracks();
+        mutate(() => { tr.ms.splice(idx, 1); });
       });
     });
     document.getElementById('btnAddBar').addEventListener('click', () => {
-      if (!tr.bars) tr.bars = [];
-      const lastEnd = tr.bars.length ? tr.bars[tr.bars.length - 1].e : 0;
-      tr.bars.push({s: lastEnd, e: Math.min(lastEnd + 2, MONTHS), c: 'c-blue', t: '새 작업'});
-      renderTracks();
-      selectItem({type:'bar', trackIdx, barIdx: tr.bars.length - 1});
+      mutate(() => {
+        if (!tr.bars) tr.bars = [];
+        const lastEnd = tr.bars.length ? tr.bars[tr.bars.length - 1].e : 0;
+        tr.bars.push({s: lastEnd, e: Math.min(lastEnd + 2, MONTHS), c: 'c-blue', t: '새 작업'});
+        selection = {type:'bar', trackIdx, barIdx: tr.bars.length - 1};
+      });
     });
     document.getElementById('btnAddMs').addEventListener('click', () => {
-      if (!tr.ms) tr.ms = [];
-      tr.ms.push({m: Math.floor(MONTHS / 2), c: 'ms-blue'});
-      renderTracks();
-      selectItem({type:'milestone', trackIdx, msIdx: tr.ms.length - 1});
+      mutate(() => {
+        if (!tr.ms) tr.ms = [];
+        tr.ms.push({m: Math.floor(MONTHS / 2), c: 'ms-blue'});
+        selection = {type:'milestone', trackIdx, msIdx: tr.ms.length - 1};
+      });
     });
     document.getElementById('btnDelTrack').addEventListener('click', () => {
       if (!confirm(`트랙 "${tr.label}" 삭제?`)) return;
-      tracks.splice(trackIdx, 1);
-      closePanel();
-      renderTracks();
-      saveTracks();
-      showToast('트랙 삭제됨');
+      deleteSelection();
     });
   } else if (type === 'bar') {
     const b = tr.bars[selection.barIdx];
@@ -893,31 +1093,31 @@ function renderPanel() {
       </div>
     `;
 
-    document.getElementById('fBarText').addEventListener('input', (e) => { b.t = e.target.value; nameEl.textContent = b.t; renderTracks(); setStatus('dirty'); saveTracks(); });
+    document.getElementById('fBarText').addEventListener('input', (e) => {
+      const val = e.target.value;
+      mutate(() => { b.t = val; }, {coalesce: `bar-text-${trackIdx}-${selection.barIdx}`});
+      nameEl.textContent = b.t;
+    });
     document.getElementById('fBarS').addEventListener('input', (e) => {
       const v = Math.max(0, Math.min(MONTHS, parseFloat(e.target.value) || 0));
-      if (v < b.e - 0.1) { b.s = v; renderTracks(); setStatus('dirty'); saveTracks(); }
+      if (v < b.e - 0.1) {
+        mutate(() => { b.s = v; }, {coalesce: `bar-s-${trackIdx}-${selection.barIdx}`});
+      }
     });
     document.getElementById('fBarE').addEventListener('input', (e) => {
       const v = Math.max(0, Math.min(MONTHS, parseFloat(e.target.value) || 0));
-      if (v > b.s + 0.1) { b.e = v; renderTracks(); setStatus('dirty'); saveTracks(); }
+      if (v > b.s + 0.1) {
+        mutate(() => { b.e = v; }, {coalesce: `bar-e-${trackIdx}-${selection.barIdx}`});
+      }
     });
     bodyEl.querySelectorAll('.sp-color-opt').forEach(el => {
       el.addEventListener('click', () => {
-        b.c = el.dataset.color;
-        bodyEl.querySelectorAll('.sp-color-opt').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        renderTracks();
-        setStatus('dirty');
-        saveTracks();
+        mutate(() => { b.c = el.dataset.color; });
       });
     });
     document.getElementById('btnDelBar').addEventListener('click', () => {
       if (!confirm(`Bar "${b.t}" 삭제?`)) return;
-      tr.bars.splice(selection.barIdx, 1);
-      closePanel();
-      renderTracks();
-      saveTracks();
+      deleteSelection();
     });
   } else if (type === 'milestone') {
     const m = tr.ms[selection.msIdx];
@@ -946,15 +1146,16 @@ function renderPanel() {
 
     document.getElementById('fMsM').addEventListener('input', (e) => {
       const v = Math.max(0, Math.min(MONTHS, parseFloat(e.target.value) || 0));
-      m.m = v; renderTracks(); nameEl.textContent = `M${v} 마일스톤`; setStatus('dirty'); saveTracks();
+      mutate(() => { m.m = v; }, {coalesce: `ms-m-${trackIdx}-${selection.msIdx}`});
+      nameEl.textContent = `M${v} 마일스톤`;
     });
-    document.getElementById('fMsC').addEventListener('change', (e) => { m.c = e.target.value; renderTracks(); setStatus('dirty'); saveTracks(); });
+    document.getElementById('fMsC').addEventListener('change', (e) => {
+      const val = e.target.value;
+      mutate(() => { m.c = val; });
+    });
     document.getElementById('btnDelMs').addEventListener('click', () => {
       if (!confirm('마일스톤 삭제?')) return;
-      tr.ms.splice(selection.msIdx, 1);
-      closePanel();
-      renderTracks();
-      saveTracks();
+      deleteSelection();
     });
   }
 }
@@ -975,6 +1176,9 @@ function esc(s) {
 // ==============================================
 // TOOLBAR ACTIONS
 // ==============================================
+document.getElementById('btnUndo').addEventListener('click', undo);
+document.getElementById('btnRedo').addEventListener('click', redo);
+
 document.getElementById('btnEdit').addEventListener('click', () => {
   editMode = !editMode;
   document.body.classList.toggle('edit-mode', editMode);
@@ -984,7 +1188,7 @@ document.getElementById('btnEdit').addEventListener('click', () => {
     ? '<span class="tbtn-icon">✕</span>편집 종료'
     : '<span class="tbtn-icon">✏️</span>편집 모드';
   if (!editMode) closePanel();
-  showToast(editMode ? '편집 모드 ON · 요소 클릭하여 수정' : '편집 모드 OFF');
+  showToast(editMode ? '편집 모드 ON · 클릭하여 수정' : '편집 모드 OFF');
 });
 
 document.getElementById('btnExport').addEventListener('click', () => {
@@ -1010,9 +1214,12 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
     try {
       const imported = JSON.parse(ev.target.result);
       if (!Array.isArray(imported)) throw new Error('Array expected');
-      tracks = imported;
-      saveTracks();
-      renderTracks();
+      mutate(() => {
+        tracks.length = 0;
+        imported.forEach(t => tracks.push(t));
+        selection = null;
+      });
+      closePanel(false);
       showToast('Import 완료');
     } catch(err) {
       alert('JSON 파싱 실패: ' + err.message);
@@ -1023,33 +1230,93 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
 });
 
 document.getElementById('btnReset').addEventListener('click', () => {
-  if (!confirm('기본값으로 복원합니다. 모든 편집 내용이 사라집니다.')) return;
-  tracks = JSON.parse(JSON.stringify(DEFAULT_TRACKS));
-  saveTracks();
-  renderTracks();
-  closePanel();
+  if (!confirm('기본값으로 복원합니다. 현재 편집 내용은 Undo로 되돌릴 수 있습니다.')) return;
+  mutate(() => {
+    tracks.length = 0;
+    DEFAULT_TRACKS.forEach(t => tracks.push(deepClone(t)));
+    selection = null;
+  });
+  closePanel(false);
   showToast('초기화 완료');
 });
 
-document.getElementById('spClose').addEventListener('click', closePanel);
+document.getElementById('spClose').addEventListener('click', () => closePanel());
 
 document.getElementById('addTrackBtn').addEventListener('click', () => {
-  const newTrack = {
-    label: '새 트랙',
-    icon: '✨',
-    cat: 'cat-sllm',
-    bars: [{s:0, e:2, c:'c-blue', t:'새 작업'}],
-    ms: []
-  };
-  tracks.push(newTrack);
-  renderTracks();
-  saveTracks();
-  selectItem({type:'track', trackIdx: tracks.length - 1});
+  mutate(() => {
+    const newTrack = {
+      label: '새 트랙',
+      icon: '✨',
+      cat: 'cat-sllm',
+      bars: [{s:0, e:2, c:'c-blue', t:'새 작업'}],
+      ms: []
+    };
+    tracks.push(newTrack);
+    selection = {type:'track', trackIdx: tracks.length - 1};
+  });
+  openPanel();
   showToast('트랙 추가됨');
 });
 
+// ==============================================
+// KEYBOARD SHORTCUTS
+// ==============================================
+function isTypingInField(target) {
+  if (!target) return false;
+  const tag = (target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+  if (target.isContentEditable) return true;
+  return false;
+}
+
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && selection) closePanel();
+  // Allow default behavior when typing in form fields (Ctrl+Z/C/V etc. on text inputs)
+  const typing = isTypingInField(e.target);
+
+  const mod = e.ctrlKey || e.metaKey;
+
+  // Undo / Redo work globally (even while typing, so you can undo text changes too?)
+  // Actually, for text fields, let browser handle its own undo. Only intercept when NOT typing.
+  if (mod && !e.shiftKey && e.key.toLowerCase() === 'z') {
+    if (typing) return; // let browser undo the text
+    e.preventDefault();
+    undo();
+    return;
+  }
+  if ((mod && e.key.toLowerCase() === 'y') || (mod && e.shiftKey && e.key.toLowerCase() === 'z')) {
+    if (typing) return;
+    e.preventDefault();
+    redo();
+    return;
+  }
+
+  // Clipboard: only when an item is selected and not typing
+  if (typing) return;
+
+  if (mod && e.key.toLowerCase() === 'c') {
+    if (selection) { e.preventDefault(); copySelection(); }
+    return;
+  }
+  if (mod && e.key.toLowerCase() === 'x') {
+    if (selection) { e.preventDefault(); cutSelection(); }
+    return;
+  }
+  if (mod && e.key.toLowerCase() === 'v') {
+    if (clipboard) { e.preventDefault(); pasteClipboard(); }
+    return;
+  }
+
+  // Delete / Backspace when in edit mode and item selected
+  if (editMode && selection && (e.key === 'Delete' || e.key === 'Backspace')) {
+    e.preventDefault();
+    deleteSelection();
+    return;
+  }
+
+  // Escape closes panel
+  if (e.key === 'Escape' && selection) {
+    closePanel();
+  }
 });
 
 // ==============================================
@@ -1058,6 +1325,7 @@ document.addEventListener('keydown', (e) => {
 renderTimeline();
 renderTracks();
 setStatus('saved');
+updateUndoRedoButtons();
 </script>
 </body>
 </html>
