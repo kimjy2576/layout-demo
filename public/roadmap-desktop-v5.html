@@ -201,6 +201,28 @@ body.edit-mode .add-track-btn{display:block}
 .dp-title{font-size:14px;font-weight:700;color:#475569;margin-bottom:6px}
 .dp-desc{font-size:11px;line-height:1.6}
 
+/* ===== Todo Section ===== */
+.todo-section{margin-top:28px;padding:20px 0 40px;border-top:2px solid #e2e8f0}
+.todo-section-title{font-size:14px;font-weight:900;color:#1a1a2e;margin-bottom:16px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em}
+.todo-section-title::before{content:'';width:4px;height:16px;background:#1a1a2e;border-radius:2px}
+.todo-section-title .count{font-size:10px;font-weight:700;color:#64748b;background:#f1f5f9;padding:3px 8px;border-radius:10px;letter-spacing:.3px;font-family:'JetBrains Mono',monospace;margin-left:6px}
+.todo-groups{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.todo-group{background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
+.todo-group-head{padding:10px 14px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px}
+.todo-group-icon{font-size:14px;flex-shrink:0}
+.todo-group-label{font-size:12px;font-weight:800;color:#1a1a2e;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.todo-group-count{font-size:9px;font-weight:700;color:#64748b;background:#fff;padding:2px 7px;border-radius:8px;font-family:'JetBrains Mono',monospace}
+.todo-list{list-style:none;padding:8px 0}
+.todo-item{display:flex;align-items:flex-start;gap:8px;padding:7px 14px;font-size:11.5px;line-height:1.55;color:#1a1a2e;border-bottom:1px dashed #f1f5f9;transition:background .1s}
+.todo-item:last-child{border-bottom:none}
+.todo-item:hover{background:#f8fafc}
+.todo-check{width:14px;height:14px;border:1.5px solid #cbd5e1;border-radius:3px;flex-shrink:0;margin-top:2px;cursor:pointer;transition:all .15s;position:relative;background:#fff}
+.todo-check:hover{border-color:#2563EB}
+.todo-check.checked{background:#059669;border-color:#059669}
+.todo-check.checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:10px;font-weight:900}
+.todo-text{flex:1;user-select:text}
+.todo-item.done .todo-text{text-decoration:line-through;color:#94a3b8}
+
 /* ===== Side Panel ===== */
 .side-panel{position:fixed;top:0;right:-440px;width:420px;height:100vh;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,.08);z-index:200;transition:right .25s ease;display:flex;flex-direction:column;border-left:1px solid #e2e8f0}
 body.panel-open .side-panel{right:0}
@@ -361,6 +383,13 @@ body.panel-open .side-panel{right:0}
     <div class="dp-title">세부 로드맵이 아직 정의되지 않았습니다</div>
     <div class="dp-desc">이 트랙은 프로토타입 세부 로드맵이 없습니다.<br>기존 간트에서 bar·마일스톤을 편집하세요.</div>
   </div>
+  <div class="todo-section" id="todoSection" style="display:none">
+    <div class="todo-section-title">
+      📋 Todo 체크리스트
+      <span class="count" id="todoTotalCount">0 / 0</span>
+    </div>
+    <div class="todo-groups" id="todoGroups"></div>
+  </div>
 </div>
 
 </div>
@@ -404,7 +433,17 @@ const DEFAULT_TRACKS=[
         {s:1.5,e:3,c:'c-blue',t:'도메인 용어 사전 구축'},
         {s:2.5,e:4,c:'c-blue-l',t:'정형 JSON 쿼리 생성기'},
         {s:4,e:5,c:'c-blue-l',t:'모호성 감지 + 튜닝'},
-      ],ms:[{m:3,c:'ms-blue'}]},
+      ],ms:[{m:3,c:'ms-blue'}],
+      todos:[
+        '사용자 질문 유형 조사 (최적화·조회·시뮬·설계·문의 등 5~7개 intent 정의)',
+        'Intent 분류용 Few-shot 프롬프트 작성 + Structured Output 스키마 설계',
+        '필수 슬롯(모델명, 목표 지표, 제약 등) 스펙 정의',
+        '슬롯 누락 감지 + 역질문 템플릿 작성 (예: "어떤 모델을 말씀하시나요?")',
+        '도메인 용어 사전 구축 ("물 안 마름" → SMER 저하 등 100+ 매핑)',
+        '정형 JSON 쿼리 스키마 확정 (Pydantic/JSON Schema)',
+        'Interpreter 단위 테스트 100+ 케이스 (모호/명확 혼합)',
+        'temperature=0 고정 + 프롬프트 버전 관리 체계 구축',
+      ]},
       {label:'② RAG 파이프라인',icon:'📚',cat:'cat-sllm',bars:[
         {s:0,e:1,c:'c-blue',t:'규격 문서 수집 (IEC·EN)'},
         {s:0.5,e:1.5,c:'c-blue',t:'청킹 + 임베딩'},
@@ -413,7 +452,20 @@ const DEFAULT_TRACKS=[
         {s:3,e:4.5,c:'c-blue',t:'멀티도메인 문서 소스 통합'},
         {s:4.5,e:6,c:'c-blue-l',t:'하이브리드 검색 (BM25 + 벡터)'},
         {s:6,e:7.5,c:'c-blue-l',t:'검색 품질 튜닝 + 재랭킹'},
-      ],ms:[{m:2,c:'ms-blue'}]},
+      ],ms:[{m:2,c:'ms-blue'}],
+      todos:[
+        '규격 문서 수집 (IEC 61121, EN 60335, 사내 가이드 등)',
+        '문서 전처리 (PDF→텍스트, 표·수식 보존, OCR 필요 여부 판단)',
+        '청킹 전략 결정 (고정 크기 vs 의미 단위, 오버랩 설정)',
+        '임베딩 모델 선정 (OpenAI ada / BGE-ko / multilingual-e5)',
+        '벡터 DB 선정·배포 (Qdrant/Chroma/Pinecone 중 사내 보안 요건 맞는 것)',
+        '메타데이터 스키마 (문서 출처·버전·섹션·접근 권한)',
+        '실험 데이터·설계 이력 등 멀티 소스 인덱싱 파이프라인',
+        '하이브리드 검색 (벡터 Top-K + BM25 키워드) 구현',
+        '재랭킹 모델 도입 (Cohere Rerank / bge-reranker)',
+        '평가 데이터셋 50~100건으로 Recall@5, MRR 측정',
+        '문서 업데이트 시 자동 재임베딩 파이프라인',
+      ]},
       {label:'③ Claude API + Tool-use',icon:'🧩',cat:'cat-sllm',bars:[
         {s:0,e:1,c:'c-blue-l',t:'API Key 관리·프록시'},
         {s:0.5,e:1.5,c:'c-blue-l',t:'민감정보 마스킹 레이어'},
@@ -422,27 +474,77 @@ const DEFAULT_TRACKS=[
         {s:3.5,e:5,c:'c-blue',t:'Tool 등록 (DB·시뮬·최적화·3D)'},
         {s:4.5,e:6,c:'c-blue',t:'LangGraph 오케스트레이터'},
         {s:5.5,e:7,c:'c-blue-l',t:'에러 복구 + 재시도 로직'},
-      ],ms:[{m:3,c:'ms-blue'},{m:6,c:'ms-blue'}]},
+      ],ms:[{m:3,c:'ms-blue'},{m:6,c:'ms-blue'}],
+      todos:[
+        'API Key 관리 (Vault/Secrets Manager), rate limit·비용 모니터링',
+        '사내 프록시 서버 구축 (회사 외부 직접 호출 차단)',
+        '민감정보 마스킹 룰 (모델번호·치수·원가 등 PII-like 데이터)',
+        'System Prompt 초안 작성 (페르소나·응답 형식·금지 행동)',
+        'Prompt 버전 관리 + A/B 테스트 체계',
+        'Answer JSON Schema 설계 (conclusion·evidence·parameters·confidence)',
+        'Tool 인터페이스 정의 (DB 조회·1D 시뮬·최적화 실행·3D 렌더)',
+        'Tool 구현 및 Anthropic Tool-use 스키마로 등록',
+        'LangGraph 상태 그래프 설계 (분기·반복·에러 경로)',
+        'Tool 호출 실패 시 재시도·Fallback 로직',
+        'temperature=0 + 응답 캐싱 (같은 질문 = 같은 답)',
+        '비용 상한 + Circuit Breaker (과다 호출 차단)',
+      ]},
       {label:'④ Explainer',icon:'🗣️',cat:'cat-ui',bars:[
         {s:2,e:3.5,c:'c-red',t:'답변 구조화 렌더링 (JSON → UI)'},
         {s:3,e:4.5,c:'c-red',t:'전문가/비전문가 모드 전환'},
         {s:4,e:5.5,c:'c-red',t:'근거·출처 링크 (규격 인용)'},
         {s:5,e:7,c:'c-red',t:'3D 시각화 연결 (Three.js)'},
         {s:7,e:8.5,c:'c-red-l',t:'음성/그래프 출력 옵션'},
-      ],ms:[{m:5,c:'ms-red'}]},
+      ],ms:[{m:5,c:'ms-red'}],
+      todos:[
+        'Answer JSON → React 카드 컴포넌트 매핑 (결론·근거·파라미터)',
+        '답변 카테고리별 템플릿 (최적화·조회·시뮬·오류 해석)',
+        '전문가 모드 UI (수식·단위·정확도 표시)',
+        '비전문가 모드 UI (용어 풀이·비유·단순 요약)',
+        '근거 문서 인용 (클릭→원문 스크롤)',
+        '3D 뷰어 연동 (Three.js로 HPWD 레이아웃 표시)',
+        '결과 그래프·차트 자동 생성 (Recharts)',
+        '답변 복사·PDF 내보내기 기능',
+        '음성 TTS 옵션 (현장 엔지니어용)',
+        '답변 신뢰도 시각화 (confidence 바)',
+      ]},
       {label:'⑤ 로그 수집 + Gold 라벨링',icon:'📊',cat:'cat-db',bars:[
         {s:3,e:4.5,c:'c-amber',t:'구조화 로그 파이프라인 (JSON)'},
         {s:4,e:5.5,c:'c-amber',t:'피드백 UI (👍/👎 + 코멘트)'},
         {s:5,e:6.5,c:'c-amber',t:'품질 필터 + 익명화'},
         {s:6,e:8,c:'c-amber',t:'전문가 리뷰 → Gold 라벨'},
         {s:7,e:9,c:'c-amber-l',t:'Synthetic 데이터 증강'},
-      ],ms:[{m:9,c:'ms-red'}]},
+      ],ms:[{m:9,c:'ms-red'}],
+      todos:[
+        '로그 스키마 정의 (질문·해석·검색·답변·Tool 호출·소요시간·피드백)',
+        '로그 저장소 선정 (PostgreSQL + S3 / ClickHouse)',
+        '사용자 피드백 UI (👍/👎 + 자유 코멘트)',
+        '자동 품질 필터 (에러·취소·너무 짧은 응답 등 제외)',
+        '개인정보·사내 기밀 자동 익명화·마스킹',
+        '전문가 리뷰 대시보드 (로그 검토·Gold 라벨링)',
+        'Gold 라벨링 가이드라인 문서화 (검토자 일관성 확보)',
+        'Claude로 Synthetic 질문·답변 쌍 생성 (도메인 커버리지 확장)',
+        'Phase 2 파인튜닝용 데이터 포맷 변환 (instruction·chat·preference)',
+        '데이터 통계 대시보드 (도메인별·intent별 분포)',
+      ]},
       {label:'⑥ Case A 시나리오',icon:'🎯',cat:'cat-ui',bars:[
         {s:6,e:7.5,c:'c-red',t:'시나리오 100+ 정의·매핑'},
         {s:7,e:8.5,c:'c-red',t:'PDF 리포트 자동 생성'},
         {s:7.5,e:9,c:'c-red',t:'통합 테스트 + 사용자 시연'},
         {s:8.5,e:9,c:'c-red-l',t:'Phase Gate 자료 준비'},
-      ],ms:[{m:9,c:'ms-red'}]},
+      ],ms:[{m:9,c:'ms-red'}],
+      todos:[
+        '설계자 인터뷰 (실제 자주 묻는 질문 수집, 30~50건)',
+        '시나리오 100+ 카탈로그 작성 (도메인 × intent 매트릭스)',
+        '각 시나리오별 기대 답변 정의 (Gold Answer)',
+        'End-to-End 테스트 스위트 구축 (회귀 테스트)',
+        'PDF 리포트 템플릿 (LaTeX 또는 ReportLab)',
+        '리포트 자동 생성 (분석 결과 + 3D 스냅샷 + 근거 인용)',
+        '실사용자(설계자 2~3명) 파일럿 테스트',
+        '사용자 피드백 수집 + 우선순위 이슈 반영',
+        'Phase Gate 발표 자료 (데모 영상·KPI·리스크·Phase 2 계획)',
+        'Go/No-Go 기준 충족 여부 자가 검증',
+      ]},
     ],
   },
   },
@@ -1846,6 +1948,95 @@ function renderDetailView() {
     row.appendChild(barsDiv);
     container.appendChild(row);
   });
+
+  renderTodos(tr);
+}
+
+// ==============================================
+// TODOS (per subtrack, with localStorage check-state)
+// ==============================================
+const TODO_STATE_KEY = 'roadmap-v5-todos';
+
+function loadTodoState() {
+  try {
+    const s = localStorage.getItem(TODO_STATE_KEY);
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return {};
+}
+function saveTodoState(state) {
+  try { localStorage.setItem(TODO_STATE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+let todoState = loadTodoState();
+
+function todoKey(trackIdx, subIdx, todoIdx) {
+  return `${trackIdx}-${subIdx}-${todoIdx}`;
+}
+
+function renderTodos(tr) {
+  const section = document.getElementById('todoSection');
+  const groupsEl = document.getElementById('todoGroups');
+  const totalCountEl = document.getElementById('todoTotalCount');
+
+  const subs = tr.detail?.subtracks || [];
+  const hasTodos = subs.some(st => Array.isArray(st.todos) && st.todos.length);
+  if (!hasTodos) { section.style.display = 'none'; return; }
+
+  section.style.display = '';
+  groupsEl.innerHTML = '';
+
+  let totalCount = 0, doneCount = 0;
+
+  subs.forEach((st, subIdx) => {
+    if (!st.todos || !st.todos.length) return;
+    const group = document.createElement('div');
+    group.className = 'todo-group';
+
+    const todosDone = st.todos.filter((_, i) => todoState[todoKey(detailTrackIdx, subIdx, i)]).length;
+    totalCount += st.todos.length;
+    doneCount += todosDone;
+
+    const head = document.createElement('div');
+    head.className = 'todo-group-head';
+    head.innerHTML = `
+      <span class="todo-group-icon">${st.icon || '▪'}</span>
+      <span class="todo-group-label">${escapeHtml(st.label)}</span>
+      <span class="todo-group-count" data-count="${subIdx}">${todosDone}/${st.todos.length}</span>
+    `;
+    group.appendChild(head);
+
+    const list = document.createElement('ul');
+    list.className = 'todo-list';
+    st.todos.forEach((text, i) => {
+      const key = todoKey(detailTrackIdx, subIdx, i);
+      const done = !!todoState[key];
+      const li = document.createElement('li');
+      li.className = 'todo-item' + (done ? ' done' : '');
+      li.innerHTML = `
+        <span class="todo-check${done ? ' checked' : ''}" data-key="${key}"></span>
+        <span class="todo-text">${escapeHtml(text)}</span>
+      `;
+      list.appendChild(li);
+    });
+    group.appendChild(list);
+    groupsEl.appendChild(group);
+  });
+
+  totalCountEl.textContent = `${doneCount} / ${totalCount}`;
+
+  // Check toggle
+  groupsEl.querySelectorAll('.todo-check').forEach(el => {
+    el.addEventListener('click', () => {
+      const key = el.dataset.key;
+      todoState[key] = !todoState[key];
+      saveTodoState(todoState);
+      renderTodos(tr);
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
 
 // Back button
