@@ -35,16 +35,31 @@ body.panel-open .page{padding-right:440px}
 .status-chip.dirty{color:#D97706;background:#FEF3C7}
 
 /* ===== Phase Tabs ===== */
-.phase-tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:2px solid #e2e8f0;padding-bottom:0}
-.phase-tab{flex:1;padding:14px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-bottom:none;border-radius:10px 10px 0 0;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:flex-start;gap:3px;transition:all .15s;position:relative;top:2px}
-.phase-tab:hover{background:#f1f5f9}
-.phase-tab.active{background:#fff;border-color:#e2e8f0;box-shadow:0 -2px 0 0 currentColor inset}
-.phase-tab[data-phase="p1"].active{color:#2563EB;box-shadow:0 -3px 0 0 #2563EB inset}
-.phase-tab[data-phase="p2"].active{color:#7C3AED;box-shadow:0 -3px 0 0 #7C3AED inset}
-.phase-tab .pt-num{font-size:9px;font-weight:900;letter-spacing:1px;color:#64748b;font-family:'JetBrains Mono',monospace}
-.phase-tab.active .pt-num{color:currentColor}
-.phase-tab .pt-name{font-size:15px;font-weight:900;color:#1a1a2e;line-height:1.2}
-.phase-tab .pt-meta{font-size:10px;color:#64748b;font-weight:600;font-family:'JetBrains Mono',monospace}
+.phase-tabs{display:flex;gap:6px;margin-bottom:16px}
+.phase-tab{flex:1;padding:18px 22px;background:#fff;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:14px;transition:all .15s;position:relative;overflow:hidden}
+.phase-tab::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:#e2e8f0;transition:background .15s}
+.phase-tab:hover{border-color:#cbd5e1;background:#f8fafc}
+.phase-tab.active{background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.phase-tab[data-phase="p1"].active{border-color:#2563EB}
+.phase-tab[data-phase="p1"].active::before{background:linear-gradient(180deg,#2563EB,#3B82F6)}
+.phase-tab[data-phase="p2"].active{border-color:#7C3AED}
+.phase-tab[data-phase="p2"].active::before{background:linear-gradient(180deg,#7C3AED,#8B5CF6)}
+.phase-tab.active[data-phase="p1"]{background:linear-gradient(135deg,rgba(37,99,235,.06),rgba(59,130,246,.03))}
+.phase-tab.active[data-phase="p2"]{background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(139,92,246,.03))}
+.phase-tab-badge{flex-shrink:0;width:50px;height:50px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f1f5f9;color:#64748b;font-family:'JetBrains Mono',monospace;font-weight:900;transition:all .15s}
+.phase-tab-badge .pb-label{font-size:8px;letter-spacing:1px;line-height:1}
+.phase-tab-badge .pb-num{font-size:22px;line-height:1;margin-top:2px}
+.phase-tab.active[data-phase="p1"] .phase-tab-badge{background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff}
+.phase-tab.active[data-phase="p2"] .phase-tab-badge{background:linear-gradient(135deg,#7C3AED,#8B5CF6);color:#fff}
+.phase-tab-body{flex:1;min-width:0;text-align:left}
+.phase-tab-body .pt-name{font-size:18px;font-weight:900;color:#1a1a2e;line-height:1.2;margin-bottom:4px;letter-spacing:-.02em}
+.phase-tab.active[data-phase="p1"] .pt-name{color:#1E40AF}
+.phase-tab.active[data-phase="p2"] .pt-name{color:#5B21B6}
+.phase-tab-body .pt-meta{font-size:11px;color:#64748b;font-weight:600;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.phase-tab-body .pt-meta span{display:inline-flex;align-items:center;gap:3px}
+.phase-tab-chip{font-size:9px;font-weight:800;padding:3px 7px;border-radius:10px;background:#f1f5f9;color:#64748b;letter-spacing:.3px}
+.phase-tab.active[data-phase="p1"] .phase-tab-chip{background:#DBEAFE;color:#1E40AF}
+.phase-tab.active[data-phase="p2"] .phase-tab-chip{background:#EDE9FE;color:#5B21B6}
 
 /* ===== Legend ===== */
 .legend-bar{display:flex;gap:14px;align-items:center;margin-bottom:14px;padding:7px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap}
@@ -225,14 +240,34 @@ body.panel-open .side-panel{right:0}
 
 <div class="phase-tabs">
   <button class="phase-tab active" data-phase="p1">
-    <span class="pt-num">PHASE 1</span>
-    <span class="pt-name">Design Guide Agent</span>
-    <span class="pt-meta">M1~M9 · 9개월 · Case A</span>
+    <div class="phase-tab-badge">
+      <span class="pb-label">PHASE</span>
+      <span class="pb-num">1</span>
+    </div>
+    <div class="phase-tab-body">
+      <div class="pt-name">Design Guide Agent</div>
+      <div class="pt-meta">
+        <span class="phase-tab-chip">M1~M9</span>
+        <span>9개월</span>
+        <span>·</span>
+        <span>Case A · 기존 제품 개선</span>
+      </div>
+    </div>
   </button>
   <button class="phase-tab" data-phase="p2">
-    <span class="pt-num">PHASE 2</span>
-    <span class="pt-name">Full Agent</span>
-    <span class="pt-meta">M10~M21 · 12개월 · Case B</span>
+    <div class="phase-tab-badge">
+      <span class="pb-label">PHASE</span>
+      <span class="pb-num">2</span>
+    </div>
+    <div class="phase-tab-body">
+      <div class="pt-name">Full Agent</div>
+      <div class="pt-meta">
+        <span class="phase-tab-chip">M10~M21</span>
+        <span>12개월</span>
+        <span>·</span>
+        <span>Case B · 신제품 설계</span>
+      </div>
+    </div>
   </button>
 </div>
 
