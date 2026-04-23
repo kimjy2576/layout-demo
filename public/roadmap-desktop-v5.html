@@ -34,6 +34,18 @@ body.panel-open .page{padding-right:440px}
 .status-chip{font-size:9px;font-weight:700;color:#059669;background:#D1FAE5;padding:3px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace}
 .status-chip.dirty{color:#D97706;background:#FEF3C7}
 
+/* ===== Phase Tabs ===== */
+.phase-tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:2px solid #e2e8f0;padding-bottom:0}
+.phase-tab{flex:1;padding:14px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-bottom:none;border-radius:10px 10px 0 0;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:flex-start;gap:3px;transition:all .15s;position:relative;top:2px}
+.phase-tab:hover{background:#f1f5f9}
+.phase-tab.active{background:#fff;border-color:#e2e8f0;box-shadow:0 -2px 0 0 currentColor inset}
+.phase-tab[data-phase="p1"].active{color:#2563EB;box-shadow:0 -3px 0 0 #2563EB inset}
+.phase-tab[data-phase="p2"].active{color:#7C3AED;box-shadow:0 -3px 0 0 #7C3AED inset}
+.phase-tab .pt-num{font-size:9px;font-weight:900;letter-spacing:1px;color:#64748b;font-family:'JetBrains Mono',monospace}
+.phase-tab.active .pt-num{color:currentColor}
+.phase-tab .pt-name{font-size:15px;font-weight:900;color:#1a1a2e;line-height:1.2}
+.phase-tab .pt-meta{font-size:10px;color:#64748b;font-weight:600;font-family:'JetBrains Mono',monospace}
+
 /* ===== Legend ===== */
 .legend-bar{display:flex;gap:14px;align-items:center;margin-bottom:14px;padding:7px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600}
@@ -211,6 +223,19 @@ body.panel-open .side-panel{right:0}
   </div>
 </div>
 
+<div class="phase-tabs">
+  <button class="phase-tab active" data-phase="p1">
+    <span class="pt-num">PHASE 1</span>
+    <span class="pt-name">Design Guide Agent</span>
+    <span class="pt-meta">M1~M9 · 9개월 · Case A</span>
+  </button>
+  <button class="phase-tab" data-phase="p2">
+    <span class="pt-num">PHASE 2</span>
+    <span class="pt-name">Full Agent</span>
+    <span class="pt-meta">M10~M21 · 12개월 · Case B</span>
+  </button>
+</div>
+
 <div class="legend-bar">
   <div class="legend-item"><div class="legend-dot" style="background:#2563EB"></div>sLLM</div>
   <div class="legend-item"><div class="legend-dot" style="background:#059669"></div>물리 Lv1</div>
@@ -225,14 +250,6 @@ body.panel-open .side-panel{right:0}
   <div style="flex:1"></div>
   <div class="legend-item"><div class="legend-line c-blue"></div>핵심</div>
   <div class="legend-item"><div class="legend-line" style="background:#93C5FD"></div>확장</div>
-</div>
-
-<div class="phase-row">
-  <div class="phase-label-area"></div>
-  <div class="phase-timeline">
-    <div class="phase-block p1">PHASE 1 — Design Guide Agent (9개월, Case A)</div>
-    <div class="phase-block p2">PHASE 2 — Full Agent (12개월, Case B)</div>
-  </div>
 </div>
 
 <div class="timeline-header">
@@ -367,10 +384,36 @@ const MS_COLORS = [
 // ==============================================
 const STORAGE_KEY = 'roadmap-v5-data-v2';
 const LEGACY_STORAGE_KEY = 'roadmap-v5-data';
+const VIEW_KEY = 'roadmap-v5-view';
 const HISTORY_LIMIT = 80;
 let tracks = loadTracks();
 let editMode = false;
 let selection = null; // {type:'bar'|'track'|'milestone'|'section', trackIdx, barIdx?, msIdx?}
+let activePhase = loadViewPhase(); // 'p1' or 'p2'
+
+// View ranges (inclusive start, exclusive end)
+const PHASE_RANGES = {
+  p1: { start: 0, end: 9 },
+  p2: { start: 9, end: 21 },
+};
+
+function loadViewPhase() {
+  try {
+    const v = localStorage.getItem(VIEW_KEY);
+    if (v === 'p1' || v === 'p2') return v;
+  } catch(e) {}
+  return 'p1';
+}
+function saveViewPhase() {
+  try { localStorage.setItem(VIEW_KEY, activePhase); } catch(e) {}
+}
+function getViewRange() {
+  return PHASE_RANGES[activePhase];
+}
+function getViewSpan() {
+  const r = getViewRange();
+  return r.end - r.start;
+}
 
 // History + Clipboard
 const history = { past: [], future: [] };
@@ -589,9 +632,10 @@ function deleteSelection() {
 function renderTimeline() {
   const mEl = document.getElementById('months');
   mEl.innerHTML = '';
-  for (let i = 0; i < MONTHS; i++) {
+  const { start, end } = getViewRange();
+  for (let i = start; i < end; i++) {
     const d = document.createElement('div');
-    d.className = 'tl-month' + (i % 3 === 0 ? ' q-start' : '');
+    d.className = 'tl-month' + ((i - start) % 3 === 0 ? ' q-start' : '');
     d.textContent = 'M' + (i + 1);
     mEl.appendChild(d);
   }
@@ -601,8 +645,37 @@ function renderTracks() {
   const tEl = document.getElementById('tracks');
   tEl.innerHTML = '';
 
+  const { start: viewStart, end: viewEnd } = getViewRange();
+  const viewSpan = viewEnd - viewStart;
+
+  // Helper: does this track belong to the active phase?
+  // We use section headers as phase separators.
+  // Tracks between "PHASE 1" section and "PHASE 2" section → p1
+  // Tracks after "PHASE 2" section → p2
+  // We also allow tracks with bars only in the active range.
+  function trackPhase(tIdx) {
+    // Walk backwards to find the nearest section header
+    for (let i = tIdx; i >= 0; i--) {
+      if (tracks[i].type === 'section') {
+        const lbl = (tracks[i].label || '').toUpperCase();
+        if (lbl.includes('PHASE 1')) return 'p1';
+        if (lbl.includes('PHASE 2')) return 'p2';
+        return null; // unknown section
+      }
+    }
+    return null;
+  }
+
   tracks.forEach((tr, tIdx) => {
     if (tr.type === 'section') {
+      const lbl = (tr.label || '').toUpperCase();
+      const secPhase = lbl.includes('PHASE 1') ? 'p1' : lbl.includes('PHASE 2') ? 'p2' : null;
+      // Hide section header that doesn't match active phase
+      if (secPhase && secPhase !== activePhase) return;
+      // Hide section header for active phase too (phase name already shown in tab)
+      if (secPhase === activePhase) return;
+      // Other sections (no phase) always shown
+
       const row = document.createElement('div');
       row.className = 'section-div';
       row.dataset.trackIdx = tIdx;
@@ -616,6 +689,10 @@ function renderTracks() {
       tEl.appendChild(row);
       return;
     }
+
+    // Only show tracks belonging to the active phase
+    const tp = trackPhase(tIdx);
+    if (tp !== activePhase) return;
 
     const row = document.createElement('div');
     row.className = 'track';
@@ -636,10 +713,15 @@ function renderTracks() {
     barsDiv.className = 'track-bars';
 
     (tr.bars || []).forEach((b, bIdx) => {
+      // Clip to view range
+      const bs = Math.max(b.s, viewStart);
+      const be = Math.min(b.e, viewEnd);
+      if (be <= bs) return; // outside view
+
       const bar = document.createElement('div');
       bar.className = `bar ${b.c}`;
-      bar.style.left = (b.s / MONTHS * 100) + '%';
-      bar.style.width = ((b.e - b.s) / MONTHS * 100) + '%';
+      bar.style.left = ((bs - viewStart) / viewSpan * 100) + '%';
+      bar.style.width = ((be - bs) / viewSpan * 100) + '%';
       bar.innerHTML = `<span class="dot${b.e <= P1_END ? ' solid' : ''}"></span>${b.t}`;
       bar.title = `M${b.s+1}~M${b.e}: ${b.t}`;
       bar.dataset.trackIdx = tIdx;
@@ -652,9 +734,12 @@ function renderTracks() {
     });
 
     (tr.ms || []).forEach((m, mIdx) => {
+      // Only show milestones inside view range
+      if (m.m < viewStart || m.m > viewEnd) return;
+
       const ms = document.createElement('div');
       ms.className = `milestone ${m.c}`;
-      ms.style.left = `calc(${m.m / MONTHS * 100}% - 6px)`;
+      ms.style.left = `calc(${(m.m - viewStart) / viewSpan * 100}% - 6px)`;
       ms.title = `M${m.m} 마일스톤`;
       ms.dataset.trackIdx = tIdx;
       ms.dataset.msIdx = mIdx;
@@ -669,10 +754,10 @@ function renderTracks() {
       barsDiv.appendChild(ms);
     });
 
-    for (let i = 0; i < MONTHS; i++) {
+    // Vertical gridlines within view range
+    for (let i = viewStart; i < viewEnd; i++) {
       const line = document.createElement('div');
-      const isPhase = i === P1_END;
-      line.style.cssText = `position:absolute;left:${(i / MONTHS * 100)}%;top:0;bottom:0;width:${isPhase ? 2 : 1}px;background:${isPhase ? '#2563EB50' : i % 3 === 0 ? '#e2e8f0' : '#f1f5f9'};z-index:0;pointer-events:none`;
+      line.style.cssText = `position:absolute;left:${((i - viewStart) / viewSpan * 100)}%;top:0;bottom:0;width:1px;background:${(i - viewStart) % 3 === 0 ? '#e2e8f0' : '#f1f5f9'};z-index:0;pointer-events:none`;
       barsDiv.appendChild(line);
     }
 
@@ -705,7 +790,10 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
     else mode = 'move';
 
     const barsRect = barsDiv.getBoundingClientRect();
-    const pxPerMonth = barsRect.width / MONTHS;
+    const viewSpan = getViewSpan();
+    const viewStart = getViewRange().start;
+    const viewEnd = getViewRange().end;
+    const pxPerMonth = barsRect.width / viewSpan;
     const startMouseX = e.clientX;
     const orig = { ...tracks[tIdx].bars[bIdx] };
 
@@ -734,8 +822,14 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
         if (newS < 0) newS = 0;
         if (newS !== b.s) { b.s = newS; b.e = newS + len; didChange = true; }
       }
-      bar.style.left = (b.s / MONTHS * 100) + '%';
-      bar.style.width = ((b.e - b.s) / MONTHS * 100) + '%';
+
+      // Redraw bar clipped to current view
+      const bsC = Math.max(b.s, viewStart);
+      const beC = Math.min(b.e, viewEnd);
+      if (beC > bsC) {
+        bar.style.left = ((bsC - viewStart) / viewSpan * 100) + '%';
+        bar.style.width = ((beC - bsC) / viewSpan * 100) + '%';
+      }
       bar.dataset.justDragged = '1';
       setStatus('dirty');
       if (selection && selection.type === 'bar' && selection.trackIdx === tIdx && selection.barIdx === bIdx) {
@@ -1148,18 +1242,53 @@ document.getElementById('spClose').addEventListener('click', () => closePanel())
 
 document.getElementById('addTrackBtn').addEventListener('click', () => {
   mutate(() => {
+    const { start, end } = getViewRange();
+    // Find the last index of a track within the active phase to insert after it
+    let insertIdx = tracks.length;
+    // Find the phase section and the next section
+    let phaseSecIdx = -1;
+    let nextSecIdx = tracks.length;
+    for (let i = 0; i < tracks.length; i++) {
+      if (tracks[i].type === 'section') {
+        const lbl = (tracks[i].label || '').toUpperCase();
+        if (activePhase === 'p1' && lbl.includes('PHASE 1')) phaseSecIdx = i;
+        if (activePhase === 'p2' && lbl.includes('PHASE 2')) phaseSecIdx = i;
+        else if (phaseSecIdx >= 0 && i > phaseSecIdx) { nextSecIdx = i; break; }
+      }
+    }
+    if (phaseSecIdx >= 0) {
+      insertIdx = nextSecIdx;
+    }
     const newTrack = {
       label: '새 트랙',
       icon: '✨',
-      cat: 'cat-sllm',
-      bars: [{s:0, e:2, c:'c-blue', t:'새 작업'}],
+      cat: activePhase === 'p1' ? 'cat-sllm' : 'cat-ai',
+      bars: [{s: start, e: Math.min(start + 2, end), c: activePhase === 'p1' ? 'c-blue' : 'c-purple', t: '새 작업'}],
       ms: []
     };
-    tracks.push(newTrack);
-    selection = {type:'track', trackIdx: tracks.length - 1};
+    tracks.splice(insertIdx, 0, newTrack);
+    selection = {type:'track', trackIdx: insertIdx};
   });
   openPanel();
-  showToast('트랙 추가됨');
+  showToast(`트랙 추가됨 (${activePhase.toUpperCase()})`);
+});
+
+// Phase tab clicks
+document.querySelectorAll('.phase-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const p = tab.dataset.phase;
+    if (p === activePhase) return;
+    activePhase = p;
+    saveViewPhase();
+    document.querySelectorAll('.phase-tab').forEach(t => t.classList.toggle('active', t.dataset.phase === p));
+    // Clear selection if it belongs to the other phase
+    if (selection && selection.trackIdx != null) {
+      // If selected track doesn't belong to new phase, clear
+      closePanel();
+    }
+    renderTimeline();
+    renderTracks();
+  });
 });
 
 // ==============================================
@@ -1226,6 +1355,7 @@ document.addEventListener('keydown', (e) => {
 // ==============================================
 // INIT
 // ==============================================
+document.querySelectorAll('.phase-tab').forEach(t => t.classList.toggle('active', t.dataset.phase === activePhase));
 renderTimeline();
 renderTracks();
 setStatus('saved');
