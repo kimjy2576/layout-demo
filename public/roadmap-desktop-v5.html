@@ -961,10 +961,11 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
 // ==============================================
 function attachTrackReorder(labelDiv, rowEl, tIdx) {
   labelDiv.addEventListener('pointerdown', (e) => {
-    if (!editMode) return;
-    // Let clicks on things inside the label bubble up if needed
-    // Only trigger on primary button
-    if (e.button !== 0) return;
+    if (!editMode) { console.log('[reorder] blocked: not edit mode'); return; }
+    if (e.button !== 0) { console.log('[reorder] blocked: button', e.button); return; }
+    console.log('[reorder] pointerdown on track', tIdx, tracks[tIdx]?.label);
+    e.preventDefault();
+    try { labelDiv.setPointerCapture(e.pointerId); } catch(err) { console.log('[reorder] capture failed', err); }
 
     const startX = e.clientX;
     const startY = e.clientY;
@@ -984,19 +985,19 @@ function attachTrackReorder(labelDiv, rowEl, tIdx) {
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
       if (!started) {
-        if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
-        // Movement threshold exceeded → start dragging
+        if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
         started = true;
         preDragSnap = snapshotState();
         document.body.classList.add('dragging');
         rowEl.classList.add('track-dragging');
         labelDiv.dataset.justDragged = '1';
+        console.log('[reorder] drag started');
       }
 
-      // Find drop target
       clearDropIndicators();
       const hoverEl = document.elementFromPoint(ev.clientX, ev.clientY);
       const targetRow = hoverEl && (hoverEl.closest('.track') || hoverEl.closest('.section-div'));
+      console.log('[reorder] y:', ev.clientY, 'hover:', hoverEl?.tagName, hoverEl?.className?.slice?.(0,40), '→ row idx:', targetRow?.dataset.trackIdx);
       if (targetRow && targetRow.dataset.trackIdx != null) {
         const targetIdx = parseInt(targetRow.dataset.trackIdx);
         if (targetIdx !== tIdx) {
@@ -1010,8 +1011,10 @@ function attachTrackReorder(labelDiv, rowEl, tIdx) {
             dropPosition = 'below';
           }
           dropTargetIdx = targetIdx;
+          console.log('[reorder] drop target set:', targetIdx, dropPosition);
         } else {
           dropTargetIdx = null;
+          console.log('[reorder] same track, ignoring');
         }
       } else {
         dropTargetIdx = null;
