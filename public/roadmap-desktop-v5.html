@@ -76,30 +76,30 @@ body.panel-open .page{padding-right:440px}
 .phase-block.p2{background:linear-gradient(135deg,#7C3AED,#8B5CF6);flex:12;margin-left:2px}
 
 /* ===== Timeline Header ===== */
-.timeline-header{display:flex;border-bottom:2px solid #1a1a2e;padding-bottom:3px}
-.tl-label{width:125px;flex-shrink:0}
+.timeline-header{display:flex;border-bottom:2px solid #1a1a2e;padding-bottom:5px}
+.tl-label{width:155px;flex-shrink:0}
 .tl-months{flex:1;display:flex}
-.tl-month{flex:1;text-align:center;font-size:9px;font-weight:600;color:#475569;padding:3px 0}
+.tl-month{flex:1;text-align:center;font-size:11px;font-weight:600;color:#475569;padding:4px 0}
 .tl-month.q-start{border-left:1px solid #cbd5e1}
 
 /* ===== Tracks ===== */
-.track{display:flex;min-height:32px;border-bottom:1px solid #f1f5f9;position:relative}
+.track{display:flex;min-height:44px;border-bottom:1px solid #f1f5f9;position:relative}
 .track:hover{background:#f8fafc}
-.track-label{width:125px;flex-shrink:0;display:flex;align-items:center;padding:3px 6px;font-size:10px;font-weight:700;gap:4px;position:relative}
-.track-bars{flex:1;display:flex;position:relative;align-items:center;padding:3px 0}
-.cat{font-size:7px;padding:2px 3px;border-radius:2px;color:#fff;display:inline-flex;align-items:center;justify-content:center}
+.track-label{width:155px;flex-shrink:0;display:flex;align-items:center;padding:4px 8px;font-size:12px;font-weight:700;gap:6px;position:relative}
+.track-bars{flex:1;display:flex;position:relative;align-items:center;padding:4px 0}
+.cat{font-size:10px;padding:3px 4px;border-radius:3px;color:#fff;display:inline-flex;align-items:center;justify-content:center;min-width:22px;min-height:22px}
 
 /* ===== Bars ===== */
-.bar{position:absolute;height:20px;border-radius:10px;display:flex;align-items:center;padding:0 9px;font-size:9px;font-weight:700;color:#fff;white-space:nowrap;transition:filter .15s,transform .15s;overflow:hidden}
+.bar{position:absolute;height:30px;border-radius:15px;display:flex;align-items:center;padding:0 12px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap;transition:filter .15s,transform .15s;overflow:hidden}
 .bar:hover{filter:brightness(1.1);z-index:3}
-.bar .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);margin-right:5px;flex-shrink:0}
+.bar .dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.55);margin-right:7px;flex-shrink:0}
 .bar .dot.solid{background:#fff}
 
 /* Edit mode: bar handles */
-body.edit-mode .bar{cursor:move;padding-left:14px;padding-right:14px}
-body.edit-mode .bar::before,body.edit-mode .bar::after{content:'';position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize;background:rgba(255,255,255,.25);transition:background .15s}
-body.edit-mode .bar::before{left:0;border-top-left-radius:10px;border-bottom-left-radius:10px}
-body.edit-mode .bar::after{right:0;border-top-right-radius:10px;border-bottom-right-radius:10px}
+body.edit-mode .bar{cursor:move;padding-left:18px;padding-right:18px}
+body.edit-mode .bar::before,body.edit-mode .bar::after{content:'';position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize;background:rgba(255,255,255,.25);transition:background .15s}
+body.edit-mode .bar::before{left:0;border-top-left-radius:15px;border-bottom-left-radius:15px}
+body.edit-mode .bar::after{right:0;border-top-right-radius:15px;border-bottom-right-radius:15px}
 body.edit-mode .bar:hover::before,body.edit-mode .bar:hover::after{background:rgba(255,255,255,.5)}
 body.edit-mode .bar.selected{outline:2px solid #1a1a2e;outline-offset:1px;z-index:4}
 body.edit-mode .track-label{cursor:pointer}
@@ -140,15 +140,15 @@ body.dragging .drag-overlay{display:block;pointer-events:auto}
 .c-gate{background:linear-gradient(90deg,#DC2626,#EF4444);border:2px solid #fff;box-shadow:0 0 0 1px #DC2626}
 
 /* ===== Milestones ===== */
-.milestone{position:absolute;width:12px;height:12px;transform:rotate(45deg);border:2px solid;border-radius:2px;top:50%;margin-top:-6px;z-index:2}
+.milestone{position:absolute;width:16px;height:16px;transform:rotate(45deg);border:2px solid;border-radius:3px;top:50%;margin-top:-8px;z-index:2}
 .ms-blue{border-color:#2563EB;background:#DBEAFE}
 .ms-green{border-color:#059669;background:#D1FAE5}
 .ms-purple{border-color:#7C3AED;background:#EDE9FE}
 .ms-red{border-color:#DC2626;background:#FEE2E2}
 
 /* ===== Section Dividers ===== */
-.section-div{display:flex;min-height:22px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;align-items:center}
-.section-div .track-label{font-size:9px;font-weight:800;color:#64748b;letter-spacing:.5px}
+.section-div{display:flex;min-height:30px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;align-items:center}
+.section-div .track-label{font-size:11px;font-weight:800;color:#64748b;letter-spacing:.5px}
 
 /* ===== Categories ===== */
 .cat-sllm{background:#2563EB}.cat-phys{background:#059669}.cat-phys2{background:#10B981}
@@ -288,7 +288,7 @@ body.panel-open .side-panel{right:0}
 </div>
 
 <div class="timeline-header">
-  <div class="tl-label" style="font-size:10px;font-weight:800;color:#1a1a2e;padding-left:6px">TRACK</div>
+  <div class="tl-label" style="font-size:12px;font-weight:800;color:#1a1a2e;padding-left:8px">TRACK</div>
   <div class="tl-months" id="months"></div>
 </div>
 
@@ -714,7 +714,7 @@ function renderTracks() {
       const row = document.createElement('div');
       row.className = 'section-div';
       row.dataset.trackIdx = tIdx;
-      row.innerHTML = `<div class="track-label" style="font-size:9px;font-weight:800;color:#64748b;letter-spacing:.5px">${tr.label}</div><div style="flex:1"></div>`;
+      row.innerHTML = `<div class="track-label" style="font-size:11px;font-weight:800;color:#64748b;letter-spacing:.5px">${tr.label}</div><div style="flex:1"></div>`;
       if (selection && selection.type === 'section' && selection.trackIdx === tIdx) row.classList.add('selected');
       row.addEventListener('click', (e) => {
         if (!editMode) return;
@@ -735,7 +735,7 @@ function renderTracks() {
 
     const labelDiv = document.createElement('div');
     labelDiv.className = 'track-label';
-    labelDiv.innerHTML = `<span class="cat ${tr.cat}">${tr.icon}</span><span style="font-size:9px">${tr.label}</span>`;
+    labelDiv.innerHTML = `<span class="cat ${tr.cat}">${tr.icon}</span><span style="font-size:12px">${tr.label}</span>`;
     if (selection && selection.type === 'track' && selection.trackIdx === tIdx) labelDiv.classList.add('selected');
     labelDiv.addEventListener('click', (e) => {
       if (!editMode) return;
@@ -774,7 +774,7 @@ function renderTracks() {
 
       const ms = document.createElement('div');
       ms.className = `milestone ${m.c}`;
-      ms.style.left = `calc(${(m.m - viewStart) / viewSpan * 100}% - 6px)`;
+      ms.style.left = `calc(${(m.m - viewStart) / viewSpan * 100}% - 8px)`;
       ms.title = `M${m.m} 마일스톤`;
       ms.dataset.trackIdx = tIdx;
       ms.dataset.msIdx = mIdx;
