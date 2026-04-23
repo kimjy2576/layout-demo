@@ -128,16 +128,6 @@ body.dragging .drag-overlay{display:block;pointer-events:auto}
 .cat-db{background:#D97706}.cat-ai{background:#7C3AED}.cat-route{background:#0D9488}
 .cat-ui{background:#DC2626}.cat-kpi{background:#475569}
 
-/* ===== Dashboard ===== */
-.dashboard{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0}
-.dash-card{padding:8px 9px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;text-align:center}
-.dash-card .d-label{font-size:8px;font-weight:700;color:#94a3b8;letter-spacing:.5px;margin-bottom:3px}
-.dash-card .d-value{font-size:13px;font-weight:900;margin-bottom:2px}
-.dash-card .d-desc{font-size:8px;color:#64748b;line-height:1.4}
-.d-green{color:#059669}.d-amber{color:#D97706}.d-red{color:#DC2626}.d-blue{color:#2563EB}.d-purple{color:#7C3AED}
-
-.footer{text-align:center;font-size:9px;color:#94a3b8;margin-top:14px;font-family:'JetBrains Mono',monospace}
-
 /* ===== Add Track Button ===== */
 .add-track-btn{display:none;margin:8px auto;padding:6px 12px;border:1px dashed #cbd5e1;background:#f8fafc;color:#64748b;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;transition:all .15s}
 .add-track-btn:hover{border-color:#2563EB;color:#2563EB;background:#EFF6FF}
@@ -253,40 +243,6 @@ body.panel-open .side-panel{right:0}
 <div id="tracks"></div>
 
 <button class="add-track-btn" id="addTrackBtn">+ 트랙 추가</button>
-
-<div class="dashboard">
-  <div class="dash-card"><div class="d-label">PHASE 1 (9개월)</div><div class="d-value d-blue">Case A</div><div class="d-desc">기존 모델 개선<br>전 도메인 Level 1<br>자연어 질의응답</div></div>
-  <div class="dash-card"><div class="d-label">PHASE 2 (12개월)</div><div class="d-value d-purple">Case B</div><div class="d-desc">신규 모델 설계<br>RL+Diffusion 배치<br>E2E 파이프라인</div></div>
-  <div class="dash-card"><div class="d-label">물리 도메인</div><div class="d-value d-green">5개</div><div class="d-desc">열유체·진동/소음<br>구조·제어·전장<br>모두 Lv1 이상</div></div>
-  <div class="dash-card"><div class="d-label">핵심 AI</div><div class="d-value d-purple">4종</div><div class="d-desc">sLLM·RL+GNN<br>Diffusion+Transformer<br>Surrogate AI</div></div>
-  <div class="dash-card"><div class="d-label">인력 피크</div><div class="d-value d-amber">6~7명</div><div class="d-desc">P1: 5~6명<br>P2: 6~7명<br>물리 전문가 5명 필수</div></div>
-  <div class="dash-card"><div class="d-label">총 기간</div><div class="d-value d-red">21개월</div><div class="d-desc">P1: 9개월 (MVP)<br>P2: +12개월 (Full)<br>2026 Q2 → 2028 Q1</div></div>
-  <div class="dash-card"><div class="d-label">거버넌스</div><div class="d-value d-green">3+2</div><div class="d-desc">주1회 + 격주 + 월1회<br>+ Phase Gate 2회<br>(M9, M21)</div></div>
-</div>
-
-<div style="margin-top:12px;padding:12px 14px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0">
-  <div style="font-size:10px;font-weight:800;color:#1a1a2e;margin-bottom:8px;letter-spacing:.5px">📋 거버넌스 상세</div>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-    <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #059669;background:#fff">
-      <div style="font-size:10px;font-weight:800;color:#059669;margin-bottom:3px">Weekly Sync · 주 1회 (1h)</div>
-      <div style="font-size:9px;color:#64748b;line-height:1.5">전체 인원 진행상황 + 도메인 간 의존성 체크. 필수. 총 ~84회</div>
-    </div>
-    <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #2563EB;background:#fff">
-      <div style="font-size:10px;font-weight:800;color:#2563EB;margin-bottom:3px">Deep Dive · 격주 (2h)</div>
-      <div style="font-size:9px;color:#64748b;line-height:1.5">기술 주제 집중 리뷰 (보상함수, DB 스키마 등). 총 ~42회</div>
-    </div>
-    <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #7C3AED;background:#fff">
-      <div style="font-size:10px;font-weight:800;color:#7C3AED;margin-bottom:3px">Milestone · 월 1회 (3h)</div>
-      <div style="font-size:9px;color:#64748b;line-height:1.5">스테이크홀더 포함. 진행률, 리스크, Go/No-Go. 총 21회</div>
-    </div>
-    <div style="padding:8px 10px;border-radius:6px;border-left:3px solid #DC2626;background:#fff">
-      <div style="font-size:10px;font-weight:800;color:#DC2626;margin-bottom:3px">Phase Gate · M9, M21</div>
-      <div style="font-size:9px;color:#64748b;line-height:1.5">전면 리뷰. Phase 완료 시점 성과 평가 + 다음 단계 승인</div>
-    </div>
-  </div>
-</div>
-
-<div class="footer">AI 기반 세탁건조기 레이아웃 최적화 v5.0 · 외부 API → 자체 sLLM 전환 전략 · Editable v1.0</div>
 
 </div>
 
