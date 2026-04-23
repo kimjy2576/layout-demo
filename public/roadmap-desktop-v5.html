@@ -102,10 +102,6 @@ body.edit-mode .bar::before{left:0;border-top-left-radius:15px;border-bottom-lef
 body.edit-mode .bar::after{right:0;border-top-right-radius:15px;border-bottom-right-radius:15px}
 body.edit-mode .bar:hover::before,body.edit-mode .bar:hover::after{background:rgba(255,255,255,.5)}
 body.edit-mode .bar.selected{outline:2px solid #1a1a2e;outline-offset:1px;z-index:4}
-body.edit-mode .track-label{cursor:pointer}
-body.edit-mode .track-label:hover{background:#fef3c7;border-radius:4px}
-body.edit-mode .track-label.selected{background:#FEF3C7;outline:1px solid #F59E0B;border-radius:4px}
-body.edit-mode .milestone{cursor:pointer}
 body.edit-mode .milestone.selected{outline:2px solid #1a1a2e;outline-offset:2px;z-index:5}
 body.edit-mode .section-div{cursor:pointer}
 body.edit-mode .section-div:hover{background:#FEF3C7}
@@ -116,6 +112,29 @@ body.dragging *{user-select:none !important;pointer-events:none}
 body.dragging .bar{transition:none}
 body.dragging .drag-overlay{display:block;pointer-events:auto}
 .drag-overlay{display:none;position:fixed;inset:0;z-index:100;cursor:inherit}
+
+/* Track reorder (drag handle on track label) */
+body.edit-mode .track-label{cursor:pointer}
+body.edit-mode .track-label:hover{background:#fef3c7;border-radius:4px}
+body.edit-mode .track-label.selected{background:#FEF3C7;outline:1px solid #F59E0B;border-radius:4px}
+body.edit-mode .track-label::after{content:'⋮⋮';position:absolute;right:4px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:14px;font-weight:700;letter-spacing:-2px;opacity:0;transition:opacity .15s;cursor:grab}
+body.edit-mode .track-label:hover::after{opacity:.7}
+body.edit-mode .track-label.section-label::after{display:none}
+
+/* Track being dragged */
+.track.track-dragging{opacity:.4}
+.track.drop-indicator-above{box-shadow:inset 0 3px 0 0 #2563EB}
+.track.drop-indicator-below{box-shadow:inset 0 -3px 0 0 #2563EB}
+.section-div.drop-indicator-above{box-shadow:inset 0 3px 0 0 #2563EB}
+.section-div.drop-indicator-below{box-shadow:inset 0 -3px 0 0 #2563EB}
+
+/* Bar cross-track drop indicator */
+.track.bar-drop-target{background:#FEF3C7 !important}
+
+/* Milestone: hover pointer in edit mode */
+body.edit-mode .milestone{cursor:grab}
+body.edit-mode .milestone:active{cursor:grabbing}
+.milestone.ms-dragging{opacity:.5;z-index:10}
 
 /* ===== Bar colors ===== */
 .c-blue{background:linear-gradient(90deg,#2563EB,#3B82F6)}
@@ -714,13 +733,22 @@ function renderTracks() {
       const row = document.createElement('div');
       row.className = 'section-div';
       row.dataset.trackIdx = tIdx;
-      row.innerHTML = `<div class="track-label" style="font-size:11px;font-weight:800;color:#64748b;letter-spacing:.5px">${tr.label}</div><div style="flex:1"></div>`;
+      const secLabelDiv = document.createElement('div');
+      secLabelDiv.className = 'track-label section-label';
+      secLabelDiv.style.cssText = 'font-size:11px;font-weight:800;color:#64748b;letter-spacing:.5px';
+      secLabelDiv.textContent = tr.label;
       if (selection && selection.type === 'section' && selection.trackIdx === tIdx) row.classList.add('selected');
-      row.addEventListener('click', (e) => {
+      secLabelDiv.addEventListener('click', (e) => {
         if (!editMode) return;
+        if (secLabelDiv.dataset.justDragged) { delete secLabelDiv.dataset.justDragged; return; }
         e.stopPropagation();
         selectItem({type:'section', trackIdx: tIdx});
       });
+      attachTrackReorder(secLabelDiv, row, tIdx);
+      row.appendChild(secLabelDiv);
+      const sp = document.createElement('div');
+      sp.style.flex = '1';
+      row.appendChild(sp);
       tEl.appendChild(row);
       return;
     }
@@ -739,9 +767,11 @@ function renderTracks() {
     if (selection && selection.type === 'track' && selection.trackIdx === tIdx) labelDiv.classList.add('selected');
     labelDiv.addEventListener('click', (e) => {
       if (!editMode) return;
+      if (labelDiv.dataset.justDragged) { delete labelDiv.dataset.justDragged; return; }
       e.stopPropagation();
       selectItem({type:'track', trackIdx: tIdx});
     });
+    attachTrackReorder(labelDiv, row, tIdx);
     row.appendChild(labelDiv);
 
     const barsDiv = document.createElement('div');
@@ -775,17 +805,13 @@ function renderTracks() {
       const ms = document.createElement('div');
       ms.className = `milestone ${m.c}`;
       ms.style.left = `calc(${(m.m - viewStart) / viewSpan * 100}% - 8px)`;
-      ms.title = `M${m.m} 마일스톤`;
+      ms.title = `M${m.m} 마일스톤 · 드래그로 이동`;
       ms.dataset.trackIdx = tIdx;
       ms.dataset.msIdx = mIdx;
       if (selection && selection.type === 'milestone' && selection.trackIdx === tIdx && selection.msIdx === mIdx) {
         ms.classList.add('selected');
       }
-      ms.addEventListener('click', (e) => {
-        if (!editMode) return;
-        e.stopPropagation();
-        selectItem({type:'milestone', trackIdx: tIdx, msIdx: mIdx});
-      });
+      attachMilestoneDrag(ms, barsDiv, tIdx, mIdx);
       barsDiv.appendChild(ms);
     });
 
@@ -835,8 +861,13 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
     // Snapshot BEFORE drag starts so one undo reverts the whole drag
     const preDragSnap = snapshotState();
     let didChange = false;
+    let dropTargetTrackIdx = null; // for cross-track drop (only on "move" mode)
 
     document.body.classList.add('dragging');
+
+    function clearDropTargets() {
+      document.querySelectorAll('.track.bar-drop-target').forEach(el => el.classList.remove('bar-drop-target'));
+    }
 
     function onMove(ev) {
       const dx = ev.clientX - startMouseX;
@@ -856,6 +887,22 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
         if (newS + len > MONTHS) newS = MONTHS - len;
         if (newS < 0) newS = 0;
         if (newS !== b.s) { b.s = newS; b.e = newS + len; didChange = true; }
+
+        // Cross-track hit test (only for move mode)
+        clearDropTargets();
+        const hoverEl = document.elementFromPoint(ev.clientX, ev.clientY);
+        const targetTrack = hoverEl && hoverEl.closest('.track');
+        if (targetTrack && targetTrack.dataset.trackIdx) {
+          const targetIdx = parseInt(targetTrack.dataset.trackIdx);
+          if (targetIdx !== tIdx && tracks[targetIdx] && !tracks[targetIdx].type) {
+            targetTrack.classList.add('bar-drop-target');
+            dropTargetTrackIdx = targetIdx;
+          } else {
+            dropTargetTrackIdx = null;
+          }
+        } else {
+          dropTargetTrackIdx = null;
+        }
       }
 
       // Redraw bar clipped to current view
@@ -876,6 +923,23 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
       document.body.classList.remove('dragging');
+      clearDropTargets();
+
+      // Cross-track drop: move the bar to target track
+      if (mode === 'move' && dropTargetTrackIdx != null && dropTargetTrackIdx !== tIdx) {
+        const srcTrack = tracks[tIdx];
+        const dstTrack = tracks[dropTargetTrackIdx];
+        if (!dstTrack.bars) dstTrack.bars = [];
+        const movingBar = srcTrack.bars[bIdx];
+        srcTrack.bars.splice(bIdx, 1);
+        dstTrack.bars.push(movingBar);
+        selection = { type: 'bar', trackIdx: dropTargetTrackIdx, barIdx: dstTrack.bars.length - 1 };
+        didChange = true;
+        renderTracks();
+        renderPanel();
+        showToast(`Bar을 "${dstTrack.label}" 트랙으로 이동`);
+      }
+
       if (didChange) {
         // Record the drag as a single history entry
         history.past.push(preDragSnap);
@@ -888,6 +952,187 @@ function attachBarInteractions(bar, tIdx, bIdx, barsDiv) {
 
     document.addEventListener('pointermove', onMove);
     document.addEventListener('pointerup', onUp);
+  });
+}
+
+// ==============================================
+// DRAG: Track reorder (drag track label up/down)
+// ==============================================
+function attachTrackReorder(labelDiv, rowEl, tIdx) {
+  labelDiv.addEventListener('pointerdown', (e) => {
+    if (!editMode) return;
+    // Let clicks on things inside the label bubble up if needed
+    // Only trigger on primary button
+    if (e.button !== 0) return;
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    let started = false;
+    let preDragSnap = null;
+
+    function clearDropIndicators() {
+      document.querySelectorAll('.drop-indicator-above, .drop-indicator-below').forEach(el => {
+        el.classList.remove('drop-indicator-above', 'drop-indicator-below');
+      });
+    }
+
+    let dropTargetIdx = null;
+    let dropPosition = null; // 'above' | 'below'
+
+    function onMove(ev) {
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      if (!started) {
+        if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+        // Movement threshold exceeded → start dragging
+        started = true;
+        preDragSnap = snapshotState();
+        document.body.classList.add('dragging');
+        rowEl.classList.add('track-dragging');
+        labelDiv.dataset.justDragged = '1';
+      }
+
+      // Find drop target
+      clearDropIndicators();
+      const hoverEl = document.elementFromPoint(ev.clientX, ev.clientY);
+      const targetRow = hoverEl && (hoverEl.closest('.track') || hoverEl.closest('.section-div'));
+      if (targetRow && targetRow.dataset.trackIdx != null) {
+        const targetIdx = parseInt(targetRow.dataset.trackIdx);
+        if (targetIdx !== tIdx) {
+          const rect = targetRow.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+          if (ev.clientY < midY) {
+            targetRow.classList.add('drop-indicator-above');
+            dropPosition = 'above';
+          } else {
+            targetRow.classList.add('drop-indicator-below');
+            dropPosition = 'below';
+          }
+          dropTargetIdx = targetIdx;
+        } else {
+          dropTargetIdx = null;
+        }
+      } else {
+        dropTargetIdx = null;
+      }
+    }
+
+    function onUp() {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      clearDropIndicators();
+      if (!started) return;
+      document.body.classList.remove('dragging');
+      rowEl.classList.remove('track-dragging');
+
+      if (dropTargetIdx != null && dropTargetIdx !== tIdx) {
+        // Compute new index
+        let newIdx = dropPosition === 'above' ? dropTargetIdx : dropTargetIdx + 1;
+        // Extract the track
+        const movedTrack = tracks[tIdx];
+        tracks.splice(tIdx, 1);
+        // Adjust newIdx if original was before target
+        if (tIdx < newIdx) newIdx--;
+        tracks.splice(newIdx, 0, movedTrack);
+        // Update selection
+        selection = { type: tracks[newIdx].type === 'section' ? 'section' : 'track', trackIdx: newIdx };
+
+        // Record as single history entry
+        history.past.push(preDragSnap);
+        if (history.past.length > HISTORY_LIMIT) history.past.shift();
+        history.future.length = 0;
+
+        saveTracks();
+        renderTracks();
+        renderPanel();
+        updateUndoRedoButtons();
+        showToast('트랙 이동됨');
+      }
+    }
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  });
+}
+
+// ==============================================
+// DRAG: Milestone horizontal drag
+// ==============================================
+function attachMilestoneDrag(msEl, barsDiv, tIdx, mIdx) {
+  msEl.addEventListener('pointerdown', (e) => {
+    if (!editMode) return;
+    if (e.button !== 0) return;
+    e.stopPropagation();
+
+    const barsRect = barsDiv.getBoundingClientRect();
+    const viewSpan = getViewSpan();
+    const viewStart = getViewRange().start;
+    const viewEnd = getViewRange().end;
+    const pxPerMonth = barsRect.width / viewSpan;
+    const startMouseX = e.clientX;
+    const orig = tracks[tIdx].ms[mIdx].m;
+
+    const preDragSnap = snapshotState();
+    let didChange = false;
+    let started = false;
+
+    function onMove(ev) {
+      const dx = ev.clientX - startMouseX;
+      if (!started) {
+        if (Math.abs(dx) < 2 && Math.abs(ev.clientY - e.clientY) < 2) return;
+        started = true;
+        document.body.classList.add('dragging');
+        msEl.classList.add('ms-dragging');
+        msEl.dataset.justDragged = '1';
+      }
+      const dm = dx / pxPerMonth;
+      const snap = (v) => Math.max(0, Math.min(MONTHS, Math.round(v * 2) / 2)); // 0.5-month snap
+      const newM = snap(orig + dm);
+      const m = tracks[tIdx].ms[mIdx];
+      if (newM !== m.m) { m.m = newM; didChange = true; }
+
+      // Clip to view
+      if (m.m < viewStart || m.m > viewEnd) {
+        msEl.style.display = 'none';
+      } else {
+        msEl.style.display = '';
+        msEl.style.left = `calc(${(m.m - viewStart) / viewSpan * 100}% - 8px)`;
+      }
+      setStatus('dirty');
+      if (selection && selection.type === 'milestone' && selection.trackIdx === tIdx && selection.msIdx === mIdx) {
+        const field = document.getElementById('fMsM');
+        if (field) field.value = m.m;
+        const nameEl = document.getElementById('spName');
+        if (nameEl) nameEl.textContent = `M${m.m} 마일스톤`;
+      }
+    }
+
+    function onUp() {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      if (started) {
+        document.body.classList.remove('dragging');
+        msEl.classList.remove('ms-dragging');
+      }
+      if (didChange) {
+        history.past.push(preDragSnap);
+        if (history.past.length > HISTORY_LIMIT) history.past.shift();
+        history.future.length = 0;
+        saveTracks();
+        updateUndoRedoButtons();
+      }
+    }
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  });
+
+  // Click (without drag) opens panel
+  msEl.addEventListener('click', (e) => {
+    if (!editMode) return;
+    if (msEl.dataset.justDragged) { delete msEl.dataset.justDragged; return; }
+    e.stopPropagation();
+    selectItem({type:'milestone', trackIdx: tIdx, msIdx: mIdx});
   });
 }
 
