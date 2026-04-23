@@ -180,6 +180,27 @@ body.edit-mode .milestone:active{cursor:grabbing}
 .add-track-btn:hover{border-color:#2563EB;color:#2563EB;background:#EFF6FF}
 body.edit-mode .add-track-btn{display:block}
 
+/* Drill-in hint on track label */
+.track-label .drill-hint{opacity:0;margin-left:auto;font-size:11px;color:#2563EB;font-weight:800;transition:opacity .15s;padding-right:16px}
+.track:hover .drill-hint{opacity:.7}
+.track:hover .track-label .drill-hint{opacity:1}
+
+/* ===== Detail View ===== */
+.detail-header{margin-bottom:18px;padding:18px 20px;background:linear-gradient(135deg,#EFF6FF,#F5F3FF);border-radius:12px;border:1px solid #e2e8f0}
+.detail-back{background:#fff;border:1px solid #cbd5e1;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#475569;cursor:pointer;font-family:inherit;margin-bottom:14px;transition:all .15s}
+.detail-back:hover{background:#f8fafc;border-color:#2563EB;color:#2563EB}
+.detail-title-row{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.detail-icon{font-size:36px;width:56px;height:56px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.detail-title-text{flex:1}
+.detail-label{font-size:22px;font-weight:900;color:#1a1a2e;line-height:1.2;letter-spacing:-.02em}
+.detail-meta{font-size:11px;color:#64748b;margin-top:4px;font-family:'JetBrains Mono',monospace;letter-spacing:.3px}
+.detail-desc{font-size:13px;color:#475569;line-height:1.6;padding-top:12px;border-top:1px dashed #cbd5e1;margin-top:12px}
+
+.detail-placeholder{padding:60px 20px;text-align:center;color:#94a3b8;margin-top:20px;border:2px dashed #e2e8f0;border-radius:12px}
+.dp-icon{font-size:40px;margin-bottom:12px;opacity:.5}
+.dp-title{font-size:14px;font-weight:700;color:#475569;margin-bottom:6px}
+.dp-desc{font-size:11px;line-height:1.6}
+
 /* ===== Side Panel ===== */
 .side-panel{position:fixed;top:0;right:-440px;width:420px;height:100vh;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,.08);z-index:200;transition:right .25s ease;display:flex;flex-direction:column;border-left:1px solid #e2e8f0}
 body.panel-open .side-panel{right:0}
@@ -258,6 +279,7 @@ body.panel-open .side-panel{right:0}
   </div>
 </div>
 
+<div id="overviewView">
 <div class="phase-tabs">
   <button class="phase-tab active" data-phase="p1">
     <div class="phase-tab-badge">
@@ -315,6 +337,31 @@ body.panel-open .side-panel{right:0}
 <div id="tracks"></div>
 
 <button class="add-track-btn" id="addTrackBtn">+ 트랙 추가</button>
+</div>
+
+<div id="detailView" style="display:none">
+  <div class="detail-header">
+    <button class="detail-back" id="detailBackBtn">← 전체 로드맵</button>
+    <div class="detail-title-row">
+      <span class="detail-icon" id="detailIcon"></span>
+      <div class="detail-title-text">
+        <div class="detail-label" id="detailLabel"></div>
+        <div class="detail-meta" id="detailMeta"></div>
+      </div>
+    </div>
+    <div class="detail-desc" id="detailDesc"></div>
+  </div>
+  <div class="timeline-header">
+    <div class="tl-label" style="font-size:12px;font-weight:800;color:#1a1a2e;padding-left:8px">SUB-TRACK</div>
+    <div class="tl-months" id="detailMonths"></div>
+  </div>
+  <div id="detailTracks"></div>
+  <div class="detail-placeholder" id="detailPlaceholder" style="display:none">
+    <div class="dp-icon">📋</div>
+    <div class="dp-title">세부 로드맵이 아직 정의되지 않았습니다</div>
+    <div class="dp-desc">이 트랙은 프로토타입 세부 로드맵이 없습니다.<br>기존 간트에서 bar·마일스톤을 편집하세요.</div>
+  </div>
+</div>
 
 </div>
 
@@ -342,29 +389,68 @@ const P1_END=9;
 
 const DEFAULT_TRACKS=[
   {type:'section',label:'PHASE 1 — Design Guide Agent (9개월, Case A)'},
-  {label:'ⓐ 1D 물리 모델 개발',icon:'🌡️',cat:'cat-phys',bars:[
+  {label:'ⓐ 외부 LLM API 구축',icon:'🗣️',cat:'cat-sllm',bars:[
+    {s:0,e:2,c:'c-blue',t:'Claude/GPT API + RAG 설계'},
+    {s:2,e:5,c:'c-blue',t:'Tool-use 에이전트'},
+    {s:5,e:7,c:'c-blue',t:'멀티도메인 질의 + 로그 수집'},
+    {s:7,e:9,c:'c-blue',t:'Design Guide Agent 완성'},
+  ],ms:[{m:3,c:'ms-blue'},{m:9,c:'ms-blue'}],
+  detail:{
+    description:'외부 LLM API(Claude/GPT)를 활용해 자연어 설계 도우미를 빠르게 구축. 9개월간 축적된 대화 로그는 Phase 2 자체 sLLM의 학습 재료.',
+    subtracks:[
+      {label:'RAG 파이프라인',icon:'📚',cat:'cat-sllm',bars:[
+        {s:0,e:1,c:'c-blue',t:'규격 문서 수집 (IEC 61121, EN 60335)'},
+        {s:0.5,e:1.5,c:'c-blue',t:'문서 청킹 + 임베딩'},
+        {s:1,e:2,c:'c-blue',t:'벡터 DB 구축 (Qdrant/Chroma)'},
+        {s:1.5,e:2.5,c:'c-blue-l',t:'검색 품질 튜닝'},
+      ],ms:[{m:2,c:'ms-blue'}]},
+      {label:'API 연동 + 보안',icon:'🔐',cat:'cat-sllm',bars:[
+        {s:0,e:1,c:'c-blue-l',t:'API Key 관리·프록시 구축'},
+        {s:0.5,e:1.5,c:'c-blue-l',t:'민감정보 마스킹 레이어'},
+        {s:1,e:2,c:'c-blue-l',t:'요청·응답 로깅'},
+      ],ms:[]},
+      {label:'Tool-use 에이전트',icon:'🧩',cat:'cat-sllm',bars:[
+        {s:2,e:3,c:'c-blue',t:'LangGraph 기반 오케스트레이터'},
+        {s:2.5,e:4,c:'c-blue',t:'Tool 등록 (DB·시뮬·최적화·3D뷰어)'},
+        {s:3,e:4.5,c:'c-blue',t:'상태 그래프 + 에러 복구'},
+        {s:4,e:5,c:'c-blue-l',t:'Explainer (결과→자연어 변환)'},
+      ],ms:[{m:3,c:'ms-blue'}]},
+      {label:'멀티도메인 질의',icon:'🌐',cat:'cat-sllm',bars:[
+        {s:5,e:6,c:'c-blue',t:'5개 도메인 Tool 통합'},
+        {s:5.5,e:6.5,c:'c-blue',t:'Trade-off 판단 로직'},
+        {s:6,e:7,c:'c-blue',t:'도메인 간 연결 그래프'},
+      ],ms:[{m:7,c:'ms-blue'}]},
+      {label:'로그 수집 + Gold 라벨링',icon:'📊',cat:'cat-db',bars:[
+        {s:5,e:6.5,c:'c-amber',t:'구조화 로그 파이프라인'},
+        {s:6,e:7.5,c:'c-amber',t:'피드백 UI + 품질 필터'},
+        {s:7,e:9,c:'c-amber',t:'전문가 리뷰 + Gold 데이터셋'},
+        {s:7.5,e:9,c:'c-amber-l',t:'Synthetic 증강'},
+      ],ms:[{m:9,c:'ms-red'}]},
+      {label:'Case A 완성',icon:'🎯',cat:'cat-ui',bars:[
+        {s:7,e:8,c:'c-red',t:'Case A 시나리오 100+ 커버'},
+        {s:7.5,e:8.5,c:'c-red',t:'리포트 자동 생성 (PDF)'},
+        {s:8,e:9,c:'c-red-l',t:'Phase Gate 준비'},
+      ],ms:[{m:9,c:'ms-red'}]},
+    ],
+  },
+  },
+  {label:'ⓑ 1D 물리 모델 개발',icon:'🌡️',cat:'cat-phys',bars:[
     {s:0,e:2,c:'c-green',t:'기존 HPWD 시뮬레이터 통합'},
     {s:2,e:5,c:'c-green',t:'통합 사이클 1D 모델'},
     {s:5,e:8,c:'c-green',t:'전 도메인 1D 확장 (진동·구조·제어·전장)'},
     {s:8,e:9,c:'c-green-l',t:'통합 검증'},
   ],ms:[{m:5,c:'ms-green'}]},
-  {label:'ⓑ 검증 DB 구축',icon:'📦',cat:'cat-db',bars:[
+  {label:'ⓒ 검증 DB 구축',icon:'📦',cat:'cat-db',bars:[
     {s:0,e:2,c:'c-amber',t:'DB 스키마 설계'},
     {s:2,e:5,c:'c-amber',t:'기존 모델 + 실험 데이터 축적'},
     {s:5,e:8,c:'c-amber',t:'규격/설계 룰 DB (LLM 추출)'},
     {s:8,e:9,c:'c-amber-l',t:'검증 데이터셋 확정'},
   ],ms:[]},
-  {label:'ⓒ 개별 요소 검증',icon:'✅',cat:'cat-phys2',bars:[
+  {label:'ⓓ 개별 요소 검증',icon:'✅',cat:'cat-phys2',bars:[
     {s:2,e:4,c:'c-teal',t:'단일 컴포넌트 모델 검증'},
     {s:4,e:7,c:'c-teal',t:'실험 vs 1D 모델 교차 검증'},
     {s:7,e:9,c:'c-teal-l',t:'모델 정확도 평가 + 보정'},
   ],ms:[{m:7,c:'ms-green'}]},
-  {label:'ⓓ 외부 LLM API 구축',icon:'🗣️',cat:'cat-sllm',bars:[
-    {s:0,e:2,c:'c-blue',t:'Claude/GPT API + RAG 설계'},
-    {s:2,e:5,c:'c-blue',t:'Tool-use 에이전트'},
-    {s:5,e:7,c:'c-blue',t:'멀티도메인 질의 + 로그 수집'},
-    {s:7,e:9,c:'c-blue',t:'Design Guide Agent 완성'},
-  ],ms:[{m:3,c:'ms-blue'},{m:9,c:'ms-blue'}]},
   {label:'ⓔ 최적화 툴 구축',icon:'⚙️',cat:'cat-route',bars:[
     {s:3,e:5,c:'c-teal',t:'목적함수·제약 정의'},
     {s:5,e:7,c:'c-teal',t:'감도분석 + Bayesian Opt'},
@@ -372,34 +458,34 @@ const DEFAULT_TRACKS=[
   ],ms:[{m:9,c:'ms-red'}]},
 
   {type:'section',label:'PHASE 2 — Full Agent (12개월, Case B)'},
-  {label:'ⓐ 유동해석 Surrogate AI',icon:'🌀',cat:'cat-phys2',bars:[
-    {s:9,e:12,c:'c-green',t:'CFD 데이터 수집 + 전처리'},
-    {s:12,e:15,c:'c-green',t:'Surrogate 모델 학습 (MLP/GNN)'},
-    {s:15,e:18,c:'c-green',t:'정확도 튜닝 + 불확실성 정량화'},
-    {s:18,e:21,c:'c-green-l',t:'풀 3D CFD 최종 검증'},
-  ],ms:[{m:15,c:'ms-green'},{m:21,c:'ms-green'}]},
-  {label:'ⓑ 배치 최적화 AI',icon:'🧠',cat:'cat-ai',bars:[
-    {s:9,e:11,c:'c-purple',t:'GNN 그래프 인코더'},
-    {s:11,e:14,c:'c-purple',t:'PPO 배치 RL 에이전트'},
-    {s:14,e:17,c:'c-purple',t:'Diffusion(DiT) 생성 모델'},
-    {s:17,e:21,c:'c-purple-l',t:'배치-경로 동시 최적화'},
-  ],ms:[{m:14,c:'ms-purple'},{m:19,c:'ms-purple'}]},
-  {label:'ⓒ Co-design 체계',icon:'📐',cat:'cat-ai',bars:[
-    {s:12,e:15,c:'c-indigo',t:'스펙-배치 파라미터 공간 정의'},
-    {s:15,e:18,c:'c-indigo',t:'Bayesian Opt 기반 동시 최적화'},
-    {s:18,e:21,c:'c-indigo',t:'전문가 RLHF 루프'},
-  ],ms:[]},
-  {label:'ⓓ 시스템 DB 검증',icon:'🔎',cat:'cat-db',bars:[
-    {s:9,e:12,c:'c-amber',t:'Phase 1 DB 확장 + MLOps 연동'},
-    {s:12,e:16,c:'c-amber',t:'전 시스템 통합 검증'},
-    {s:16,e:21,c:'c-amber-l',t:'모델 레지스트리 + 회귀 테스트'},
-  ],ms:[]},
-  {label:'ⓔ 전용 sLLM 개발',icon:'🗣️',cat:'cat-sllm',bars:[
+  {label:'ⓐ 전용 sLLM 개발',icon:'🗣️',cat:'cat-sllm',bars:[
     {s:9,e:12,c:'c-blue',t:'학습 데이터셋 구축 + Base 모델 선정'},
     {s:12,e:15,c:'c-blue',t:'LoRA 파인튜닝 + 서빙 인프라'},
     {s:15,e:18,c:'c-blue',t:'API vs 자체 sLLM A/B 테스트'},
     {s:18,e:21,c:'c-blue-l',t:'자체 sLLM 전환 + Full Agent 완성'},
   ],ms:[{m:15,c:'ms-blue'},{m:21,c:'ms-blue'}]},
+  {label:'ⓑ 유동해석 Surrogate AI',icon:'🌀',cat:'cat-phys2',bars:[
+    {s:9,e:12,c:'c-green',t:'CFD 데이터 수집 + 전처리'},
+    {s:12,e:15,c:'c-green',t:'Surrogate 모델 학습 (MLP/GNN)'},
+    {s:15,e:18,c:'c-green',t:'정확도 튜닝 + 불확실성 정량화'},
+    {s:18,e:21,c:'c-green-l',t:'풀 3D CFD 최종 검증'},
+  ],ms:[{m:15,c:'ms-green'},{m:21,c:'ms-green'}]},
+  {label:'ⓒ 배치 최적화 AI',icon:'🧠',cat:'cat-ai',bars:[
+    {s:9,e:11,c:'c-purple',t:'GNN 그래프 인코더'},
+    {s:11,e:14,c:'c-purple',t:'PPO 배치 RL 에이전트'},
+    {s:14,e:17,c:'c-purple',t:'Diffusion(DiT) 생성 모델'},
+    {s:17,e:21,c:'c-purple-l',t:'배치-경로 동시 최적화'},
+  ],ms:[{m:14,c:'ms-purple'},{m:19,c:'ms-purple'}]},
+  {label:'ⓓ Co-design 체계',icon:'📐',cat:'cat-ai',bars:[
+    {s:12,e:15,c:'c-indigo',t:'스펙-배치 파라미터 공간 정의'},
+    {s:15,e:18,c:'c-indigo',t:'Bayesian Opt 기반 동시 최적화'},
+    {s:18,e:21,c:'c-indigo',t:'전문가 RLHF 루프'},
+  ],ms:[]},
+  {label:'ⓔ 시스템 DB 검증',icon:'🔎',cat:'cat-db',bars:[
+    {s:9,e:12,c:'c-amber',t:'Phase 1 DB 확장 + MLOps 연동'},
+    {s:12,e:16,c:'c-amber',t:'전 시스템 통합 검증'},
+    {s:16,e:21,c:'c-amber-l',t:'모델 레지스트리 + 회귀 테스트'},
+  ],ms:[]},
 ];
 
 // ==============================================
@@ -437,14 +523,16 @@ const MS_COLORS = [
 // ==============================================
 // STATE
 // ==============================================
-const STORAGE_KEY = 'roadmap-v5-data-v2';
-const LEGACY_STORAGE_KEY = 'roadmap-v5-data';
+const STORAGE_KEY = 'roadmap-v5-data-v3';
+const LEGACY_STORAGE_KEY = 'roadmap-v5-data-v2';
 const VIEW_KEY = 'roadmap-v5-view';
 const HISTORY_LIMIT = 80;
 let tracks = loadTracks();
 let editMode = false;
 let selection = null; // {type:'bar'|'track'|'milestone'|'section', trackIdx, barIdx?, msIdx?}
 let activePhase = loadViewPhase(); // 'p1' or 'p2'
+let viewMode = 'overview'; // 'overview' | 'detail'
+let detailTrackIdx = null; // which track is currently drilled into
 
 // View ranges (inclusive start, exclusive end)
 const PHASE_RANGES = {
@@ -764,13 +852,22 @@ function renderTracks() {
 
     const labelDiv = document.createElement('div');
     labelDiv.className = 'track-label';
-    labelDiv.innerHTML = `<span class="cat ${tr.cat}">${tr.icon}</span><span style="font-size:12px">${tr.label}</span>`;
+    const hasDetail = !!tr.detail;
+    labelDiv.innerHTML = `<span class="cat ${tr.cat}">${tr.icon}</span><span style="font-size:12px;flex:1">${tr.label}</span>${hasDetail ? '<span class="drill-hint" title="더블클릭하여 세부 로드맵">▶</span>' : ''}`;
     if (selection && selection.type === 'track' && selection.trackIdx === tIdx) labelDiv.classList.add('selected');
     labelDiv.addEventListener('click', (e) => {
-      if (!editMode) return;
+      if (!editMode) {
+        // In view mode, single click does nothing (double click opens detail)
+        return;
+      }
       if (labelDiv.dataset.justDragged) { delete labelDiv.dataset.justDragged; return; }
       e.stopPropagation();
       selectItem({type:'track', trackIdx: tIdx});
+    });
+    labelDiv.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      if (tr.detail) enterDetailView(tIdx);
+      else showToast('세부 로드맵이 아직 없는 트랙입니다');
     });
     attachTrackReorder(labelDiv, row, tIdx);
     row.appendChild(labelDiv);
@@ -1630,6 +1727,117 @@ document.addEventListener('keydown', (e) => {
     closePanel();
   }
 });
+
+// ==============================================
+// DETAIL VIEW (drill-down into a track)
+// ==============================================
+function enterDetailView(tIdx) {
+  viewMode = 'detail';
+  detailTrackIdx = tIdx;
+  document.getElementById('overviewView').style.display = 'none';
+  document.getElementById('detailView').style.display = '';
+  renderDetailView();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function exitDetailView() {
+  viewMode = 'overview';
+  detailTrackIdx = null;
+  document.getElementById('detailView').style.display = 'none';
+  document.getElementById('overviewView').style.display = '';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function renderDetailView() {
+  if (detailTrackIdx == null) return;
+  const tr = tracks[detailTrackIdx];
+  if (!tr) { exitDetailView(); return; }
+
+  // Compute track's own range from its bars
+  const bars = tr.bars || [];
+  const starts = bars.map(b => b.s);
+  const ends = bars.map(b => b.e);
+  const tStart = bars.length ? Math.min(...starts) : 0;
+  const tEnd = bars.length ? Math.max(...ends) : MONTHS;
+  const tSpan = Math.max(0.1, tEnd - tStart);
+
+  // Header
+  document.getElementById('detailIcon').textContent = tr.icon || '📋';
+  document.getElementById('detailLabel').textContent = tr.label;
+  document.getElementById('detailMeta').textContent = `M${Math.round(tStart+1)} ~ M${Math.round(tEnd)} · ${Math.round(tSpan)}개월`;
+  document.getElementById('detailDesc').textContent = tr.detail?.description || '';
+
+  // Month axis
+  const mEl = document.getElementById('detailMonths');
+  mEl.innerHTML = '';
+  const startInt = Math.floor(tStart);
+  const endInt = Math.ceil(tEnd);
+  for (let i = startInt; i < endInt; i++) {
+    const d = document.createElement('div');
+    d.className = 'tl-month' + ((i - startInt) % 3 === 0 ? ' q-start' : '');
+    d.textContent = 'M' + (i + 1);
+    mEl.appendChild(d);
+  }
+
+  // Sub-tracks
+  const container = document.getElementById('detailTracks');
+  container.innerHTML = '';
+  const placeholder = document.getElementById('detailPlaceholder');
+
+  if (!tr.detail?.subtracks || tr.detail.subtracks.length === 0) {
+    placeholder.style.display = '';
+    return;
+  }
+  placeholder.style.display = 'none';
+
+  tr.detail.subtracks.forEach((st, stIdx) => {
+    const row = document.createElement('div');
+    row.className = 'track';
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'track-label';
+    labelDiv.innerHTML = `<span class="cat ${st.cat || tr.cat}">${st.icon || '▪'}</span><span style="font-size:12px">${st.label}</span>`;
+    row.appendChild(labelDiv);
+
+    const barsDiv = document.createElement('div');
+    barsDiv.className = 'track-bars';
+
+    (st.bars || []).forEach(b => {
+      const bs = Math.max(b.s, tStart);
+      const be = Math.min(b.e, tEnd);
+      if (be <= bs) return;
+      const bar = document.createElement('div');
+      bar.className = `bar ${b.c}`;
+      bar.style.left = ((bs - tStart) / tSpan * 100) + '%';
+      bar.style.width = ((be - bs) / tSpan * 100) + '%';
+      bar.innerHTML = `<span class="dot"></span>${b.t}`;
+      bar.title = `M${b.s+1}~M${b.e}: ${b.t}`;
+      barsDiv.appendChild(bar);
+    });
+
+    (st.ms || []).forEach(m => {
+      if (m.m < tStart || m.m > tEnd) return;
+      const ms = document.createElement('div');
+      ms.className = `milestone ${m.c}`;
+      ms.style.left = `calc(${(m.m - tStart) / tSpan * 100}% - 8px)`;
+      ms.title = `M${m.m} 마일스톤`;
+      barsDiv.appendChild(ms);
+    });
+
+    // Gridlines
+    for (let i = startInt; i < endInt; i++) {
+      const line = document.createElement('div');
+      line.style.cssText = `position:absolute;left:${((i - tStart) / tSpan * 100)}%;top:0;bottom:0;width:1px;background:${(i - startInt) % 3 === 0 ? '#e2e8f0' : '#f1f5f9'};z-index:0;pointer-events:none`;
+      barsDiv.appendChild(line);
+    }
+
+    row.appendChild(barsDiv);
+    container.appendChild(row);
+  });
+}
+
+// Back button
+document.getElementById('detailBackBtn').addEventListener('click', exitDetailView);
 
 // ==============================================
 // INIT
