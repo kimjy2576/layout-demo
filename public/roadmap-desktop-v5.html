@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 레이아웃 최적화 개발 로드맵 v5 · Editable</title>
+<title>HPWD-GPT 개발 로드맵 v5 · Editable</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -196,8 +196,8 @@ body.panel-open .side-panel{right:0}
 
 <div class="header">
   <div>
-    <h1>AI <span>LAYOUT OPTIMIZATION</span> ROADMAP v5</h1>
-    <div class="header-sub">전 물리 도메인 Lv1 · 외부 API→자체 sLLM 전환 전략 · 21개월</div>
+    <h1>HPWD<span>-GPT</span> 개발 로드맵 v5</h1>
+    <div class="header-sub">Phase 1: Design Guide Agent (1D+API) · Phase 2: Full Agent (Surrogate+sLLM) · 21개월</div>
   </div>
   <div class="toolbar">
     <span class="status-chip" id="statusChip">saved</span>
@@ -230,8 +230,8 @@ body.panel-open .side-panel{right:0}
 <div class="phase-row">
   <div class="phase-label-area"></div>
   <div class="phase-timeline">
-    <div class="phase-block p1">PHASE 1 — 기존 모델 개선 (9개월, Case A)</div>
-    <div class="phase-block p2">PHASE 2 — 신규 모델 설계 (12개월, Case B)</div>
+    <div class="phase-block p1">PHASE 1 — Design Guide Agent (9개월, Case A)</div>
+    <div class="phase-block p2">PHASE 2 — Full Agent (12개월, Case B)</div>
   </div>
 </div>
 
@@ -269,120 +269,65 @@ const MONTHS=21;
 const P1_END=9;
 
 const DEFAULT_TRACKS=[
-  {type:'section',label:'PHASE 1 — 기존 모델 개선 (Case A, 9개월)'},
-  {label:'sLLM (외부 API)',icon:'🗣️',cat:'cat-sllm',bars:[
+  {type:'section',label:'PHASE 1 — Design Guide Agent (9개월, Case A)'},
+  {label:'ⓐ 1D 물리 모델 개발',icon:'🌡️',cat:'cat-phys',bars:[
+    {s:0,e:2,c:'c-green',t:'기존 HPWD 시뮬레이터 통합'},
+    {s:2,e:5,c:'c-green',t:'통합 사이클 1D 모델'},
+    {s:5,e:8,c:'c-green',t:'전 도메인 1D 확장 (진동·구조·제어·전장)'},
+    {s:8,e:9,c:'c-green-l',t:'통합 검증'},
+  ],ms:[{m:5,c:'ms-green'}]},
+  {label:'ⓑ 검증 DB 구축',icon:'📦',cat:'cat-db',bars:[
+    {s:0,e:2,c:'c-amber',t:'DB 스키마 설계'},
+    {s:2,e:5,c:'c-amber',t:'기존 모델 + 실험 데이터 축적'},
+    {s:5,e:8,c:'c-amber',t:'규격/설계 룰 DB (LLM 추출)'},
+    {s:8,e:9,c:'c-amber-l',t:'검증 데이터셋 확정'},
+  ],ms:[]},
+  {label:'ⓒ 개별 요소 검증',icon:'✅',cat:'cat-phys2',bars:[
+    {s:2,e:4,c:'c-teal',t:'단일 컴포넌트 모델 검증'},
+    {s:4,e:7,c:'c-teal',t:'실험 vs 1D 모델 교차 검증'},
+    {s:7,e:9,c:'c-teal-l',t:'모델 정확도 평가 + 보정'},
+  ],ms:[{m:7,c:'ms-green'}]},
+  {label:'ⓓ 외부 LLM API 구축',icon:'🗣️',cat:'cat-sllm',bars:[
     {s:0,e:2,c:'c-blue',t:'Claude/GPT API + RAG 설계'},
     {s:2,e:5,c:'c-blue',t:'Tool-use 에이전트'},
     {s:5,e:7,c:'c-blue',t:'멀티도메인 질의 + 로그 수집'},
-    {s:7,e:9,c:'c-blue',t:'Case A 완성 + 학습데이터 축적'},
+    {s:7,e:9,c:'c-blue',t:'Design Guide Agent 완성'},
   ],ms:[{m:3,c:'ms-blue'},{m:9,c:'ms-blue'}]},
-  {label:'열유체 Lv1',icon:'🌡️',cat:'cat-phys',bars:[
-    {s:0,e:1,c:'c-green',t:'기존 HPWD 연결'},
-    {s:1,e:4,c:'c-green',t:'통합 사이클 1D'},
-    {s:4,e:7,c:'c-green',t:'실험 데이터 보정'},
-    {s:7,e:9,c:'c-green-l',t:'감도분석 자동화'},
-  ],ms:[{m:4,c:'ms-green'}]},
-  {label:'진동/소음 Lv1',icon:'🔊',cat:'cat-phys',bars:[
-    {s:1,e:3,c:'c-green',t:'1D 전달 모델'},
-    {s:3,e:6,c:'c-green',t:'가진원 데이터 구축'},
-    {s:6,e:9,c:'c-green',t:'소음 경험식 + 보정'},
-  ],ms:[{m:6,c:'ms-green'}]},
-  {label:'구조 Lv1',icon:'🔩',cat:'cat-phys',bars:[
-    {s:1,e:4,c:'c-green',t:'마운트 응력 1D'},
-    {s:4,e:7,c:'c-green',t:'FEA 기반 ROM'},
-    {s:7,e:9,c:'c-green-l',t:'운송하중 체크'},
-  ],ms:[]},
-  {label:'제어 Lv1',icon:'🎛️',cat:'cat-phys',bars:[
-    {s:2,e:5,c:'c-green',t:'운전점 최적화'},
-    {s:5,e:8,c:'c-green',t:'건조 종점 판단 로직'},
-    {s:8,e:9,c:'c-green-l',t:'인버터/팬/EEV 제어'},
-  ],ms:[]},
-  {label:'전장 Lv1',icon:'⚡',cat:'cat-phys',bars:[
-    {s:2,e:4,c:'c-green',t:'전류/전력 체크 룰'},
-    {s:4,e:7,c:'c-green',t:'EMC 간이 모델'},
-    {s:7,e:9,c:'c-green-l',t:'하네스 용량 검증'},
-  ],ms:[]},
-  {label:'DB / 데이터',icon:'📦',cat:'cat-db',bars:[
-    {s:0,e:2,c:'c-amber',t:'컴포넌트 DB 스키마'},
-    {s:2,e:5,c:'c-amber',t:'기존 모델 + 실험 데이터'},
-    {s:5,e:7,c:'c-amber',t:'설계 룰 DB (LLM 추출)'},
-    {s:7,e:9,c:'c-amber-l',t:'도메인 간 연결 그래프'},
-  ],ms:[]},
-  {label:'UI / 시각화',icon:'🖥️',cat:'cat-ui',bars:[
-    {s:1,e:3,c:'c-red',t:'챗 UI + 3D 뷰어'},
-    {s:3,e:6,c:'c-red',t:'멀티도메인 대시보드'},
-    {s:6,e:9,c:'c-red',t:'리포트 자동 생성'},
+  {label:'ⓔ 최적화 툴 구축',icon:'⚙️',cat:'cat-route',bars:[
+    {s:3,e:5,c:'c-teal',t:'목적함수·제약 정의'},
+    {s:5,e:7,c:'c-teal',t:'감도분석 + Bayesian Opt'},
+    {s:7,e:9,c:'c-teal',t:'에이전트 연동'},
   ],ms:[{m:9,c:'ms-red'}]},
-  {type:'section',label:'PHASE 2 — 신규 모델 설계 (Case B, 12개월)'},
-  {label:'sLLM (자체 구축)',icon:'🗣️',cat:'cat-sllm',bars:[
+
+  {type:'section',label:'PHASE 2 — Full Agent (12개월, Case B)'},
+  {label:'ⓐ 유동해석 Surrogate AI',icon:'🌀',cat:'cat-phys2',bars:[
+    {s:9,e:12,c:'c-green',t:'CFD 데이터 수집 + 전처리'},
+    {s:12,e:15,c:'c-green',t:'Surrogate 모델 학습 (MLP/GNN)'},
+    {s:15,e:18,c:'c-green',t:'정확도 튜닝 + 불확실성 정량화'},
+    {s:18,e:21,c:'c-green-l',t:'풀 3D CFD 최종 검증'},
+  ],ms:[{m:15,c:'ms-green'},{m:21,c:'ms-green'}]},
+  {label:'ⓑ 배치 최적화 AI',icon:'🧠',cat:'cat-ai',bars:[
+    {s:9,e:11,c:'c-purple',t:'GNN 그래프 인코더'},
+    {s:11,e:14,c:'c-purple',t:'PPO 배치 RL 에이전트'},
+    {s:14,e:17,c:'c-purple',t:'Diffusion(DiT) 생성 모델'},
+    {s:17,e:21,c:'c-purple-l',t:'배치-경로 동시 최적화'},
+  ],ms:[{m:14,c:'ms-purple'},{m:19,c:'ms-purple'}]},
+  {label:'ⓒ Co-design 체계',icon:'📐',cat:'cat-ai',bars:[
+    {s:12,e:15,c:'c-indigo',t:'스펙-배치 파라미터 공간 정의'},
+    {s:15,e:18,c:'c-indigo',t:'Bayesian Opt 기반 동시 최적화'},
+    {s:18,e:21,c:'c-indigo',t:'전문가 RLHF 루프'},
+  ],ms:[]},
+  {label:'ⓓ 시스템 DB 검증',icon:'🔎',cat:'cat-db',bars:[
+    {s:9,e:12,c:'c-amber',t:'Phase 1 DB 확장 + MLOps 연동'},
+    {s:12,e:16,c:'c-amber',t:'전 시스템 통합 검증'},
+    {s:16,e:21,c:'c-amber-l',t:'모델 레지스트리 + 회귀 테스트'},
+  ],ms:[]},
+  {label:'ⓔ 전용 sLLM 개발',icon:'🗣️',cat:'cat-sllm',bars:[
     {s:9,e:12,c:'c-blue',t:'학습 데이터셋 구축 + Base 모델 선정'},
     {s:12,e:15,c:'c-blue',t:'LoRA 파인튜닝 + 서빙 인프라'},
     {s:15,e:18,c:'c-blue',t:'API vs 자체 sLLM A/B 테스트'},
-    {s:18,e:21,c:'c-blue-l',t:'자체 sLLM 전환 + E2E 자동화'},
+    {s:18,e:21,c:'c-blue-l',t:'자체 sLLM 전환 + Full Agent 완성'},
   ],ms:[{m:15,c:'ms-blue'},{m:21,c:'ms-blue'}]},
-  {label:'RL + GNN',icon:'🧠',cat:'cat-ai',bars:[
-    {s:9,e:11,c:'c-purple',t:'GNN 그래프 인코더'},
-    {s:11,e:14,c:'c-purple',t:'PPO 배치 에이전트'},
-    {s:14,e:16,c:'c-purple',t:'멀티피직스 보상 통합'},
-    {s:16,e:18,c:'c-purple-l',t:'전이 학습'},
-  ],ms:[{m:14,c:'ms-purple'}]},
-  {label:'Diffusion',icon:'🌀',cat:'cat-ai',bars:[
-    {s:15,e:17,c:'c-purple',t:'RL 데이터 수집'},
-    {s:17,e:19,c:'c-purple',t:'DiT 학습'},
-    {s:19,e:21,c:'c-purple',t:'Diff→RL Fine-tune 루프'},
-  ],ms:[{m:19,c:'ms-purple'}]},
-  {label:'경로 최적화',icon:'🔧',cat:'cat-route',bars:[
-    {s:11,e:13,c:'c-teal',t:'A* 덕트/배관'},
-    {s:13,e:15,c:'c-teal',t:'제조 제약 (엘보/곡률)'},
-    {s:15,e:18,c:'c-teal-l',t:'배치-경로 동시 최적화'},
-  ],ms:[{m:15,c:'ms-green'}]},
-  {label:'물리 Lv2 (Surrogate)',icon:'⚡',cat:'cat-phys2',bars:[
-    {s:9,e:12,c:'c-green',t:'열유체 Surrogate'},
-    {s:12,e:15,c:'c-green',t:'진동/구조 Surrogate'},
-    {s:15,e:18,c:'c-green',t:'모델 자동 보정 (BO)'},
-    {s:18,e:21,c:'c-green-l',t:'풀 3D 검증 (CFD/FEA)'},
-  ],ms:[{m:12,c:'ms-green'},{m:18,c:'ms-green'}]},
-  {label:'Co-design',icon:'📐',cat:'cat-ai',bars:[
-    {s:13,e:16,c:'c-indigo',t:'Bayesian Opt (스펙)'},
-    {s:16,e:19,c:'c-indigo',t:'스펙+배치 동시 최적화'},
-  ],ms:[]},
-  {label:'DB 확장',icon:'📦',cat:'cat-db',bars:[
-    {s:9,e:12,c:'c-amber',t:'학습 데이터 파이프라인'},
-    {s:15,e:19,c:'c-amber-l',t:'모델 레지스트리 (MLOps)'},
-  ],ms:[]},
-  {label:'전문가 검토',icon:'👨‍🔬',cat:'cat-ui',bars:[
-    {s:13,e:16,c:'c-red',t:'RLHF 검토 UI'},
-    {s:16,e:19,c:'c-red',t:'3D 배치 리뷰'},
-    {s:19,e:21,c:'c-red-l',t:'통합 플랫폼'},
-  ],ms:[{m:21,c:'ms-red'}]},
-  {type:'section',label:'거버넌스 / 미팅 체계'},
-  {label:'Weekly Sync',icon:'📅',cat:'cat-phys',bars:[
-    {s:0,e:21,c:'c-meet-w',t:'주 1회 · 1시간 · 전체 인원 진행상황 + 의존성 체크 (총 ~84회)'},
-  ],ms:[]},
-  {label:'Bi-weekly Deep Dive',icon:'🔬',cat:'cat-sllm',bars:[
-    {s:0,e:21,c:'c-meet-b',t:'격주 · 2시간 · 기술 주제 집중 리뷰 (총 ~42회)'},
-  ],ms:[]},
-  {label:'Monthly Milestone',icon:'📊',cat:'cat-ai',bars:[
-    {s:0,e:21,c:'c-meet-m',t:'월 1회 · 3시간 · 스테이크홀더 포함, Go/No-Go 결정 (총 21회)'},
-  ],ms:[]},
-  {label:'Phase Gate Review',icon:'🚪',cat:'cat-ui',bars:[
-    {s:8.8,e:9.2,c:'c-gate',t:'P1 게이트'},
-    {s:20.8,e:21,c:'c-gate',t:'P2 게이트'},
-  ],ms:[{m:9,c:'ms-red'},{m:21,c:'ms-red'}]},
-  {type:'section',label:'KPI / 인력'},
-  {label:'KPI 마일스톤',icon:'🎯',cat:'cat-kpi',bars:[
-    {s:2.5,e:3.5,c:'c-slate',t:'MVP Demo'},
-    {s:8.5,e:9.5,c:'c-blue',t:'Case A 완성'},
-    {s:13.5,e:14.5,c:'c-purple',t:'RL 자동배치'},
-    {s:18.5,e:19.5,c:'c-purple',t:'Diffusion 생성'},
-    {s:20.5,e:21,c:'c-green',t:'Full 플랫폼'},
-  ],ms:[{m:3,c:'ms-blue'},{m:9,c:'ms-blue'},{m:14,c:'ms-purple'},{m:19,c:'ms-purple'},{m:21,c:'ms-green'}]},
-  {label:'인력 투입',icon:'👥',cat:'cat-kpi',bars:[
-    {s:0,e:3,c:'c-slate',t:'2~3명 (초기 세팅)'},
-    {s:3,e:9,c:'c-slate',t:'5~6명 (전 도메인 전문가 + AI + SW)'},
-    {s:9,e:18,c:'c-slate',t:'6~7명 (피크, AI 집중)'},
-    {s:18,e:21,c:'c-slate',t:'4~5명 (통합/검증)'},
-  ],ms:[]},
 ];
 
 // ==============================================
@@ -420,7 +365,8 @@ const MS_COLORS = [
 // ==============================================
 // STATE
 // ==============================================
-const STORAGE_KEY = 'roadmap-v5-data';
+const STORAGE_KEY = 'roadmap-v5-data-v2';
+const LEGACY_STORAGE_KEY = 'roadmap-v5-data';
 const HISTORY_LIMIT = 80;
 let tracks = loadTracks();
 let editMode = false;
@@ -502,6 +448,8 @@ function loadTracks() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) return JSON.parse(saved);
+    // Remove any legacy data from old schema versions
+    try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch(e) {}
   } catch(e) {}
   return JSON.parse(JSON.stringify(DEFAULT_TRACKS));
 }
