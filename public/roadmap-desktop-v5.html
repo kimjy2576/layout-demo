@@ -34,6 +34,13 @@ body.panel-open .page{padding-right:440px}
 .status-chip{font-size:9px;font-weight:700;color:#059669;background:#D1FAE5;padding:3px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace}
 .status-chip.dirty{color:#D97706;background:#FEF3C7}
 
+/* Date control in toolbar */
+.date-control{display:inline-flex;align-items:center;gap:4px;padding:0 6px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;margin:0 2px}
+.date-label{font-size:10px;font-weight:700;color:#64748b;letter-spacing:.3px}
+.date-input{padding:5px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;font-weight:600;color:#1a1a2e;font-family:'JetBrains Mono',monospace;background:#fff;cursor:pointer}
+.date-input:hover,.date-input:focus{border-color:#2563EB;outline:none}
+.tbtn.active-toggle{background:#EFF6FF;color:#2563EB;border-color:#93C5FD}
+
 /* ===== Phase Tabs ===== */
 .phase-tabs{display:flex;gap:6px;margin-bottom:16px}
 .phase-tab{flex:1;padding:18px 22px;background:#fff;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:14px;transition:all .15s;position:relative;overflow:hidden}
@@ -81,6 +88,7 @@ body.panel-open .page{padding-right:440px}
 .tl-months{flex:1;display:flex}
 .tl-month{flex:1;text-align:center;font-size:11px;font-weight:600;color:#475569;padding:4px 0}
 .tl-month.q-start{border-left:1px solid #cbd5e1}
+.tl-month.date-mode{font-size:10px;letter-spacing:-.3px;font-family:'JetBrains Mono',monospace}
 
 /* ===== Tracks ===== */
 .track{display:flex;min-height:44px;border-bottom:1px solid #f1f5f9;position:relative}
@@ -322,6 +330,11 @@ body.panel-open .side-panel{right:0}
     <button class="tbtn" id="btnUndo" title="실행 취소 (Ctrl+Z)" disabled><span class="tbtn-icon">↶</span>Undo</button>
     <button class="tbtn" id="btnRedo" title="다시 실행 (Ctrl+Y)" disabled><span class="tbtn-icon">↷</span>Redo</button>
     <button class="tbtn" id="btnEdit"><span class="tbtn-icon">✏️</span>편집 모드</button>
+    <span class="date-control">
+      <label class="date-label">시작:</label>
+      <input type="month" id="startDate" value="2026-04" class="date-input" title="프로젝트 시작 월 (M1 = 이 월)">
+      <button class="tbtn" id="btnDateToggle" title="M표시 ↔ 날짜표시 전환"><span class="tbtn-icon">📅</span><span id="dateToggleLabel">날짜</span></button>
+    </span>
     <button class="tbtn" id="btnExport" title="현재 데이터 JSON 내보내기"><span class="tbtn-icon">📥</span>Export</button>
     <button class="tbtn" id="btnImport" title="JSON 불러오기"><span class="tbtn-icon">📤</span>Import</button>
     <button class="tbtn danger" id="btnReset" title="기본값으로 복원"><span class="tbtn-icon">↻</span>초기화</button>
@@ -677,6 +690,50 @@ let activePhase = loadViewPhase(); // 'p1' or 'p2'
 let viewMode = 'overview'; // 'overview' | 'detail'
 let detailTrackIdx = null; // which track is currently drilled into
 
+// Date settings
+const DATE_CONFIG_KEY = 'roadmap-v5-date-config';
+let dateConfig = loadDateConfig();
+
+function loadDateConfig() {
+  try {
+    const s = localStorage.getItem(DATE_CONFIG_KEY);
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return { startYear: 2026, startMonth: 4, showDates: false };
+}
+function saveDateConfig() {
+  try { localStorage.setItem(DATE_CONFIG_KEY, JSON.stringify(dateConfig)); } catch(e) {}
+}
+
+// Convert M-index (0-based, M1 = index 0) to YYYY-MM string
+function monthIdxToDateStr(idx) {
+  const totalMonths = dateConfig.startMonth - 1 + Math.round(idx);
+  const year = dateConfig.startYear + Math.floor(totalMonths / 12);
+  const month = (totalMonths % 12 + 12) % 12 + 1;
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
+// Format month label based on current toggle
+function formatMonthLabel(idx) {
+  // idx is 0-based: M1 = idx 0
+  if (dateConfig.showDates) {
+    return monthIdxToDateStr(idx);
+  } else {
+    return 'M' + (idx + 1);
+  }
+}
+
+// Format month range (used in tooltips)
+function formatRange(s, e) {
+  if (dateConfig.showDates) {
+    return `${monthIdxToDateStr(s)} ~ ${monthIdxToDateStr(e - 0.001)}`;
+  }
+  // Round for cleaner display
+  const sStr = (s + 1).toFixed(s % 1 ? 1 : 0);
+  const eStr = e.toFixed(e % 1 ? 1 : 0);
+  return `M${sStr} ~ M${eStr}`;
+}
+
 // View ranges (inclusive start, exclusive end)
 const PHASE_RANGES = {
   p1: { start: 0, end: 9 },
@@ -921,8 +978,8 @@ function renderTimeline() {
   const { start, end } = getViewRange();
   for (let i = start; i < end; i++) {
     const d = document.createElement('div');
-    d.className = 'tl-month' + ((i - start) % 3 === 0 ? ' q-start' : '');
-    d.textContent = 'M' + (i + 1);
+    d.className = 'tl-month' + ((i - start) % 3 === 0 ? ' q-start' : '') + (dateConfig.showDates ? ' date-mode' : '');
+    d.textContent = formatMonthLabel(i);
     mEl.appendChild(d);
   }
 }
@@ -1029,7 +1086,7 @@ function renderTracks() {
       bar.style.left = ((bs - viewStart) / viewSpan * 100) + '%';
       bar.style.width = ((be - bs) / viewSpan * 100) + '%';
       bar.innerHTML = `<span class="dot${b.e <= P1_END ? ' solid' : ''}"></span>${b.t}`;
-      bar.title = `M${b.s+1}~M${b.e}: ${b.t}`;
+      bar.title = `${formatRange(b.s, b.e)}: ${b.t}`;
       bar.dataset.trackIdx = tIdx;
       bar.dataset.barIdx = bIdx;
       if (selection && selection.type === 'bar' && selection.trackIdx === tIdx && selection.barIdx === bIdx) {
@@ -1046,7 +1103,7 @@ function renderTracks() {
       const ms = document.createElement('div');
       ms.className = `milestone ${m.c}`;
       ms.style.left = `calc(${(m.m - viewStart) / viewSpan * 100}% - 8px)`;
-      ms.title = `M${m.m} 마일스톤 · 드래그로 이동`;
+      ms.title = (dateConfig.showDates ? monthIdxToDateStr(m.m) : `M${m.m}`) + ' 마일스톤 · 드래그로 이동';
       ms.dataset.trackIdx = tIdx;
       ms.dataset.msIdx = mIdx;
       if (selection && selection.type === 'milestone' && selection.trackIdx === tIdx && selection.msIdx === mIdx) {
@@ -1911,7 +1968,10 @@ function renderDetailView() {
   // Header
   document.getElementById('detailIcon').textContent = tr.icon || '📋';
   document.getElementById('detailLabel').textContent = tr.label;
-  document.getElementById('detailMeta').textContent = `M${Math.round(tStart+1)} ~ M${Math.round(tEnd)} · ${Math.round(tSpan)}개월`;
+  const metaText = dateConfig.showDates
+    ? `${monthIdxToDateStr(Math.floor(tStart))} ~ ${monthIdxToDateStr(Math.ceil(tEnd) - 1)} · ${Math.round(tSpan)}개월`
+    : `M${Math.round(tStart+1)} ~ M${Math.round(tEnd)} · ${Math.round(tSpan)}개월`;
+  document.getElementById('detailMeta').textContent = metaText;
   document.getElementById('detailDesc').textContent = tr.detail?.description || '';
 
   // Month axis
@@ -1921,8 +1981,8 @@ function renderDetailView() {
   const endInt = Math.ceil(tEnd);
   for (let i = startInt; i < endInt; i++) {
     const d = document.createElement('div');
-    d.className = 'tl-month' + ((i - startInt) % 3 === 0 ? ' q-start' : '');
-    d.textContent = 'M' + (i + 1);
+    d.className = 'tl-month' + ((i - startInt) % 3 === 0 ? ' q-start' : '') + (dateConfig.showDates ? ' date-mode' : '');
+    d.textContent = formatMonthLabel(i);
     mEl.appendChild(d);
   }
 
@@ -2004,7 +2064,7 @@ function renderDetailView() {
       bar.style.left = ((bs - tStart) / tSpan * 100) + '%';
       bar.style.width = ((be - bs) / tSpan * 100) + '%';
       bar.innerHTML = `<span class="dot"></span>${escapeHtml(b.t)}`;
-      attachTooltip(bar, `M${(b.s+1).toFixed(b.s%1?1:0)} ~ M${(b.e).toFixed(b.e%1?1:0)}`, b.t);
+      attachTooltip(bar, formatRange(b.s, b.e), b.t);
       laneEls[barLane[i]].appendChild(bar);
     });
 
@@ -2014,7 +2074,7 @@ function renderDetailView() {
       const ms = document.createElement('div');
       ms.className = `milestone ${m.c}`;
       ms.style.left = `calc(${(m.m - tStart) / tSpan * 100}% - 9px)`;
-      attachTooltip(ms, `M${m.m}`, '마일스톤');
+      attachTooltip(ms, dateConfig.showDates ? monthIdxToDateStr(m.m) : `M${m.m}`, '마일스톤');
       laneEls[0].appendChild(ms);
     });
 
@@ -2228,9 +2288,67 @@ function escapeHtml(s) {
 document.getElementById('detailBackBtn').addEventListener('click', exitDetailView);
 
 // ==============================================
+// DATE CONTROLS
+// ==============================================
+function rerenderAll() {
+  renderTimeline();
+  renderTracks();
+  if (viewMode === 'detail' && detailTrackIdx != null) {
+    renderDetailView();
+  }
+}
+
+function updatePhaseTabLabels() {
+  const p1Chip = document.querySelector('.phase-tab[data-phase="p1"] .phase-tab-chip');
+  const p2Chip = document.querySelector('.phase-tab[data-phase="p2"] .phase-tab-chip');
+  if (dateConfig.showDates) {
+    if (p1Chip) p1Chip.textContent = `${monthIdxToDateStr(0)} ~ ${monthIdxToDateStr(8)}`;
+    if (p2Chip) p2Chip.textContent = `${monthIdxToDateStr(9)} ~ ${monthIdxToDateStr(20)}`;
+  } else {
+    if (p1Chip) p1Chip.textContent = 'M1~M9';
+    if (p2Chip) p2Chip.textContent = 'M10~M21';
+  }
+}
+
+document.getElementById('startDate').addEventListener('change', (e) => {
+  const v = e.target.value; // YYYY-MM
+  const m = v.match(/^(\d{4})-(\d{2})$/);
+  if (!m) return;
+  dateConfig.startYear = parseInt(m[1]);
+  dateConfig.startMonth = parseInt(m[2]);
+  saveDateConfig();
+  updatePhaseTabLabels();
+  rerenderAll();
+  showToast(`시작 월: ${v}`);
+});
+
+document.getElementById('btnDateToggle').addEventListener('click', () => {
+  dateConfig.showDates = !dateConfig.showDates;
+  saveDateConfig();
+  const btn = document.getElementById('btnDateToggle');
+  const lbl = document.getElementById('dateToggleLabel');
+  btn.classList.toggle('active-toggle', dateConfig.showDates);
+  lbl.textContent = dateConfig.showDates ? 'M표시' : '날짜';
+  updatePhaseTabLabels();
+  rerenderAll();
+  showToast(dateConfig.showDates ? '날짜 표시 모드' : 'M 표시 모드');
+});
+
+// Initialize toolbar UI from saved config
+(() => {
+  const dateInput = document.getElementById('startDate');
+  dateInput.value = `${dateConfig.startYear}-${String(dateConfig.startMonth).padStart(2,'0')}`;
+  const btn = document.getElementById('btnDateToggle');
+  const lbl = document.getElementById('dateToggleLabel');
+  btn.classList.toggle('active-toggle', dateConfig.showDates);
+  lbl.textContent = dateConfig.showDates ? 'M표시' : '날짜';
+})();
+
+// ==============================================
 // INIT
 // ==============================================
 document.querySelectorAll('.phase-tab').forEach(t => t.classList.toggle('active', t.dataset.phase === activePhase));
+updatePhaseTabLabels();
 renderTimeline();
 renderTracks();
 setStatus('saved');
