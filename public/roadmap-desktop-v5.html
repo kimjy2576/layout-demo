@@ -205,6 +205,13 @@ body.edit-mode .add-track-btn{display:block}
 .detail-meta{font-size:11px;color:#64748b;margin-top:4px;font-family:'JetBrains Mono',monospace;letter-spacing:.3px}
 .detail-desc{font-size:13px;color:#475569;line-height:1.6;padding-top:12px;border-top:1px dashed #cbd5e1;margin-top:12px}
 
+/* Mapping bar (overview ↔ detail) */
+.detail-mapping{margin-top:14px;padding-top:12px;border-top:1px dashed #cbd5e1}
+.mapping-title{font-size:10px;font-weight:800;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.mapping-bar{position:relative;height:32px;background:#f1f5f9;border-radius:8px;overflow:hidden}
+.mapping-seg{position:absolute;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-right:1px solid rgba(255,255,255,.3)}
+.mapping-seg:last-child{border-right:none}
+
 /* Detail view uses taller rows and bigger bars */
 #detailView .track{min-height:auto;border-bottom:1px solid #e2e8f0}
 #detailView .track-bars{padding:8px 0;flex-direction:column;align-items:stretch;gap:4px}
@@ -415,6 +422,7 @@ body.panel-open .side-panel{right:0}
       </div>
     </div>
     <div class="detail-desc" id="detailDesc"></div>
+    <div class="detail-mapping" id="detailMapping" style="display:none"></div>
   </div>
   <div class="timeline-header">
     <div class="tl-label" style="font-size:12px;font-weight:800;color:#1a1a2e;padding-left:8px">SUB-TRACK</div>
@@ -463,13 +471,13 @@ const P1_END=9;
 const DEFAULT_TRACKS=[
   {type:'section',label:'PHASE 1 — Design Guide Agent (9개월, Case A)'},
   {label:'ⓐ 외부 LLM API 구축',icon:'🗣️',cat:'cat-sllm',bars:[
-    {s:0,e:2,c:'c-blue',t:'Claude/GPT API + RAG 설계'},
-    {s:2,e:5,c:'c-blue',t:'Tool-use 에이전트'},
-    {s:5,e:7,c:'c-blue',t:'멀티도메인 질의 + 로그 수집'},
-    {s:7,e:9,c:'c-blue',t:'Design Guide Agent 완성'},
+    {s:0,e:3,c:'c-blue',t:'기반 구축 (RAG·API·Interpreter)'},
+    {s:3,e:5,c:'c-blue',t:'에이전트 MVP (Tool-use·Explainer)'},
+    {s:5,e:7,c:'c-blue',t:'멀티도메인 확장 + 로그 수집'},
+    {s:7,e:9,c:'c-blue-l',t:'Case A 완성 + Gold 라벨링'},
   ],ms:[{m:3,c:'ms-blue'},{m:9,c:'ms-blue'}],
   detail:{
-    description:'비전문가 질문 → 정형 쿼리 → 사내 DB 검색 → Claude API → 구조화 답변 → 사용자 친화 렌더링의 6단계 파이프라인. 전 과정에서 로그를 수집해 Phase 2 자체 sLLM 학습에 활용.',
+    description:'6개 컴포넌트 트랙이 9개월간 병렬 진행. 전체 로드맵의 4단계는 "어느 컴포넌트가 메인 작업인가"의 시간 마커. ① Interpreter / ② RAG / ③ Claude+Tool / ④ Explainer / ⑤ 로그 / ⑥ Case A.',
     subtracks:[
       {label:'① Interpreter (해석기)',icon:'🎧',cat:'cat-sllm',bars:[
         {s:0,e:1.5,c:'c-blue',t:'의도 분류 (intent classification)'},
@@ -593,13 +601,13 @@ const DEFAULT_TRACKS=[
   },
   },
   {label:'ⓑ 검증 DB 구축',icon:'📦',cat:'cat-db',bars:[
-    {s:0,e:2,c:'c-amber',t:'DB 스키마 설계'},
-    {s:2,e:5,c:'c-amber',t:'기존 모델 + 실험 데이터 축적'},
-    {s:5,e:8,c:'c-amber',t:'규격/설계 룰 DB (LLM 추출)'},
-    {s:8,e:9,c:'c-amber-l',t:'검증 데이터셋 확정'},
-  ],ms:[],
+    {s:0,e:3,c:'c-amber',t:'데이터 소스·스키마 정의'},
+    {s:2,e:5,c:'c-amber',t:'실험·컴포넌트 데이터 수집'},
+    {s:4,e:8,c:'c-amber',t:'규격 룰 추출 + API 노출'},
+    {s:6,e:9,c:'c-amber-l',t:'검증 데이터셋 + 품질 관리'},
+  ],ms:[{m:3,c:'ms-green'},{m:9,c:'ms-red'}],
   detail:{
-    description:'LLM API와 1D 물리 모델 양쪽 모두의 재료 창고. 실험 데이터·규격·설계 이력을 구조화된 형태로 모으고, 검증·검색·접근까지 통합 관리. RAG의 정확도와 시뮬레이션 보정 품질을 좌우하는 핵심 인프라.',
+    description:'6개 컴포넌트 트랙이 9개월간 병렬 진행. 전체 로드맵의 4단계는 "어느 컴포넌트가 메인 작업인가"의 시간 마커. ① 소스/스키마 / ② 실험 데이터 / ③ 규격 룰 / ④ 컴포넌트 카탈로그 / ⑤ API+권한 / ⑥ 검증·품질.',
     subtracks:[
       {label:'① 데이터 소스 + 스키마 설계',icon:'🗂️',cat:'cat-db',bars:[
         {s:0,e:1,c:'c-amber',t:'데이터 소스 인벤토리 (실험·규격·이력)'},
@@ -796,8 +804,8 @@ const MS_COLORS = [
 // ==============================================
 // STATE
 // ==============================================
-const STORAGE_KEY = 'roadmap-v5-data-v6';
-const LEGACY_STORAGE_KEY = 'roadmap-v5-data-v5';
+const STORAGE_KEY = 'roadmap-v5-data-v7';
+const LEGACY_STORAGE_KEY = 'roadmap-v5-data-v6';
 const VIEW_KEY = 'roadmap-v5-view';
 const HISTORY_LIMIT = 80;
 let tracks = loadTracks();
@@ -2090,6 +2098,33 @@ function renderDetailView() {
     : `M${Math.round(tStart+1)} ~ M${Math.round(tEnd)} · ${Math.round(tSpan)}개월`;
   document.getElementById('detailMeta').textContent = metaText;
   document.getElementById('detailDesc').textContent = tr.detail?.description || '';
+
+  // Overview-to-detail mapping bar
+  const mappingEl = document.getElementById('detailMapping');
+  if (tr.bars && tr.bars.length) {
+    mappingEl.style.display = '';
+    mappingEl.innerHTML = '';
+    const mapTitle = document.createElement('div');
+    mapTitle.className = 'mapping-title';
+    mapTitle.textContent = '🔗 전체 로드맵 ↔ 세부 매핑';
+    mappingEl.appendChild(mapTitle);
+
+    const mapBar = document.createElement('div');
+    mapBar.className = 'mapping-bar';
+    const mapSpan = Math.max(0.1, tEnd - tStart);
+    tr.bars.forEach(b => {
+      const seg = document.createElement('div');
+      seg.className = `mapping-seg ${b.c}`;
+      seg.style.left = ((b.s - tStart) / mapSpan * 100) + '%';
+      seg.style.width = ((b.e - b.s) / mapSpan * 100) + '%';
+      seg.textContent = b.t;
+      seg.title = `${formatRange(b.s, b.e)}: ${b.t}`;
+      mapBar.appendChild(seg);
+    });
+    mappingEl.appendChild(mapBar);
+  } else {
+    mappingEl.style.display = 'none';
+  }
 
   // Month axis
   const mEl = document.getElementById('detailMonths');
