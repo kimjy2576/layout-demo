@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HPWD-GPT 개발 로드맵 v5 · Editable</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#fff;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',system-ui,sans-serif;padding:0;overflow-x:auto}
@@ -337,6 +338,7 @@ body.panel-open .side-panel{right:0}
     </span>
     <button class="tbtn" id="btnExport" title="현재 데이터 JSON 내보내기"><span class="tbtn-icon">📥</span>Export</button>
     <button class="tbtn" id="btnImport" title="JSON 불러오기"><span class="tbtn-icon">📤</span>Import</button>
+    <button class="tbtn" id="btnExportPPT" title="PowerPoint로 내보내기 (편집 가능)"><span class="tbtn-icon">🎯</span>PPT</button>
     <button class="tbtn danger" id="btnReset" title="기본값으로 복원"><span class="tbtn-icon">↻</span>초기화</button>
     <input type="file" id="fileInput" accept=".json" style="display:none">
   </div>
@@ -2286,6 +2288,484 @@ function escapeHtml(s) {
 
 // Back button
 document.getElementById('detailBackBtn').addEventListener('click', exitDetailView);
+
+// ==============================================
+// PPT EXPORT (PptxGenJS)
+// ==============================================
+
+// Hex color map matching CSS gradient bars (use the darker stop)
+const PPT_COLORS = {
+  'c-blue':       '2563EB',
+  'c-blue-l':     '60A5FA',
+  'c-green':      '059669',
+  'c-green-l':    '34D399',
+  'c-amber':      'D97706',
+  'c-amber-l':    'FBBF24',
+  'c-purple':     '7C3AED',
+  'c-purple-l':   'A78BFA',
+  'c-red':        'DC2626',
+  'c-red-l':      'F87171',
+  'c-teal':       '0D9488',
+  'c-teal-l':     '2DD4BF',
+  'c-pink':       'DB2777',
+  'c-slate':      '475569',
+  'c-indigo':     '4338CA',
+  'c-meet-w':     '10B981',
+  'c-meet-b':     '3B82F6',
+  'c-meet-m':     '8B5CF6',
+  'c-gate':       'DC2626',
+};
+const PPT_CAT_COLORS = {
+  'cat-sllm': '2563EB',
+  'cat-phys': '059669',
+  'cat-phys2': '10B981',
+  'cat-db': 'D97706',
+  'cat-ai': '7C3AED',
+  'cat-route': '0D9488',
+  'cat-ui': 'DC2626',
+  'cat-kpi': '475569',
+};
+const PPT_MS_COLORS = {
+  'ms-blue': '2563EB', 'ms-green': '059669', 'ms-purple': '7C3AED', 'ms-red': 'DC2626'
+};
+
+function exportToPPT() {
+  if (typeof PptxGenJS === 'undefined') {
+    alert('PPT 라이브러리 로드 실패. 새로고침 후 다시 시도하세요.');
+    return;
+  }
+  showToast('PPT 생성 중...');
+
+  const pptx = new PptxGenJS();
+  pptx.layout = 'LAYOUT_WIDE'; // 13.33 x 7.5 inch
+  pptx.title = 'HPWD-GPT 개발 로드맵 v5';
+  pptx.author = '건조기선행연구팀';
+
+  // === Slide 1: Title / Overview ===
+  buildOverviewSlide(pptx);
+
+  // === Slide 2: Phase 1 detail gantt ===
+  buildPhaseSlide(pptx, 'p1');
+
+  // === Slide 3: Phase 2 detail gantt ===
+  buildPhaseSlide(pptx, 'p2');
+
+  // === Slide N: Per-track detail (only tracks with detail data) ===
+  tracks.forEach((tr, idx) => {
+    if (tr.detail && tr.detail.subtracks && tr.detail.subtracks.length) {
+      buildTrackDetailSlide(pptx, tr, idx);
+    }
+  });
+
+  // Save
+  const fname = `HPWD-GPT-Roadmap-${new Date().toISOString().slice(0,10)}.pptx`;
+  pptx.writeFile({ fileName: fname }).then(() => {
+    showToast('✓ PPT 다운로드 완료');
+  }).catch(err => {
+    console.error(err);
+    alert('PPT 생성 실패: ' + err.message);
+  });
+}
+
+// ---- Slide 1: Overview ----
+function buildOverviewSlide(pptx) {
+  const s = pptx.addSlide();
+  s.background = { fill: 'FFFFFF' };
+
+  // Title
+  s.addText('HPWD-GPT 개발 로드맵 v5', {
+    x: 0.5, y: 0.3, w: 12.3, h: 0.6,
+    fontSize: 32, fontFace: 'Pretendard', bold: true, color: '1A1A2E'
+  });
+  s.addText('Phase 1: Design Guide Agent (1D+API)  ·  Phase 2: Full Agent (Surrogate+sLLM)  ·  21개월',
+    { x: 0.5, y: 0.95, w: 12.3, h: 0.3, fontSize: 12, color: '64748B', fontFace: 'Pretendard' });
+
+  // Phase boxes
+  const phases = [
+    { title: 'PHASE 1', name: 'Design Guide Agent', range: dateConfig.showDates ? `${monthIdxToDateStr(0)} ~ ${monthIdxToDateStr(8)}` : 'M1 ~ M9',
+      months: '9개월', desc: 'Case A · 기존 제품 개선', color: '2563EB', x: 0.5 },
+    { title: 'PHASE 2', name: 'Full Agent', range: dateConfig.showDates ? `${monthIdxToDateStr(9)} ~ ${monthIdxToDateStr(20)}` : 'M10 ~ M21',
+      months: '12개월', desc: 'Case B · 신제품 설계', color: '7C3AED', x: 6.92 },
+  ];
+  phases.forEach(p => {
+    s.addShape('rect', {
+      x: p.x, y: 1.5, w: 5.91, h: 1.6,
+      fill: { color: 'FFFFFF' }, line: { color: p.color, width: 2 }
+    });
+    s.addShape('rect', {
+      x: p.x, y: 1.5, w: 0.15, h: 1.6,
+      fill: { color: p.color }, line: { color: p.color }
+    });
+    // Phase number badge
+    s.addText(p.title, {
+      x: p.x + 0.3, y: 1.65, w: 1.4, h: 0.35,
+      fontSize: 11, fontFace: 'JetBrains Mono', bold: true, color: '64748B'
+    });
+    s.addText(p.name, {
+      x: p.x + 0.3, y: 2.0, w: 5.4, h: 0.5,
+      fontSize: 22, fontFace: 'Pretendard', bold: true, color: p.color
+    });
+    s.addText(`${p.range}  ·  ${p.months}  ·  ${p.desc}`, {
+      x: p.x + 0.3, y: 2.5, w: 5.4, h: 0.3,
+      fontSize: 11, fontFace: 'JetBrains Mono', color: '64748B'
+    });
+  });
+
+  // Track count summary
+  const p1Tracks = countPhaseRealTracks('p1');
+  const p2Tracks = countPhaseRealTracks('p2');
+  s.addText(
+    `총 ${p1Tracks + p2Tracks}개 트랙  ·  Phase 1: ${p1Tracks}개  ·  Phase 2: ${p2Tracks}개`,
+    { x: 0.5, y: 3.3, w: 12.3, h: 0.4, fontSize: 13, color: '475569', fontFace: 'Pretendard', bold: true }
+  );
+
+  // Track list (two columns)
+  const p1List = getPhaseTracks('p1');
+  const p2List = getPhaseTracks('p2');
+  drawTrackListColumn(s, 0.5, 3.9, p1List, '2563EB', 'PHASE 1 트랙');
+  drawTrackListColumn(s, 6.92, 3.9, p2List, '7C3AED', 'PHASE 2 트랙');
+
+  // Footer
+  s.addText('건조기선행연구팀  ·  ' + new Date().toISOString().slice(0,10), {
+    x: 0.5, y: 7.1, w: 12.3, h: 0.3, fontSize: 9, color: '94A3B8',
+    fontFace: 'JetBrains Mono', align: 'right'
+  });
+}
+
+function drawTrackListColumn(s, x, y, list, color, title) {
+  s.addText(title, {
+    x, y, w: 5.91, h: 0.3,
+    fontSize: 10, fontFace: 'JetBrains Mono', bold: true, color: color, charSpacing: 10
+  });
+  let cy = y + 0.32;
+  list.forEach((tr, i) => {
+    if (cy > 7.0) return;
+    s.addText(`${tr.icon || '▪'}  ${tr.label}`, {
+      x: x, y: cy, w: 5.91, h: 0.32,
+      fontSize: 12, fontFace: 'Pretendard', color: '1A1A2E', valign: 'middle'
+    });
+    cy += 0.34;
+  });
+}
+
+function countPhaseRealTracks(phase) {
+  return getPhaseTracks(phase).length;
+}
+function getPhaseTracks(phase) {
+  // Walk the array, track current phase via section headers
+  const result = [];
+  let cur = null;
+  tracks.forEach(tr => {
+    if (tr.type === 'section') {
+      const lbl = (tr.label || '').toUpperCase();
+      if (lbl.includes('PHASE 1')) cur = 'p1';
+      else if (lbl.includes('PHASE 2')) cur = 'p2';
+      else cur = null;
+      return;
+    }
+    if (cur === phase) result.push(tr);
+  });
+  return result;
+}
+
+// ---- Phase slide (gantt) ----
+function buildPhaseSlide(pptx, phase) {
+  const s = pptx.addSlide();
+  s.background = { fill: 'FFFFFF' };
+
+  const phaseInfo = phase === 'p1'
+    ? { name: 'Phase 1 — Design Guide Agent', color: '2563EB', start: 0, end: 9 }
+    : { name: 'Phase 2 — Full Agent', color: '7C3AED', start: 9, end: 21 };
+  const phaseTracks = getPhaseTracks(phase);
+
+  // Title
+  s.addText(phaseInfo.name, {
+    x: 0.5, y: 0.25, w: 12.3, h: 0.5,
+    fontSize: 22, fontFace: 'Pretendard', bold: true, color: phaseInfo.color
+  });
+  const rangeStr = dateConfig.showDates
+    ? `${monthIdxToDateStr(phaseInfo.start)} ~ ${monthIdxToDateStr(phaseInfo.end - 1)}  ·  ${phaseInfo.end - phaseInfo.start}개월`
+    : `M${phaseInfo.start + 1} ~ M${phaseInfo.end}  ·  ${phaseInfo.end - phaseInfo.start}개월`;
+  s.addText(rangeStr, {
+    x: 0.5, y: 0.75, w: 12.3, h: 0.3,
+    fontSize: 11, fontFace: 'JetBrains Mono', color: '64748B'
+  });
+
+  // Gantt area
+  const ganttX = 0.5;
+  const ganttY = 1.25;
+  const ganttW = 12.3;
+  const labelW = 2.4;
+  const barAreaX = ganttX + labelW;
+  const barAreaW = ganttW - labelW;
+  const span = phaseInfo.end - phaseInfo.start;
+  const pxPerMonth = barAreaW / span;
+
+  // Month axis
+  s.addText('TRACK', {
+    x: ganttX + 0.05, y: ganttY, w: labelW - 0.1, h: 0.32,
+    fontSize: 10, fontFace: 'JetBrains Mono', bold: true, color: '1A1A2E'
+  });
+  for (let i = phaseInfo.start; i < phaseInfo.end; i++) {
+    s.addText(formatMonthLabel(i), {
+      x: barAreaX + (i - phaseInfo.start) * pxPerMonth, y: ganttY,
+      w: pxPerMonth, h: 0.32,
+      fontSize: dateConfig.showDates ? 8 : 9,
+      fontFace: 'JetBrains Mono', color: '475569', align: 'center'
+    });
+  }
+
+  // Header line
+  s.addShape('line', {
+    x: ganttX, y: ganttY + 0.36, w: ganttW, h: 0,
+    line: { color: '1A1A2E', width: 1.5 }
+  });
+
+  // Tracks
+  const rowH = 0.45;
+  const maxRowsOnSlide = 12;
+  const tracksToShow = phaseTracks.slice(0, maxRowsOnSlide);
+
+  tracksToShow.forEach((tr, ti) => {
+    const ry = ganttY + 0.42 + ti * rowH;
+
+    // Track label
+    const catColor = PPT_CAT_COLORS[tr.cat] || '64748B';
+    s.addShape('rect', {
+      x: ganttX + 0.05, y: ry + 0.05, w: 0.32, h: 0.32,
+      fill: { color: catColor }, line: { color: catColor },
+      rectRadius: 0.04
+    });
+    s.addText(tr.icon || '▪', {
+      x: ganttX + 0.05, y: ry + 0.05, w: 0.32, h: 0.32,
+      fontSize: 11, color: 'FFFFFF', align: 'center', valign: 'middle'
+    });
+    s.addText(tr.label, {
+      x: ganttX + 0.42, y: ry + 0.02, w: labelW - 0.45, h: 0.4,
+      fontSize: 10, fontFace: 'Pretendard', bold: true, color: '1A1A2E', valign: 'middle'
+    });
+
+    // Bars
+    (tr.bars || []).forEach(b => {
+      const bs = Math.max(b.s, phaseInfo.start);
+      const be = Math.min(b.e, phaseInfo.end);
+      if (be <= bs) return;
+      const bx = barAreaX + (bs - phaseInfo.start) * pxPerMonth;
+      const bw = (be - bs) * pxPerMonth;
+      const fillColor = PPT_COLORS[b.c] || '64748B';
+
+      s.addShape('roundRect', {
+        x: bx + 0.02, y: ry + 0.07, w: bw - 0.04, h: 0.28,
+        fill: { color: fillColor }, line: { color: fillColor },
+        rectRadius: 0.14
+      });
+      // Bar label (truncate if too narrow)
+      if (bw > 0.5) {
+        s.addText(b.t, {
+          x: bx + 0.1, y: ry + 0.07, w: bw - 0.2, h: 0.28,
+          fontSize: 9, fontFace: 'Pretendard', bold: true, color: 'FFFFFF',
+          valign: 'middle'
+        });
+      }
+    });
+
+    // Milestones (diamond shape)
+    (tr.ms || []).forEach(m => {
+      if (m.m < phaseInfo.start || m.m > phaseInfo.end) return;
+      const mx = barAreaX + (m.m - phaseInfo.start) * pxPerMonth;
+      const msColor = PPT_MS_COLORS[m.c] || '2563EB';
+      s.addShape('diamond', {
+        x: mx - 0.1, y: ry + 0.1, w: 0.2, h: 0.2,
+        fill: { color: msColor + '33' /* alpha-ish via lighter shade */ },
+        line: { color: msColor, width: 1.5 }
+      });
+    });
+  });
+
+  // Footnote if truncated
+  if (phaseTracks.length > maxRowsOnSlide) {
+    s.addText(`(${phaseTracks.length - maxRowsOnSlide}개 트랙 더 있음 — 다음 슬라이드 참조)`, {
+      x: ganttX, y: ganttY + 0.42 + maxRowsOnSlide * rowH + 0.1,
+      w: ganttW, h: 0.3,
+      fontSize: 9, color: '94A3B8', fontFace: 'Pretendard', italic: true
+    });
+  }
+}
+
+// ---- Track detail slide (subtracks + todos) ----
+function buildTrackDetailSlide(pptx, tr, trackIdx) {
+  const s = pptx.addSlide();
+  s.background = { fill: 'FFFFFF' };
+
+  // Compute track range
+  const bars = tr.bars || [];
+  const tStart = bars.length ? Math.min(...bars.map(b => b.s)) : 0;
+  const tEnd = bars.length ? Math.max(...bars.map(b => b.e)) : MONTHS;
+
+  // Determine phase color
+  const phase = tracks.findIndex((t, i) => i <= trackIdx && t.type === 'section' && (t.label || '').toUpperCase().includes('PHASE 2')) >= 0
+    ? '7C3AED' : '2563EB';
+  // Actually walk to find the nearest section
+  let phaseColor = '2563EB';
+  for (let i = trackIdx; i >= 0; i--) {
+    if (tracks[i].type === 'section') {
+      const lbl = (tracks[i].label || '').toUpperCase();
+      if (lbl.includes('PHASE 2')) phaseColor = '7C3AED';
+      break;
+    }
+  }
+
+  // Title bar
+  s.addShape('rect', {
+    x: 0, y: 0, w: 13.33, h: 0.9,
+    fill: { color: phaseColor }, line: { color: phaseColor }
+  });
+  s.addText(`${tr.icon || '📋'}  ${tr.label}`, {
+    x: 0.5, y: 0.15, w: 9, h: 0.6,
+    fontSize: 22, fontFace: 'Pretendard', bold: true, color: 'FFFFFF', valign: 'middle'
+  });
+  const rangeStr = dateConfig.showDates
+    ? `${monthIdxToDateStr(Math.floor(tStart))} ~ ${monthIdxToDateStr(Math.ceil(tEnd) - 1)}`
+    : `M${Math.round(tStart + 1)} ~ M${Math.round(tEnd)}`;
+  s.addText(`${rangeStr}  ·  ${Math.round(tEnd - tStart)}개월`, {
+    x: 9.5, y: 0.15, w: 3.5, h: 0.6,
+    fontSize: 11, fontFace: 'JetBrains Mono', color: 'FFFFFF', align: 'right', valign: 'middle'
+  });
+
+  // Description
+  if (tr.detail.description) {
+    s.addText(tr.detail.description, {
+      x: 0.5, y: 1.05, w: 12.3, h: 0.5,
+      fontSize: 11, fontFace: 'Pretendard', color: '475569', italic: true
+    });
+  }
+
+  // Subtrack gantt
+  const ganttY = 1.65;
+  const labelW = 2.0;
+  const ganttX = 0.5;
+  const ganttW = 12.3;
+  const barAreaX = ganttX + labelW;
+  const barAreaW = ganttW - labelW;
+  const span = Math.max(0.1, tEnd - tStart);
+  const pxPerMonth = barAreaW / span;
+
+  // Month axis
+  const startInt = Math.floor(tStart);
+  const endInt = Math.ceil(tEnd);
+  for (let i = startInt; i < endInt; i++) {
+    s.addText(formatMonthLabel(i), {
+      x: barAreaX + (i - tStart) * pxPerMonth, y: ganttY,
+      w: pxPerMonth, h: 0.3,
+      fontSize: dateConfig.showDates ? 8 : 9,
+      fontFace: 'JetBrains Mono', color: '475569', align: 'center'
+    });
+  }
+  s.addShape('line', {
+    x: ganttX, y: ganttY + 0.32, w: ganttW, h: 0,
+    line: { color: '1A1A2E', width: 1.5 }
+  });
+
+  // Subtracks (with lane packing, simplified to 1 lane each for slide)
+  const subs = tr.detail.subtracks || [];
+  const subRowH = 0.4;
+  subs.forEach((st, si) => {
+    const ry = ganttY + 0.36 + si * subRowH;
+    const catColor = PPT_CAT_COLORS[st.cat || tr.cat] || '64748B';
+
+    s.addShape('rect', {
+      x: ganttX + 0.05, y: ry + 0.04, w: 0.32, h: 0.3,
+      fill: { color: catColor }, line: { color: catColor },
+      rectRadius: 0.04
+    });
+    s.addText(st.icon || '▪', {
+      x: ganttX + 0.05, y: ry + 0.04, w: 0.32, h: 0.3,
+      fontSize: 10, color: 'FFFFFF', align: 'center', valign: 'middle'
+    });
+    s.addText(st.label, {
+      x: ganttX + 0.42, y: ry, w: labelW - 0.45, h: 0.38,
+      fontSize: 9, fontFace: 'Pretendard', bold: true, color: '1A1A2E', valign: 'middle'
+    });
+
+    (st.bars || []).forEach(b => {
+      const bs = Math.max(b.s, tStart);
+      const be = Math.min(b.e, tEnd);
+      if (be <= bs) return;
+      const bx = barAreaX + (bs - tStart) * pxPerMonth;
+      const bw = (be - bs) * pxPerMonth;
+      const fillColor = PPT_COLORS[b.c] || '64748B';
+
+      s.addShape('roundRect', {
+        x: bx + 0.02, y: ry + 0.06, w: bw - 0.04, h: 0.26,
+        fill: { color: fillColor }, line: { color: fillColor },
+        rectRadius: 0.13
+      });
+      if (bw > 0.4) {
+        s.addText(b.t, {
+          x: bx + 0.08, y: ry + 0.06, w: bw - 0.16, h: 0.26,
+          fontSize: 8, fontFace: 'Pretendard', bold: true, color: 'FFFFFF',
+          valign: 'middle'
+        });
+      }
+    });
+  });
+
+  // Todos (lower section)
+  const todoStartY = ganttY + 0.36 + subs.length * subRowH + 0.25;
+  if (todoStartY < 6.5) {
+    s.addText('📋 Todo 체크리스트', {
+      x: 0.5, y: todoStartY, w: 12.3, h: 0.3,
+      fontSize: 12, fontFace: 'Pretendard', bold: true, color: '1A1A2E'
+    });
+    // 2-col grid of todo summaries
+    const cols = 2;
+    const colW = 6.0;
+    const itemY = todoStartY + 0.35;
+    const maxRows = Math.floor((7.2 - itemY) / 0.18);
+    let placed = 0;
+    subs.forEach((st, si) => {
+      if (!st.todos || !st.todos.length) return;
+      if (placed >= cols * maxRows) return;
+      const col = placed % cols;
+      const row = Math.floor(placed / cols);
+      const x = 0.5 + col * (colW + 0.3);
+      const y = itemY + row * 0.18;
+      // (Trying to cram all subgroups into the slide gets ugly; skip todo grid here.)
+      // Instead, summarize each subgroup with its todo count
+      placed++;
+    });
+
+    // Simplified: list each subtrack with its todo count + first 2 todos
+    let cy = itemY;
+    subs.forEach(st => {
+      if (cy > 7.1) return;
+      if (!st.todos || !st.todos.length) return;
+      s.addText(`${st.icon || '▪'} ${st.label}  (${st.todos.length}개)`, {
+        x: 0.5, y: cy, w: 12.3, h: 0.22,
+        fontSize: 9, fontFace: 'Pretendard', bold: true, color: '475569'
+      });
+      cy += 0.22;
+      st.todos.slice(0, 2).forEach(t => {
+        if (cy > 7.1) return;
+        s.addText('  • ' + t, {
+          x: 0.7, y: cy, w: 12.1, h: 0.2,
+          fontSize: 8, fontFace: 'Pretendard', color: '64748B'
+        });
+        cy += 0.2;
+      });
+      if (st.todos.length > 2) {
+        s.addText(`  … +${st.todos.length - 2}개 더`, {
+          x: 0.7, y: cy, w: 12.1, h: 0.2,
+          fontSize: 8, fontFace: 'Pretendard', color: '94A3B8', italic: true
+        });
+        cy += 0.2;
+      }
+      cy += 0.05;
+    });
+  }
+}
+
+document.getElementById('btnExportPPT').addEventListener('click', exportToPPT);
 
 // ==============================================
 // DATE CONTROLS
