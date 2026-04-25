@@ -592,18 +592,18 @@ const DEFAULT_TRACKS=[
     ],
   },
   },
-  {label:'ⓑ 1D 물리 모델 개발',icon:'🌡️',cat:'cat-phys',bars:[
-    {s:0,e:2,c:'c-green',t:'기존 HPWD 시뮬레이터 통합'},
-    {s:2,e:5,c:'c-green',t:'통합 사이클 1D 모델'},
-    {s:5,e:8,c:'c-green',t:'전 도메인 1D 확장 (진동·구조·제어·전장)'},
-    {s:8,e:9,c:'c-green-l',t:'통합 검증'},
-  ],ms:[{m:5,c:'ms-green'}]},
-  {label:'ⓒ 검증 DB 구축',icon:'📦',cat:'cat-db',bars:[
+  {label:'ⓑ 검증 DB 구축',icon:'📦',cat:'cat-db',bars:[
     {s:0,e:2,c:'c-amber',t:'DB 스키마 설계'},
     {s:2,e:5,c:'c-amber',t:'기존 모델 + 실험 데이터 축적'},
     {s:5,e:8,c:'c-amber',t:'규격/설계 룰 DB (LLM 추출)'},
     {s:8,e:9,c:'c-amber-l',t:'검증 데이터셋 확정'},
   ],ms:[]},
+  {label:'ⓒ 1D 물리 모델 개발',icon:'🌡️',cat:'cat-phys',bars:[
+    {s:0,e:2,c:'c-green',t:'기존 HPWD 시뮬레이터 통합'},
+    {s:2,e:5,c:'c-green',t:'통합 사이클 1D 모델'},
+    {s:5,e:8,c:'c-green',t:'전 도메인 1D 확장 (진동·구조·제어·전장)'},
+    {s:8,e:9,c:'c-green-l',t:'통합 검증'},
+  ],ms:[{m:5,c:'ms-green'}]},
   {label:'ⓓ 개별 요소 검증',icon:'✅',cat:'cat-phys2',bars:[
     {s:2,e:4,c:'c-teal',t:'단일 컴포넌트 모델 검증'},
     {s:4,e:7,c:'c-teal',t:'실험 vs 1D 모델 교차 검증'},
@@ -681,8 +681,8 @@ const MS_COLORS = [
 // ==============================================
 // STATE
 // ==============================================
-const STORAGE_KEY = 'roadmap-v5-data-v4';
-const LEGACY_STORAGE_KEY = 'roadmap-v5-data-v3';
+const STORAGE_KEY = 'roadmap-v5-data-v5';
+const LEGACY_STORAGE_KEY = 'roadmap-v5-data-v4';
 const VIEW_KEY = 'roadmap-v5-view';
 const HISTORY_LIMIT = 80;
 let tracks = loadTracks();
