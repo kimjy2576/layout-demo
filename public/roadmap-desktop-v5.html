@@ -2666,53 +2666,99 @@ function buildTrackDetailSlide(pptx, tr, trackIdx) {
     line: { color: '1A1A2E', width: 1.5 }
   });
 
-  // Subtracks (with lane packing, simplified to 1 lane each for slide)
+  // Subtracks (with lane packing — match the on-screen detail view)
   const subs = tr.detail.subtracks || [];
-  const subRowH = 0.4;
+  const subBarH = 0.26;
+  const subLaneGap = 0.04;
+  const subRowPadV = 0.08;
+  let curY = ganttY + 0.36; // first row top
+
   subs.forEach((st, si) => {
-    const ry = ganttY + 0.36 + si * subRowH;
     const catColor = PPT_CAT_COLORS[st.cat || tr.cat] || '64748B';
 
+    // Lane packing: assign each bar to first lane that has no overlap
+    const subBars = (st.bars || []).slice().sort((a, b) => a.s - b.s);
+    const lanes = []; // each lane = array of placed bars
+    const barLane = []; // index → lane number
+    subBars.forEach((b, i) => {
+      let placed = false;
+      for (let li = 0; li < lanes.length; li++) {
+        const lastBar = lanes[li][lanes[li].length - 1];
+        if (lastBar.e <= b.s + 0.01) {
+          lanes[li].push(b);
+          barLane[i] = li;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        lanes.push([b]);
+        barLane[i] = lanes.length - 1;
+      }
+    });
+
+    const laneCount = Math.max(1, lanes.length);
+    const rowH = subRowPadV + laneCount * subBarH + (laneCount - 1) * subLaneGap + subRowPadV;
+
+    // Track label box
     s.addShape('rect', {
-      x: ganttX + 0.05, y: ry + 0.04, w: 0.32, h: 0.3,
+      x: ganttX + 0.05, y: curY + (rowH - 0.3) / 2, w: 0.32, h: 0.3,
       fill: { color: catColor }, line: { color: catColor },
       rectRadius: 0.04
     });
     s.addText(st.icon || '▪', {
-      x: ganttX + 0.05, y: ry + 0.04, w: 0.32, h: 0.3,
+      x: ganttX + 0.05, y: curY + (rowH - 0.3) / 2, w: 0.32, h: 0.3,
       fontSize: 10, color: 'FFFFFF', align: 'center', valign: 'middle'
     });
     s.addText(st.label, {
-      x: ganttX + 0.42, y: ry, w: labelW - 0.45, h: 0.38,
+      x: ganttX + 0.42, y: curY, w: labelW - 0.45, h: rowH,
       fontSize: 9, fontFace: 'Malgun Gothic', bold: true, color: '1A1A2E', valign: 'middle'
     });
 
-    (st.bars || []).forEach(b => {
+    // Place bars on assigned lanes
+    subBars.forEach((b, i) => {
       const bs = Math.max(b.s, tStart);
       const be = Math.min(b.e, tEnd);
       if (be <= bs) return;
       const bx = barAreaX + (bs - tStart) * pxPerMonth;
       const bw = (be - bs) * pxPerMonth;
       const fillColor = PPT_COLORS[b.c] || '64748B';
+      const lane = barLane[i];
+      const by = curY + subRowPadV + lane * (subBarH + subLaneGap);
 
       s.addShape('roundRect', {
-        x: bx + 0.02, y: ry + 0.06, w: bw - 0.04, h: 0.26,
+        x: bx + 0.02, y: by, w: bw - 0.04, h: subBarH,
         fill: { color: fillColor }, line: { color: fillColor },
         rectRadius: 0.13
       });
       if (bw > 0.4) {
         s.addText(b.t, {
-          x: bx + 0.08, y: ry + 0.06, w: bw - 0.16, h: 0.26,
+          x: bx + 0.08, y: by, w: bw - 0.16, h: subBarH,
           fontSize: 8, fontFace: 'Malgun Gothic', bold: true, color: 'FFFFFF',
           valign: 'middle'
         });
       }
     });
+
+    // Milestones — drawn at first lane row level
+    (st.ms || []).forEach(m => {
+      if (m.m < tStart || m.m > tEnd) return;
+      const mx = barAreaX + (m.m - tStart) * pxPerMonth;
+      const msColor = PPT_MS_COLORS[m.c] || '2563EB';
+      const my = curY + subRowPadV + (subBarH - 0.18) / 2;
+      s.addShape('diamond', {
+        x: mx - 0.09, y: my, w: 0.18, h: 0.18,
+        fill: { color: 'FFFFFF' },
+        line: { color: msColor, width: 1.5 }
+      });
+    });
+
+    curY += rowH + 0.04; // small gap between subtrack rows
   });
 
-  // Todos (lower section)
-  const todoStartY = ganttY + 0.36 + subs.length * subRowH + 0.25;
-  if (todoStartY < 6.5) {
+  // Todos (lower section) — adjust starting Y based on actual content used
+  const todoStartY = curY + 0.2;
+  if (todoStartY < 6.3) {
     s.addText('📋 Todo 체크리스트', {
       x: 0.5, y: todoStartY, w: 12.3, h: 0.3,
       fontSize: 12, fontFace: 'Malgun Gothic', bold: true, color: '1A1A2E'
