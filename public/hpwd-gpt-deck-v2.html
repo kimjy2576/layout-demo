@@ -716,12 +716,12 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
       <div class="explain-block accent">
         <div class="eb-eyebrow">Phase 1 목표</div>
         <div class="eb-title">자연어 질문 → 즉답 도우미</div>
-        <div class="eb-text">대상 — <b>기존 모델 개선 (Case A)</b><br>방식 — <b>Claude/GPT API 활용</b> · 자체 AI 미개발<br>기간 — <b>9개월</b></div>
+        <div class="eb-text">대상 — <b>기존 모델 개선 (Case A)</b><br>방식 — <b>외부 LLM API 활용</b> · 자체 AI 미개발<br>기간 — <b>9개월</b></div>
       </div>
       <div class="explain-block green">
         <div class="eb-eyebrow">5트랙 구성</div>
         <div class="eb-list">
-          <div class="eb-li"><div><b>ⓐ 외부 LLM API</b> — AI 두뇌 (Claude API)</div></div>
+          <div class="eb-li"><div><b>ⓐ 외부 LLM API</b> — AI 두뇌 (외부 LLM API)</div></div>
           <div class="eb-li"><div><b>ⓑ 검증 DB</b> — 사내 데이터 창고</div></div>
           <div class="eb-li"><div><b>ⓒ 1D 물리 모델</b> — 기존 시뮬레이터 통합·확장</div></div>
           <div class="eb-li"><div><b>ⓓ 개별 요소 검증</b> — 시뮬 ↔ 실험 비교</div></div>
@@ -949,8 +949,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
         <div class="eb-eyebrow">우리 시스템 AI 모델 구성</div>
         <div class="eb-list">
           <div class="eb-li"><div><b>임베딩·재랭킹</b> (~수백 MB) — ② RAG · 사내 호스팅</div></div>
-          <div class="eb-li"><div><b>Claude API</b> (~수백 GB) — ③ 답변 생성 · 외부 (마스킹)</div></div>
-          <div class="eb-li"><div><b>자체 sLLM</b> (~수십 GB) — Phase 2 Claude 대체 · 사내 호스팅</div></div>
+          <div class="eb-li"><div><b>외부 LLM API</b> (~수백 GB) — ③ 답변 생성 · 외부 (마스킹)</div></div>
+          <div class="eb-li"><div><b>자체 sLLM</b> (~수십 GB) — Phase 2 외부 LLM 대체 · 사내 호스팅</div></div>
         </div>
         <div class="eb-text" style="margin-top:10px"><strong>핵심</strong> — AI ≠ 단일 거대 LLM. 단계별 적정 크기 조합. <b>대부분 사내 호스팅</b>, 외부 API는 ③에 한정</div>
       </div>
@@ -967,7 +967,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
   <div class="slide-header">
     <div>
       <div class="slide-eyebrow">D-3. 서브트랙 ③</div>
-      <h1 class="slide-title">③ Claude API + Tool-use · AI 답변<small>도구 호출형 AI 엔지니어</small></h1>
+      <h1 class="slide-title">③ 외부 LLM API + Tool-use · AI 답변<small>도구 호출형 AI 엔지니어</small></h1>
     </div>
     <div class="slide-progress">09 / 18</div>
   </div>
@@ -977,10 +977,10 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
       <div class="explain-block accent">
         <div class="eb-eyebrow">한 줄 비유</div>
         <div class="eb-title">도구를 쓰는 AI 엔지니어</div>
-        <div class="eb-text">단순 텍스트 생성 ≠ Claude<br><br><b>호출 가능</b> — 시뮬레이터 · DB · 최적화 도구<br>예 — "응축기 UA 14% 증가 시?" → 1D 시뮬 호출 → 결과 → 답변</div>
+        <div class="eb-text">단순 텍스트 생성 ≠ 외부 LLM<br><br><b>호출 가능</b> — 시뮬레이터 · DB · 최적화 도구<br>예 — "응축기 UA 14% 증가 시?" → 1D 시뮬 호출 → 결과 → 답변</div>
         <div class="term">
           <div class="term-title">Tool-use</div>
-          <div class="term-body">AI 외부 함수 호출 능력. Claude 판단 → 도구 호출 → 결과 수신 → 답변 반영.</div>
+          <div class="term-body">AI 외부 함수 호출 능력. LLM 판단 → 도구 호출 → 결과 수신 → 답변 반영.</div>
         </div>
       </div>
       <div class="explain-block green">
@@ -1074,7 +1074,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
           <div class="eb-li"><div><b>피드백 UI</b> — 👍/👎 + 자유 코멘트</div></div>
           <div class="eb-li"><div><b>품질 필터 · 익명화</b> — 노이즈 제거 · 민감정보 마스킹</div></div>
           <div class="eb-li"><div><b>전문가 리뷰 · 라벨링</b> — 정답 라벨 부착</div></div>
-          <div class="eb-li"><div><b>Synthetic 증강</b> — Claude로 보충 데이터 생성</div></div>
+          <div class="eb-li"><div><b>Synthetic 증강</b> — 외부 LLM으로 보충 데이터 생성</div></div>
         </div>
       </div>
       <div class="explain-block warm">
