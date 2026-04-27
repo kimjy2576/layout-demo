@@ -331,7 +331,7 @@ body.panel-open .side-panel{right:0}
 <div class="header">
   <div>
     <h1>HPWD<span>-GPT</span> 개발 로드맵 v5</h1>
-    <div class="header-sub">Phase 1: Design Guide Agent (1D+API) · Phase 2: Full Agent (Surrogate+sLLM) · 21개월</div>
+    <div class="header-sub">Phase 1: Design Guide Agent (1D+API) · 9개월 · ⓐ + ⓑ ① DB 설계까지</div>
   </div>
   <div class="toolbar">
     <span class="status-chip" id="statusChip">saved</span>
@@ -365,21 +365,6 @@ body.panel-open .side-panel{right:0}
         <span>9개월</span>
         <span>·</span>
         <span>Case A · 기존 제품 개선</span>
-      </div>
-    </div>
-  </button>
-  <button class="phase-tab" data-phase="p2">
-    <div class="phase-tab-badge">
-      <span class="pb-label">PHASE</span>
-      <span class="pb-num">2</span>
-    </div>
-    <div class="phase-tab-body">
-      <div class="pt-name">Full Agent</div>
-      <div class="pt-meta">
-        <span class="phase-tab-chip">M10~M21</span>
-        <span>12개월</span>
-        <span>·</span>
-        <span>Case B · 신제품 설계</span>
       </div>
     </div>
   </button>
@@ -607,13 +592,10 @@ const DEFAULT_TRACKS=[
   },
   },
   {label:'ⓑ 검증 DB 구축',icon:'📦',cat:'cat-db',bars:[
-    {s:0,e:3,c:'c-amber',t:'데이터 소스·스키마 정의'},
-    {s:2,e:5,c:'c-amber',t:'실험·컴포넌트 데이터 수집'},
-    {s:4,e:8,c:'c-amber',t:'규격 룰 추출 + API 노출'},
-    {s:6,e:9,c:'c-amber-l',t:'검증 데이터셋 + 품질 관리'},
-  ],ms:[{m:3,c:'ms-green'},{m:9,c:'ms-red'}],
+    {s:0,e:3,c:'c-amber',t:'① DB 설계 (M1~M3)'},
+  ],ms:[{m:3,c:'ms-green'}],
   detail:{
-    description:'6개 컴포넌트 트랙이 9개월간 병렬 진행. 전체 로드맵의 4단계는 "어느 컴포넌트가 메인 작업인가"의 시간 마커. ① 소스/스키마 / ② 실험 데이터 / ③ 규격 룰 / ④ 컴포넌트 카탈로그 / ⑤ API+권한 / ⑥ 검증·품질.',
+    description:'ⓑ ① DB 설계만 본 발표 범위. 5요소(소스 인벤토리·ERD·스키마+인덱스·품질 기준·마이그레이션) 3개월 토대. 후속 ② ~ ⑥ (실험 수집·규격 추출·카탈로그·API·검증)은 다음 워크샵.',
     subtracks:[
       {label:'① 데이터 소스 + 스키마 설계',icon:'🗂️',cat:'cat-db',
        bars:[
@@ -634,151 +616,9 @@ const DEFAULT_TRACKS=[
         'DB 엔진 선정 (PostgreSQL / TimescaleDB · 보안·확장성)',
         '스키마 버전 관리 + 마이그레이션 도구 (Alembic 등)',
       ]},
-      {label:'② 실험 데이터 수집 + 전처리',icon:'🧪',cat:'cat-db',
-       bars:[
-        {s:1,e:2.5,c:'c-amber',t:'사내 실험 결과 수집 (DAQ·로그)'},
-        {s:2,e:3.5,c:'c-amber',t:'데이터 클렌징 + 단위 통일'},
-        {s:3,e:4.5,c:'c-amber',t:'시계열·이벤트 정규화'},
-        {s:4,e:5.5,c:'c-amber',t:'결측·이상치 처리 파이프라인'},
-        {s:5,e:6.5,c:'c-amber-l',t:'자동 수집 ETL 구축'},
-      ],ms:[{m:5,c:'ms-green'}],
-      todos:[
-        '사내 실험 데이터 위치·포맷 조사 (DAQ 로그·CSV·내부 시스템)',
-        '데이터 추출 스크립트 (회사 내부 시스템 API·파일 → DB)',
-        '단위 통일 정책 (SI 단위 강제·온도/압력/유량)',
-        '시간 정규화 (UTC 통일, 샘플링 간격 표준화)',
-        '결측치 처리 룰 (보간·제외 기준)',
-        '이상치 감지 (statistical outlier·물리적 한계 위반)',
-        '데이터 라이너지 추적 (어떤 실험·언제·누가 측정)',
-        'Apache Airflow / Prefect 기반 ETL 워크플로우',
-        '실험 메타데이터 표준화 (조건·환경·장비 calibration)',
-      ]},
-      {label:'③ 규격·설계 룰 추출 (LLM 활용)',icon:'📜',cat:'cat-sllm',
-       bars:[
-        {s:3,e:4.5,c:'c-blue',t:'규격 문서 디지털화 (IEC·EN)'},
-        {s:4,e:5.5,c:'c-blue',t:'LLM 룰 추출 프롬프트 설계'},
-        {s:5,e:7,c:'c-blue',t:'사내 설계 가이드 룰 추출'},
-        {s:6,e:7.5,c:'c-blue',t:'전문가 검증 + Gold 룰셋'},
-        {s:7,e:8.5,c:'c-blue-l',t:'룰 검색·매칭 인덱스'},
-      ],ms:[{m:7,c:'ms-blue'}],
-      todos:[
-        '규격 문서 수집 (IEC 61121, EN 60335, ISO 10472 등)',
-        '문서 OCR + 표·수식 보존 처리',
-        'LLM 룰 추출 프롬프트 (조항 → "조건/제약/기준값" JSON)',
-        '추출된 룰 검증 워크플로우 (LLM 추출 → 전문가 리뷰)',
-        '사내 설계 가이드·체크리스트 디지털화',
-        'Gold 룰셋 라벨링 (정확도 95%+ 검증)',
-        '룰 카테고리 체계 (안전·성능·EMC·구조 등)',
-        '룰 충돌 탐지 (다른 규격 간 모순)',
-        '규격 버전 관리 + 변경 이력 추적',
-        '룰 검색 인덱스 (도메인·키워드·조항 번호)',
-      ]},
-      {label:'④ 컴포넌트/모델 카탈로그',icon:'🔧',cat:'cat-db',
-       bars:[
-        {s:2,e:4,c:'c-amber',t:'압축기·HX·팬·EEV 스펙 DB'},
-        {s:3.5,e:5.5,c:'c-amber',t:'기존 모델 BOM + 도면 메타'},
-        {s:5,e:7,c:'c-amber',t:'성능 곡선 + AHRI 맵 통합'},
-        {s:6.5,e:8,c:'c-amber-l',t:'벤더·단가 정보 (제한 접근)'},
-      ],ms:[],
-      todos:[
-        '컴포넌트 카탈로그 스키마 (타입·용량·치수·성능·인증)',
-        '압축기 DB (변속·정속·R290·R134a 등)',
-        '열교환기(HX) DB (핀 사양·코어 치수·UA값)',
-        '팬·블로어 DB (P-Q 곡선·소음·소비전력)',
-        'EEV·서보 DB (개도·반응속도)',
-        '기존 양산 모델 BOM (Bill of Materials)',
-        '3D 도면 링크·메타데이터 (파일 경로·버전)',
-        '성능 시험 결과 (AHRI 맵·소음 스펙트럼·진동)',
-        '벤더 정보·단가 (접근 권한 분리)',
-        '컴포넌트 라이프사이클 상태 (활성·EOL 예정·단종)',
-      ]},
-      {label:'⑤ 검색·접근 API + 권한',icon:'🔌',cat:'cat-route',
-       bars:[
-        {s:3,e:4.5,c:'c-teal',t:'REST/GraphQL API 설계'},
-        {s:4,e:6,c:'c-teal',t:'벡터 검색 + 정형 쿼리'},
-        {s:5.5,e:7,c:'c-teal',t:'역할 기반 접근 제어 (RBAC)'},
-        {s:6.5,e:8,c:'c-teal-l',t:'캐싱 + 성능 최적화'},
-      ],ms:[],
-      todos:[
-        'API 스타일 결정 (REST · GraphQL · 양립)',
-        '엔드포인트 설계 (컴포넌트 조회·시험 데이터·룰 검색)',
-        '벡터 검색 엔드포인트 (LLM RAG에서 호출)',
-        '정형 쿼리 인터페이스 (시뮬레이터에서 호출)',
-        'API 인증 (JWT·OAuth)',
-        '역할 기반 권한 (R&D·기획·품질 등 차등)',
-        '민감 정보 접근 로깅 (단가·도면)',
-        '응답 캐싱 (Redis) — 자주 쓰는 쿼리',
-        'Rate limiting + 비정상 패턴 탐지',
-        'API 문서 자동화 (OpenAPI / GraphQL Schema)',
-      ]},
-      {label:'⑥ 검증 데이터셋 + 품질 관리',icon:'✅',cat:'cat-phys2',
-       bars:[
-        {s:5,e:6.5,c:'c-teal',t:'테스트 시나리오 100+ 정의'},
-        {s:6,e:7.5,c:'c-teal',t:'Ground Truth 수치 대조'},
-        {s:7,e:8.5,c:'c-teal',t:'회귀 테스트 자동화'},
-        {s:8,e:9,c:'c-teal-l',t:'데이터 품질 모니터링'},
-      ],ms:[{m:9,c:'ms-red'}],
-      todos:[
-        '검증 시나리오 100+ 정의 (실모델 케이스·합성 케이스)',
-        '시나리오별 Ground Truth (실험·검증된 시뮬·문헌)',
-        '시뮬-실험 비교 자동 리포트',
-        '검증 합격 기준 (정확도·재현성)',
-        '회귀 테스트 자동화 (CI/CD 연동)',
-        '데이터 품질 메트릭 (완결성·일관성·정확성·최신성)',
-        '품질 대시보드 (Grafana)',
-        '이상 데이터 알림 (Slack·이메일)',
-        'Phase Gate 검증 자료 패키지',
-        'Phase 2 인계용 데이터셋 핸드오프 문서',
-      ]},
     ],
   },
   },
-  {label:'ⓒ 1D 물리 모델 개발',icon:'🌡️',cat:'cat-phys',bars:[
-    {s:0,e:2,c:'c-green',t:'기존 HPWD 시뮬레이터 통합'},
-    {s:2,e:5,c:'c-green',t:'통합 사이클 1D 모델'},
-    {s:5,e:8,c:'c-green',t:'전 도메인 1D 확장 (진동·구조·제어·전장)'},
-    {s:8,e:9,c:'c-green-l',t:'통합 검증'},
-  ],ms:[{m:5,c:'ms-green'}]},
-  {label:'ⓓ 개별 요소 검증',icon:'✅',cat:'cat-phys2',bars:[
-    {s:2,e:4,c:'c-teal',t:'단일 컴포넌트 모델 검증'},
-    {s:4,e:7,c:'c-teal',t:'실험 vs 1D 모델 교차 검증'},
-    {s:7,e:9,c:'c-teal-l',t:'모델 정확도 평가 + 보정'},
-  ],ms:[{m:7,c:'ms-green'}]},
-  {label:'ⓔ 최적화 툴 구축',icon:'⚙️',cat:'cat-route',bars:[
-    {s:3,e:5,c:'c-teal',t:'목적함수·제약 정의'},
-    {s:5,e:7,c:'c-teal',t:'감도분석 + Bayesian Opt'},
-    {s:7,e:9,c:'c-teal',t:'에이전트 연동'},
-  ],ms:[{m:9,c:'ms-red'}]},
-
-  {type:'section',label:'PHASE 2 — Full Agent (12개월, Case B)'},
-  {label:'ⓐ 전용 sLLM 개발',icon:'🗣️',cat:'cat-sllm',bars:[
-    {s:9,e:12,c:'c-blue',t:'학습 데이터셋 구축 + Base 모델 선정'},
-    {s:12,e:15,c:'c-blue',t:'LoRA 파인튜닝 + 서빙 인프라'},
-    {s:15,e:18,c:'c-blue',t:'API vs 자체 sLLM A/B 테스트'},
-    {s:18,e:21,c:'c-blue-l',t:'자체 sLLM 전환 + Full Agent 완성'},
-  ],ms:[{m:15,c:'ms-blue'},{m:21,c:'ms-blue'}]},
-  {label:'ⓑ 유동해석 Surrogate AI',icon:'🌀',cat:'cat-phys2',bars:[
-    {s:9,e:12,c:'c-green',t:'CFD 데이터 수집 + 전처리'},
-    {s:12,e:15,c:'c-green',t:'Surrogate 모델 학습 (MLP/GNN)'},
-    {s:15,e:18,c:'c-green',t:'정확도 튜닝 + 불확실성 정량화'},
-    {s:18,e:21,c:'c-green-l',t:'풀 3D CFD 최종 검증'},
-  ],ms:[{m:15,c:'ms-green'},{m:21,c:'ms-green'}]},
-  {label:'ⓒ 배치 최적화 AI',icon:'🧠',cat:'cat-ai',bars:[
-    {s:9,e:11,c:'c-purple',t:'GNN 그래프 인코더'},
-    {s:11,e:14,c:'c-purple',t:'PPO 배치 RL 에이전트'},
-    {s:14,e:17,c:'c-purple',t:'Diffusion(DiT) 생성 모델'},
-    {s:17,e:21,c:'c-purple-l',t:'배치-경로 동시 최적화'},
-  ],ms:[{m:14,c:'ms-purple'},{m:19,c:'ms-purple'}]},
-  {label:'ⓓ Co-design 체계',icon:'📐',cat:'cat-ai',bars:[
-    {s:12,e:15,c:'c-indigo',t:'스펙-배치 파라미터 공간 정의'},
-    {s:15,e:18,c:'c-indigo',t:'Bayesian Opt 기반 동시 최적화'},
-    {s:18,e:21,c:'c-indigo',t:'전문가 RLHF 루프'},
-  ],ms:[]},
-  {label:'ⓔ 시스템 DB 검증',icon:'🔎',cat:'cat-db',bars:[
-    {s:9,e:12,c:'c-amber',t:'Phase 1 DB 확장 + MLOps 연동'},
-    {s:12,e:16,c:'c-amber',t:'전 시스템 통합 검증'},
-    {s:16,e:21,c:'c-amber-l',t:'모델 레지스트리 + 회귀 테스트'},
-  ],ms:[]},
 ];
 
 // ==============================================

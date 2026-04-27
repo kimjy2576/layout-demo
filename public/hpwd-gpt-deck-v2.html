@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HPWD-GPT 로드맵 발표</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF8F3;
+  --ink:#1A1A2E;
+  --ink-soft:#475569;
+  --muted:#94A3B8;
+  --line:#E2E8F0;
+  --accent:#2563EB;
+  --accent2:#7C3AED;
+  --warm:#D97706;
+  --green:#059669;
+  --red:#DC2626;
+  --teal:#0D9488;
+  --paper:#FFFFFF;
+  --shadow:0 4px 20px rgba(0,0,0,0.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);background:#1F1F2A;height:100%;overflow:hidden}
+
+.deck{width:100vw;height:100vh;position:relative;overflow:hidden}
+
+/* Slides */
+.slide{
+  position:absolute;
+  inset:0;
+  background:var(--bg);
+  display:none;
+  padding:24px 32px 36px;
+  flex-direction:column;
+  overflow:hidden;
+}
+.slide.active{display:flex}
+.slide-num{
+  position:absolute;
+  bottom:12px;right:24px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--muted);
+  font-weight:600;
+  letter-spacing:1px;
+}
+.slide-body{
+  flex:1;
+  display:grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap:24px;
+  min-height:0;
+}
+.slide-body.full{grid-template-columns:1fr}
+.slide-body.flip{grid-template-columns:1fr 1.45fr}
+
+.slide-header{
+  margin-bottom:14px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:20px;
+  flex-shrink:0;
+}
+.slide-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:22px;
+  font-weight:800;
+  color:var(--accent);
+  letter-spacing:1.5px;
+  margin-bottom:8px;
+  text-transform:uppercase;
+}
+.slide-title{
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:-0.01em;
+  color:var(--ink-soft);
+  line-height:1.25;
+}
+.slide-title small{
+  font-size:12px;
+  font-weight:500;
+  color:var(--muted);
+  display:block;
+  margin-top:2px;
+}
+.slide-progress{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+  font-weight:600;
+}
+
+/* === ROADMAP CANVAS (left side) === */
+.roadmap-canvas, .db-infographic-panel{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  position:relative;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  flex:1;
+}
+.db-info-titlebar{
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+  font-weight:700;
+  color:var(--muted);
+  letter-spacing:1px;
+  margin-bottom:10px;
+  text-transform:uppercase;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-shrink:0;
+}
+.db-info-titlebar .db-info-meta{
+  font-weight:600;
+  color:var(--warm);
+}
+.db-info-svg-wrap{
+  flex:1;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.db-info-svg-wrap svg{
+  width:100%;
+  height:100%;
+  max-width:560px;
+  max-height:560px;
+}
+.canvas-title{
+  font-size:13px;
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;
+  color:var(--muted);
+  letter-spacing:1px;
+  margin-bottom:14px;
+  text-transform:uppercase;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-shrink:0;
+}
+.canvas-title .canvas-meta{
+  font-weight:600;
+  color:var(--accent);
+}
+
+/* Phase tabs (for roadmap) */
+.rm-phase-tabs{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:12px;
+  flex-shrink:0;
+}
+.rm-phase-tab{
+  width:100%;
+  padding:8px 14px;
+  background:#F1F5F9;
+  border:1px solid var(--line);
+  border-radius:10px;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  color:var(--muted);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  transition:all 0.3s;
+}
+.rm-phase-tab.active.p1{background:#fff;border-color:var(--accent);color:var(--accent);box-shadow:inset 0 -3px 0 0 var(--accent)}
+.rm-phase-tab.active.p2{background:#fff;border-color:var(--accent2);color:var(--accent2);box-shadow:inset 0 -3px 0 0 var(--accent2)}
+.rm-phase-tab .pt-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  font-weight:900;
+  background:var(--ink);
+  color:#fff;
+  padding:3px 8px;
+  border-radius:5px;
+  letter-spacing:1px;
+}
+.rm-phase-tab.active.p1 .pt-num{background:var(--accent)}
+.rm-phase-tab.active.p2 .pt-num{background:var(--accent2)}
+.rm-phase-tab.dim{opacity:0.3}
+
+/* Month axis */
+.rm-months{
+  display:flex;
+  border-bottom:2px solid var(--ink);
+  padding-bottom:5px;
+  margin-bottom:8px;
+  flex-shrink:0;
+}
+.rm-label-col{
+  width:185px;
+  flex-shrink:0;
+  font-size:11px;
+  font-weight:800;
+  color:var(--ink);
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:1px;
+  padding-left:6px;
+  display:flex;
+  align-items:flex-end;
+}
+.rm-month-cells{
+  flex:1;
+  display:flex;
+}
+.rm-month{
+  flex:1;
+  text-align:center;
+  font-size:11px;
+  font-weight:600;
+  color:var(--ink-soft);
+  padding:3px 0;
+  font-family:'JetBrains Mono',monospace;
+}
+.rm-month.q-start{border-left:1px solid var(--line)}
+.rm-month.highlight{color:var(--accent);font-weight:800}
+
+/* Tracks — now flex:1 + overflow auto so it can scroll if needed */
+.rm-tracks{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  padding-right:4px;
+}
+/* Custom scrollbar */
+.rm-tracks::-webkit-scrollbar{width:6px}
+.rm-tracks::-webkit-scrollbar-track{background:transparent}
+.rm-tracks::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px}
+.rm-tracks::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+.rm-track{
+  display:flex;
+  align-items:center;
+  min-height:46px;
+  border-bottom:1px solid #F1F5F9;
+  position:relative;
+  transition:opacity 0.3s, background 0.3s;
+}
+.rm-track.dim{opacity:0.25}
+.rm-track.highlight{background:#FEF9C3;border-radius:6px;border-bottom-color:transparent}
+.rm-track-label{
+  width:185px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:5px 6px;
+  font-size:13px;
+  font-weight:700;
+}
+.rm-track-label .cat{
+  font-size:14px;
+  width:28px;
+  height:28px;
+  border-radius:6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  flex-shrink:0;
+}
+.rm-track-label .label-text{font-size:15px;line-height:1.25;font-weight:800}
+.rm-track-bars{
+  flex:1;
+  display:flex;
+  position:relative;
+  align-items:center;
+  padding:5px 0;
+  height:46px;
+}
+
+/* Bar colors */
+.cat-sllm{background:#2563EB}
+.cat-phys{background:#059669}
+.cat-phys2{background:#10B981}
+.cat-db{background:#D97706}
+.cat-route{background:#0D9488}
+.cat-ui{background:#DC2626}
+.cat-ai{background:#7C3AED}
+
+.bar{
+  position:absolute;
+  height:26px;
+  border-radius:13px;
+  display:flex;
+  align-items:center;
+  padding:0 11px;
+  font-size:11px;
+  font-weight:700;
+  color:#fff;
+  white-space:nowrap;
+  overflow:hidden;
+  transition:all 0.3s;
+  text-overflow:ellipsis;
+}
+.bar.dim{opacity:0.25}
+.bar.highlight{
+  height:30px;
+  border-radius:15px;
+  font-size:12px;
+  padding:0 13px;
+  box-shadow:0 0 0 2px #FEF9C3, 0 4px 12px rgba(0,0,0,0.15);
+  z-index:5;
+}
+
+.c-blue{background:linear-gradient(90deg,#2563EB,#3B82F6)}
+.c-blue-l{background:linear-gradient(90deg,#60A5FA,#93C5FD)}
+.c-green{background:linear-gradient(90deg,#059669,#10B981)}
+.c-green-l{background:linear-gradient(90deg,#34D399,#6EE7B7)}
+.c-amber{background:linear-gradient(90deg,#D97706,#F59E0B)}
+.c-amber-l{background:linear-gradient(90deg,#FBBF24,#FCD34D)}
+.c-purple{background:linear-gradient(90deg,#7C3AED,#8B5CF6)}
+.c-red{background:linear-gradient(90deg,#DC2626,#EF4444)}
+.c-red-l{background:linear-gradient(90deg,#F87171,#FCA5A5)}
+.c-teal{background:linear-gradient(90deg,#0D9488,#14B8A6)}
+.c-teal-l{background:linear-gradient(90deg,#2DD4BF,#5EEAD4)}
+.c-indigo{background:linear-gradient(90deg,#4338CA,#6366F1)}
+.c-slate{background:linear-gradient(90deg,#475569,#64748B)}
+
+/* Section divider in roadmap */
+.rm-section{
+  background:#F1F5F9;
+  border-radius:6px;
+  padding:7px 12px;
+  font-size:11px;
+  font-weight:800;
+  color:var(--ink-soft);
+  letter-spacing:1px;
+  margin:6px 0;
+  text-transform:uppercase;
+  transition:opacity 0.3s;
+  flex-shrink:0;
+}
+.rm-section.dim{opacity:0.25}
+
+/* Milestones */
+.milestone{
+  position:absolute;
+  width:14px;
+  height:14px;
+  transform:rotate(45deg);
+  border:2px solid;
+  border-radius:2px;
+  top:50%;
+  margin-top:-7px;
+  z-index:2;
+  transition:all 0.3s;
+}
+.milestone.dim{opacity:0.3}
+.milestone.highlight{
+  width:18px;
+  height:18px;
+  margin-top:-9px;
+  box-shadow:0 0 0 3px #FEF9C3;
+}
+.milestone{display:none}
+.ms-blue{border-color:#2563EB;background:#DBEAFE}
+.ms-green{border-color:#059669;background:#D1FAE5}
+.ms-purple{border-color:#7C3AED;background:#EDE9FE}
+.ms-red{border-color:#DC2626;background:#FEE2E2}
+
+/* Spotlight overlay (zoom indicator) */
+.spotlight{
+  position:absolute;
+  pointer-events:none;
+  border:3px dashed var(--accent);
+  border-radius:10px;
+  background:rgba(37,99,235,0.05);
+  transition:all 0.4s ease;
+  opacity:0;
+  z-index:3;
+}
+.spotlight.active{opacity:1}
+
+/* === EXPLANATION PANEL (right side) === */
+.explain{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  overflow-y:auto;
+  padding:0 4px;
+}
+.explain-block{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:18px;
+  box-shadow:var(--shadow);
+}
+.explain-block.accent{border-left:4px solid var(--accent)}
+.explain-block.green{border-left:4px solid var(--green)}
+.explain-block.warm{border-left:4px solid var(--warm)}
+.explain-block.red{border-left:4px solid var(--red)}
+.explain-block.purple{border-left:4px solid var(--accent2)}
+.explain-block.teal{border-left:4px solid var(--teal)}
+.eb-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:8px;
+}
+.eb-title{
+  font-size:18px;
+  font-weight:800;
+  color:var(--ink);
+  margin-bottom:8px;
+  line-height:1.3;
+}
+.eb-text{
+  font-size:14px;
+  color:var(--ink-soft);
+  line-height:1.6;
+}
+.eb-text strong{color:var(--ink);font-weight:700}
+.eb-text b{color:var(--accent);font-weight:700}
+
+/* Term card */
+.term{
+  background:#F8FAFC;
+  border-radius:10px;
+  padding:12px 14px;
+  margin-top:10px;
+  border:1px dashed #CBD5E1;
+}
+.term-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  font-weight:700;
+  color:var(--accent);
+  letter-spacing:1px;
+  margin-bottom:4px;
+}
+.term-body{
+  font-size:13px;
+  color:var(--ink-soft);
+  line-height:1.55;
+}
+.term-body b{color:var(--ink)}
+
+/* Bullet list inside explain */
+.eb-list{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.eb-li{
+  display:grid;
+  grid-template-columns:22px 1fr;
+  gap:10px;
+  align-items:flex-start;
+  font-size:13px;
+  color:var(--ink-soft);
+  line-height:1.5;
+}
+.eb-li::before{
+  content:'';
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--accent);
+  margin-top:8px;
+  margin-left:4px;
+}
+.eb-li b{color:var(--ink)}
+
+/* Pipeline mini diagram */
+.mini-flow{display:flex;align-items:center;gap:8px;margin:14px 0;flex-wrap:wrap}
+.mini-step{
+  background:var(--paper);
+  border:2px solid var(--accent);
+  border-radius:10px;
+  padding:8px 10px;
+  font-size:11px;
+  font-weight:700;
+  text-align:center;
+  flex:1;
+  min-width:90px;
+}
+.mini-step .step-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;
+  color:var(--accent);
+  display:block;
+  margin-bottom:2px;
+}
+.mini-step.dim{opacity:0.25}
+.mini-step.highlight{background:#FEF9C3;border-color:#D97706}
+.mini-arrow{font-size:14px;color:var(--muted);font-weight:600}
+
+/* Cover */
+.slide.cover{
+  background:linear-gradient(135deg,#0F172A,#1E293B 50%,#312E81);
+  color:#fff;
+  justify-content:center;
+  padding:60px 80px;
+}
+.cover-mark{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:4px;
+  color:#94A3B8;
+  margin-bottom:24px;
+}
+.cover-title{
+  font-size:96px;
+  font-weight:900;
+  letter-spacing:-0.04em;
+  line-height:1;
+  background:linear-gradient(135deg,#fff,#A78BFA);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:24px;
+}
+.cover-tagline{
+  font-size:24px;
+  font-weight:300;
+  color:#CBD5E1;
+  margin-bottom:40px;
+  max-width:900px;
+  line-height:1.4;
+}
+.cover-meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:#94A3B8;
+  display:flex;
+  gap:24px;
+}
+.cover-meta b{color:#fff}
+
+/* Toolbar */
+.toolbar{
+  position:fixed;
+  bottom:14px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(15,23,42,0.95);
+  backdrop-filter:blur(8px);
+  border-radius:24px;
+  padding:6px 12px;
+  display:flex;
+  gap:4px;
+  align-items:center;
+  z-index:100;
+  box-shadow:0 6px 20px rgba(0,0,0,0.4);
+}
+.toolbar.hidden{transform:translateX(-50%) translateY(60px);opacity:0;pointer-events:none;transition:all 0.3s}
+.tb-btn{
+  background:transparent;
+  border:none;
+  color:#fff;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  padding:5px 10px;
+  border-radius:16px;
+  cursor:pointer;
+  font-weight:600;
+}
+.tb-btn:hover{background:rgba(255,255,255,0.1)}
+.tb-progress{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:#94A3B8;
+  font-weight:600;
+  padding:0 10px;
+  border-left:1px solid rgba(255,255,255,0.15);
+  border-right:1px solid rgba(255,255,255,0.15);
+  margin:0 4px;
+}
+
+.notes{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:rgba(15,23,42,0.97);
+  color:#E2E8F0;
+  padding:18px 30px 50px;
+  max-height:30vh;
+  overflow-y:auto;
+  font-size:13px;
+  line-height:1.55;
+  display:none;
+  z-index:90;
+  border-top:2px solid #2563EB;
+}
+.notes.visible{display:block}
+.notes-title{font-family:'JetBrains Mono',monospace;font-size:10px;color:#60A5FA;font-weight:700;letter-spacing:2px;margin-bottom:6px}
+
+/* === Detail view in roadmap canvas === */
+.rm-detail-header{
+  background:linear-gradient(135deg,#EFF6FF,#F5F3FF);
+  border-radius:10px;
+  padding:14px 18px;
+  margin-bottom:12px;
+  border:1px solid var(--line);
+  flex-shrink:0;
+}
+.rm-detail-title{
+  font-size:17px;
+  font-weight:800;
+  color:var(--ink);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.rm-detail-meta{
+  font-size:12px;
+  color:var(--muted);
+  font-family:'JetBrains Mono',monospace;
+  margin-top:4px;
+  letter-spacing:0.5px;
+}
+
+/* Lane (used in detail mode) */
+.lane{position:relative;height:30px;margin-bottom:3px}
+.rm-track.detail-mode .rm-track-bars{flex-direction:column;align-items:stretch;height:auto;padding:7px 0}
+.rm-track.detail-mode{min-height:54px}
+
+/* Detail mode bar (slightly different from normal) */
+.rm-track.detail-mode .bar{
+  position:absolute;
+  height:26px;
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ============================================================ -->
+<!-- SLIDE 1 — COVER                                                -->
+<!-- ============================================================ -->
+<section class="slide cover active" data-notes="발표 시작. 청중에게 인사하고, 60분 워크샵임을 안내. 로드맵을 보면서 단계별로 설명해 나갈 것임을 예고.">
+  <div class="cover-mark">PRESENTATION · 2026</div>
+  <h1 class="cover-title">HPWD-GPT</h1>
+  <p class="cover-tagline">개발 로드맵 일정 발표</p>
+  <div class="cover-meta">
+    <span><b>Phase 1</b> · 9개월 · Design Guide Agent</span>
+    <span><b>Phase 2</b> · 12개월 · Full Agent</span>
+  </div>
+  <div class="slide-num">01 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 2 — 전체 로드맵 한눈에                                   -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="all" data-notes="로드맵 전체 그림을 보여주는 첫 슬라이드. '21개월 동안 우리가 무엇을 만드나'를 한 화면에. 너무 자세히 들어가지 않고, '큰 그림'에 집중. 다음 슬라이드부터 부분별로 줌인.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">A. 전체 로드맵</div>
+      <h1 class="slide-title">21개월 · 10트랙 · 2단계<small>Phase 1 (9개월) + Phase 2 (12개월)</small></h1>
+    </div>
+    <div class="slide-progress">02 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="roadmap-canvas" id="rm-1">
+      <!-- Roadmap rendered by JS -->
+    </div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 요약</div>
+        <div class="eb-title">설계 도우미 AI · 21개월 · 단계적 구축</div>
+        <div class="eb-text"><b>Phase 1 (9개월)</b> — 외부 API + 1D 물리 모델 기반 빠른 MVP<br><br><b>Phase 2 (12개월)</b> — Phase 1 데이터로 자체 AI(sLLM) + 신제품 자동 설계 확장</div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">왜 두 단계로?</div>
+        <div class="eb-text">한 번에 다 만들면 — <strong>장기간 · 학습 데이터 부재 · 고위험</strong><br><br><b>Phase 1</b> · 빠른 동작 + 데이터 수집<br><b>Phase 2</b> · 자체 AI 학습 + 자립</div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">화면 구성</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>가로축</b> — 21개월 (M1~M21)</div></div>
+          <div class="eb-li"><div><b>세로축</b> — 10트랙 (P1: ⓐ~ⓔ, P2: ⓐ~ⓔ)</div></div>
+          <div class="eb-li"><div><b>가로 막대</b> — 트랙별 작업 기간 (색 = 카테고리)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">02 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 3 — Phase 1 줌                                          -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="phase1" data-notes="Phase 1만 강조. 9개월 동안 5개 트랙이 어떻게 진행되는지. 각 트랙이 무엇을 다루는지 한 줄씩 소개.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">B. Phase 1 — Design Guide Agent</div>
+      <h1 class="slide-title">Phase 1 · 9개월 · 5트랙 병렬<small>외부 API + 1D 물리 모델 · 빠른 MVP</small></h1>
+    </div>
+    <div class="slide-progress">03 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="roadmap-canvas" id="rm-2"></div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">Phase 1 목표</div>
+        <div class="eb-title">자연어 질문 → 즉답 도우미</div>
+        <div class="eb-text">대상 — <b>기존 모델 개선 (Case A)</b><br>방식 — <b>Claude/GPT API 활용</b> · 자체 AI 미개발<br>기간 — <b>9개월</b></div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">5트랙 구성</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>ⓐ 외부 LLM API</b> — AI 두뇌 (Claude API)</div></div>
+          <div class="eb-li"><div><b>ⓑ 검증 DB</b> — 사내 데이터 창고</div></div>
+          <div class="eb-li"><div><b>ⓒ 1D 물리 모델</b> — 기존 시뮬레이터 통합·확장</div></div>
+          <div class="eb-li"><div><b>ⓓ 개별 요소 검증</b> — 시뮬 ↔ 실험 비교</div></div>
+          <div class="eb-li"><div><b>ⓔ 최적화 툴</b> — AI 호출 가능 자동 최적화</div></div>
+        </div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">5트랙 모두 필요한 이유</div>
+        <div class="eb-text"><b>ⓐ AI</b>만 — 참조 자료 부재<br><b>ⓑ DB</b>만 — 활용 도구 부재<br><b>ⓒ 시뮬</b>만 — 사용자 직접 운용 부담<br><br>5트랙 = <strong>상호 입력 구조</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">03 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 4 — ⓐ 트랙 강조                                          -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="track-a" data-notes="ⓐ 외부 LLM API 구축 트랙만 강조. 다른 트랙은 흐려져 있음. 9개월 동안 4단계로 진행됨을 설명. 다음 슬라이드부터 세부로 들어감.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">C. Phase 1 ⓐ 트랙</div>
+      <h1 class="slide-title">ⓐ 외부 LLM API 구축<small>9개월 · 4단계 · AI 두뇌</small></h1>
+    </div>
+    <div class="slide-progress">04 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="roadmap-canvas" id="rm-3"></div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">왜 가장 먼저인가</div>
+        <div class="eb-title">시스템의 얼굴 — 사용자 직접 접점</div>
+        <div class="eb-text"><b>ⓐ</b> = 답변 시스템 (사용자 노출)<br><b>ⓑⓒⓓⓔ</b> = ⓐ의 재료 공급<br><br>ⓐ 부재 시 — 결과 전달 채널 없음</div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">9개월 4단계</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>M1~M3 기반 구축</b> — RAG · API · Interpreter</div></div>
+          <div class="eb-li"><div><b>M3~M5 에이전트 MVP</b> — Tool-use · Explainer · 첫 데모</div></div>
+          <div class="eb-li"><div><b>M5~M7 멀티도메인 + 로그</b> — 5도메인 통합 · 데이터 수집</div></div>
+          <div class="eb-li"><div><b>M7~M9 통합 완성</b> — 사용자 시연 · Phase Gate</div></div>
+        </div>
+      </div>
+      <div class="explain-block purple">
+        <div class="eb-eyebrow">다음 슬라이드</div>
+        <div class="eb-text">트랙 내부 <b>5개 컴포넌트</b> 차례 설명</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">04 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 5 — ⓐ 세부 진입 (전체 보기)                              -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="detail-a" data-notes="ⓐ 트랙의 세부 로드맵으로 진입. 6개 서브트랙이 9개월간 어떻게 병렬 진행되는지. 사용자가 보고 'ⓐ 안에 6개가 더 있구나'를 인식.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">D. ⓐ 외부 LLM API · 세부 로드맵</div>
+      <h1 class="slide-title">ⓐ 세부 — 5개 컴포넌트 병렬<small>4단계 = "메인 컴포넌트 시간 마커"</small></h1>
+    </div>
+    <div class="slide-progress">05 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="roadmap-canvas" id="rm-4"></div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">데이터 흐름</div>
+        <div class="eb-title">4박자 파이프라인 + 보조 1</div>
+        <div class="eb-text">실행 — 4박자 순차<br>개발 — 5트랙 동시<br>로그(⑤) — 전 과정 수집</div>
+        <div class="mini-flow">
+          <div class="mini-step"><span class="step-num">1</span>질문 이해</div>
+          <div class="mini-arrow">→</div>
+          <div class="mini-step"><span class="step-num">2</span>자료 검색</div>
+          <div class="mini-arrow">→</div>
+          <div class="mini-step"><span class="step-num">3</span>AI 답변</div>
+          <div class="mini-arrow">→</div>
+          <div class="mini-step"><span class="step-num">4</span>답변 표시</div>
+        </div>
+      </div>
+      <div class="explain-block teal">
+        <div class="eb-eyebrow">병렬 진행 가능 이유</div>
+        <div class="eb-text">컴포넌트별 <b>독립 개발</b><br>인터페이스(데이터 형식)만 사전 합의<br>→ 9개월 5트랙 동시 완성</div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">화면 구성</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>왼쪽 라벨</b> — 5개 서브트랙</div></div>
+          <div class="eb-li"><div><b>가로 막대</b> — 세부 작업 (5~7개)</div></div>
+          <div class="eb-li"><div><b>색상</b> — 카테고리 (파랑=AI · 빨강=UI · 노랑=DB)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">05 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 6 — ① Interpreter                                       -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="sub-1" data-notes="① Interpreter만 강조. 비유: 비서. 모호한 질문을 정형 쿼리로 변환. 구체 예시 보여주기.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">D-1. 서브트랙 ①</div>
+      <h1 class="slide-title">① Interpreter · 질문 이해<small>모호한 질문 → 정형 쿼리 변환</small></h1>
+    </div>
+    <div class="slide-progress">06 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="roadmap-canvas" id="rm-5"></div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 비유</div>
+        <div class="eb-title">모호한 질문 정리 비서</div>
+        <div class="eb-text"><b>입력</b> — "빨래가 안말라"<br><b>출력</b> — "VX 모델 · FMC 저하 진단 요청"<br><br>AI가 받기 전 정형화 단계</div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">구성 요소</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>의도 분류</b> — 진단 · 조회 · 시뮬 · 최적화</div></div>
+          <div class="eb-li"><div><b>역질문 로직</b> — 모델명 · 시험 조건 누락 시 자동 되묻기</div></div>
+          <div class="eb-li"><div><b>도메인 용어 사전</b> — "안말라" → "FMC 저하"</div></div>
+          <div class="eb-li"><div><b>정형 JSON 쿼리</b> — 표준 포맷 생성</div></div>
+        </div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">필요성</div>
+        <div class="eb-text">미적용 시 — <b>해석 일관성 부재</b><br>"안말라" → SMER · 건조시간 등 매번 다른 해석<br><br>Interpreter = <strong>입구 정형화</strong></div>
+        <div class="term">
+          <div class="term-title">FMC</div>
+          <div class="term-body">의류 함습률 또는 건조 효율 지표. 단위 전력당 제거 수분량(kg/kWh) 기준.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">06 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 7 — ② RAG (자료 검색)                                    -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="sub-2" data-notes="② RAG. 비유: 사서. 의미 검색의 핵심. AI가 들어가긴 하는데 LLM이 아니라 작은 전문 모델임을 강조. 임원 안심 메시지: 사내 호스팅 가능.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">D-2. 서브트랙 ②</div>
+      <h1 class="slide-title">② RAG · 자료 검색<small>키워드 아닌 '의미' 기반 사내 검색</small></h1>
+    </div>
+    <div class="slide-progress">07 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="roadmap-canvas"></div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 비유</div>
+        <div class="eb-title">의미를 이해하는 도서관 사서</div>
+        <div class="eb-text"><b>"빨래가 안말라"</b> → "건조 효율 저하" · "FMC 부족" · "응축기 성능" 자료 동시 검색<br><br>키워드 검색 — <b>실패</b><br>RAG — <b>의미 기반 검색</b></div>
+        <div class="term">
+          <div class="term-title">RAG</div>
+          <div class="term-body"><b>R</b>etrieval-<b>A</b>ugmented <b>G</b>eneration. "검색 + AI 답변" 조합 파이프라인. 단일 AI 아닌 <b>검색·답변 협력 구조</b>. 사내 자료를 답변 근거로 활용.</div>
+        </div>
+      </div>
+
+      <div class="explain-block green">
+        <div class="eb-eyebrow">구성 요소 (M1~M7.5)</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>문서 수집·디지털화</b> — IEC · EN · 사내 가이드 · 실험 데이터</div></div>
+          <div class="eb-li"><div><b>임베딩 · 벡터 DB</b> — 의미 좌표 변환 · 저장</div></div>
+          <div class="eb-li"><div><b>의미 검색 (Top-K)</b> — 근접 5개 추출</div></div>
+          <div class="eb-li"><div><b>멀티도메인 통합</b> — 5도메인 일괄 검색</div></div>
+          <div class="eb-li"><div><b>하이브리드 + 재랭킹</b> — 의미 + 키워드 결합</div></div>
+        </div>
+      </div>
+
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">필요성</div>
+        <div class="eb-text">RAG 미적용 — AI 환각 (학습 데이터 기반 추측)<br>RAG 적용 — <b>사내 자료 근거 답변</b><br><br><strong>사내 지식 주입 최단 경로</strong> (Phase 2 자체 학습 전)<br><br><span style="font-size:13px;color:var(--accent);font-weight:700">→ RAG 내부 AI 종류는 다음 슬라이드</span></div>
+        <div class="term">
+          <div class="term-title">벡터 DB</div>
+          <div class="term-body">임베딩 좌표 저장·검색 DB. 좌표 근접 = 의미 유사. <b>Qdrant · Chroma</b>. 사내 호스팅 가능.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">07 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 8 — AI는 언제 필요한가 (RAG 안의 AI 설명)              -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="sub-2" data-notes="RAG 슬라이드 직후 보충. 핵심 메시지 3가지: ① '의미'는 알고리즘으로 못 푸는 문제라 AI가 필요 ② 작은 전문 AI가 LLM보다 빠르고 정확 ③ 그래서 사내 호스팅 가능. 발표 시 비유 강조: GPS, 패스트푸드 직원.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">D-2 보충 · AI vs 알고리즘</div>
+      <h1 class="slide-title">RAG 안의 AI<small>알고리즘 vs AI · LLM vs 작은 모델</small></h1>
+    </div>
+    <div class="slide-progress">08 / 18</div>
+  </div>
+  <div class="slide-body full">
+    <div class="explain" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-content:start">
+
+      <div class="explain-block accent" style="grid-column:1/-1">
+        <div class="eb-eyebrow">핵심 요약</div>
+        <div class="eb-title">"의미" → 알고리즘 불가 · AI 필요<br>단, 작은 전문 AI면 충분 (LLM 불필요)</div>
+      </div>
+
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">알고리즘 vs AI</div>
+        <div class="eb-text"><b>"빨래가 안말라"</b> ≡ <b>"건조 효율 저하"</b><br>→ 단어 미일치 · 의미 일치<br><br>키워드 · 통계 · 사전 — <b>의미 처리 불가</b><br>"의미" = <strong>명시적 규칙화 불가능 추상 개념</strong><br>→ 학습된 AI 필요</div>
+        <div class="term">
+          <div class="term-title">비유 — GPS</div>
+          <div class="term-body"><b>알고리즘</b> · 사람이 적은 명시적 좌표 필요<br><b>임베딩 AI</b> · 수십억 문장 쌍 학습 → 의미 좌표 자동 부여</div>
+        </div>
+      </div>
+
+      <div class="explain-block teal">
+        <div class="eb-eyebrow">LLM vs 작은 모델</div>
+        <div class="eb-text">임베딩·재랭킹 = <b>"의미 거리 측정" 단일 작업</b><br>LLM 기능(생성·요약·번역) 불필요<br><br><strong>특화 = 작음 · 빠름 · 정확함</strong><br>LLM 사용 시 — 100~1000× 느림 · 정확도↓</div>
+        <div class="term">
+          <div class="term-title">비유 — 패스트푸드</div>
+          <div class="term-body"><b>LLM</b> · 1만 가지 요리하는 호텔 셰프 (수백 GB)<br><b>임베딩 모델</b> · 햄버거만 굽는 직원 (수백 MB) — 햄버거는 더 빠르고 정확</div>
+        </div>
+      </div>
+
+      <div class="explain-block purple" style="grid-column:1/-1">
+        <div class="eb-eyebrow">우리 시스템 AI 모델 구성</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>임베딩·재랭킹</b> (~수백 MB) — ② RAG · 사내 호스팅</div></div>
+          <div class="eb-li"><div><b>Claude API</b> (~수백 GB) — ③ 답변 생성 · 외부 (마스킹)</div></div>
+          <div class="eb-li"><div><b>자체 sLLM</b> (~수십 GB) — Phase 2 Claude 대체 · 사내 호스팅</div></div>
+        </div>
+        <div class="eb-text" style="margin-top:10px"><strong>핵심</strong> — AI ≠ 단일 거대 LLM. 단계별 적정 크기 조합. <b>대부분 사내 호스팅</b>, 외부 API는 ③에 한정</div>
+      </div>
+
+    </div>
+  </div>
+  <div class="slide-num">08 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 9 — ③ Claude API + Tool-use (was 8)                    -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="sub-3" data-notes="③ AI 답변 엔진. Tool-use 강조 — Claude가 단순히 답을 짓는 게 아니라 도구를 호출함.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">D-3. 서브트랙 ③</div>
+      <h1 class="slide-title">③ Claude API + Tool-use · AI 답변<small>도구 호출형 AI 엔지니어</small></h1>
+    </div>
+    <div class="slide-progress">09 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="roadmap-canvas"></div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 비유</div>
+        <div class="eb-title">도구를 쓰는 AI 엔지니어</div>
+        <div class="eb-text">단순 텍스트 생성 ≠ Claude<br><br><b>호출 가능</b> — 시뮬레이터 · DB · 최적화 도구<br>예 — "응축기 UA 14% 증가 시?" → 1D 시뮬 호출 → 결과 → 답변</div>
+        <div class="term">
+          <div class="term-title">Tool-use</div>
+          <div class="term-body">AI 외부 함수 호출 능력. Claude 판단 → 도구 호출 → 결과 수신 → 답변 반영.</div>
+        </div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">구성 요소 (M1~M7)</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>API 보안 + 마스킹</b> — 단가 · 도면 외부 차단</div></div>
+          <div class="eb-li"><div><b>System Prompt 설계</b> — 페르소나 · 답변 형식</div></div>
+          <div class="eb-li"><div><b>Tool 등록 (4종)</b> — DB · 1D 시뮬 · 최적화 · 시각화</div></div>
+          <div class="eb-li"><div><b>JSON Schema</b> — 정형 포맷 강제 (환각 방지)</div></div>
+          <div class="eb-li"><div><b>Orchestrator (LangGraph)</b> — 호출 순서 · 반복 · 복구</div></div>
+        </div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">필요성</div>
+        <div class="eb-text">설계자 질의 — "변경 적용 시 결과?"<br>→ <b>실시간 시뮬 실행 필수</b><br><br>Tool-use = <strong>"말하는 비서" → "행동하는 엔지니어"</strong></div>
+        <div class="term">
+          <div class="term-title">Structured Output</div>
+          <div class="term-body">자유 텍스트 → 고정 JSON. 누락 · 환각 방지. 예 — <code style="font-family:'JetBrains Mono',monospace;font-size:11px">{conclusion, evidence, confidence}</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">09 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 9 — ④ Explainer                                          -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="sub-4" data-notes="④ 답변 표시. 같은 답을 전문가/비전문가에게 다르게. 우리 도구의 차별화.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">D-4. 서브트랙 ④</div>
+      <h1 class="slide-title">④ Explainer · 답변 표시<small>JSON → 카드 · 그래프 · 다이어그램</small></h1>
+    </div>
+    <div class="slide-progress">10 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="roadmap-canvas"></div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 비유</div>
+        <div class="eb-title">청중 적응형 디자이너</div>
+        <div class="eb-text">동일 데이터 · 다른 표현<br><br><b>전문가</b> — "FMC 0.62 kg/kWh · UAcond 145 W/K"<br><b>비전문가</b> — "건조 효율 12%↓ · 라디에이터 부족"</div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">구성 요소 (M3~M8.5)</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>JSON → UI 매핑</b> — 카테고리별 카드 컴포넌트</div></div>
+          <div class="eb-li"><div><b>전문가 / 비전문가 모드</b> — 답변 톤 분기</div></div>
+          <div class="eb-li"><div><b>근거 인용</b> — 클릭 → 원문 스크롤</div></div>
+          <div class="eb-li"><div><b>1D 시각화</b> — 시뮬 결과 그래프 · 차트</div></div>
+          <div class="eb-li"><div><b>음성 · 그래프 · PDF</b> — 출력 다양화</div></div>
+        </div>
+      </div>
+      <div class="explain-block red">
+        <div class="eb-eyebrow">필요성</div>
+        <div class="eb-text">정확 답변 ≠ 유용한 답변<br><b>비전문가 사용 가능성</b> = HPWD-GPT 차별점<br><br><strong>근거 인용</strong> = 신뢰성 핵심 ("왜 이렇게 답했나" 추적)</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">10 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 10 — ⑤ 로그 수집                                          -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="sub-5" data-notes="⑤ 로그 수집. Phase 2 학습 데이터 수확기. 9개월간 모이는 데이터가 미래 자체 sLLM의 재료.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">D-5. 서브트랙 ⑤</div>
+      <h1 class="slide-title">⑤ 로그 수집 + 데이터 라벨링<small>Phase 2 학습 데이터 수확기</small></h1>
+    </div>
+    <div class="slide-progress">11 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="roadmap-canvas"></div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 비유</div>
+        <div class="eb-title">미래 AI 양식 창고</div>
+        <div class="eb-text">9개월 동안 — 대화 · 검색 · 답변 · 피드백 전수 저장<br>→ Phase 2 자체 sLLM <strong>학습 데이터셋</strong></div>
+        <div class="term">
+          <div class="term-title">데이터 라벨링</div>
+          <div class="term-body">전문가 검토 후 "정답" 라벨 부착 데이터. AI 학습 핵심 재료. 양보다 품질 우선 → 전문가 리뷰 필수.</div>
+        </div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">구성 요소 (M3~M9)</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>구조화 로그 파이프</b> — JSON 형식 대화 저장</div></div>
+          <div class="eb-li"><div><b>피드백 UI</b> — 👍/👎 + 자유 코멘트</div></div>
+          <div class="eb-li"><div><b>품질 필터 · 익명화</b> — 노이즈 제거 · 민감정보 마스킹</div></div>
+          <div class="eb-li"><div><b>전문가 리뷰 · 라벨링</b> — 정답 라벨 부착</div></div>
+          <div class="eb-li"><div><b>Synthetic 증강</b> — Claude로 보충 데이터 생성</div></div>
+        </div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">필요성</div>
+        <div class="eb-text">Phase 2 자체 AI = <b>도메인 특화 데이터 필수</b><br>일반 LLM — 본 도메인 미숙지<br><br>데이터 부재 시 — 자체 sLLM 개발 <strong>최소 6개월 지연</strong><br>⑤ 트랙 = <b>시간 매입 트랙</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">11 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 12 — ⓑ 트랙 강조                                          -->
+<!-- ============================================================ -->
+<section class="slide" data-spotlight="track-b" data-notes="ⓑ 검증 DB 트랙으로 전환. ⓐ가 시스템 얼굴이라면, ⓑ는 시스템 재료. AI 품질의 70%는 데이터.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">E. Phase 1 ⓑ 트랙</div>
+      <h1 class="slide-title">ⓑ 검증 DB 구축<small>AI · 시뮬 공용 사내 데이터 창고</small></h1>
+    </div>
+    <div class="slide-progress">12 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="roadmap-canvas"></div>
+    <div class="explain">
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">트랙 정체</div>
+        <div class="eb-title">독립 DB 트랙이 필요한 이유</div>
+        <div class="eb-text"><strong>"AI 품질의 70% = 데이터"</strong><br><br>ⓐ 답변 엔진 — 양질의 데이터 필수<br>ⓑ 트랙 — <b>수집 · 정제 · 검증</b></div>
+      </div>
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">9개월 4단계</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>M1~M3 소스·스키마</b> — 데이터 정의 · 저장 방식</div></div>
+          <div class="eb-li"><div><b>M2~M5 수집</b> — 실험 데이터 · 컴포넌트 카탈로그</div></div>
+          <div class="eb-li"><div><b>M4~M8 룰 + API</b> — 규격 추출 · 검색 인터페이스</div></div>
+          <div class="eb-li"><div><b>M6~M9 검증·품질</b> — 100+ 시나리오 · 회귀 테스트</div></div>
+        </div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">ⓐ와의 관계</div>
+        <div class="eb-text">ⓐ ② RAG 자료 출처 = ⓑ<br>ⓐ ③ Tool-use DB API 제공처 = ⓑ<br><br><strong>ⓐ ↔ ⓑ 짝꿍 트랙</strong> — 한 쪽 부재 시 시스템 정지</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">12 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 13 — ⓑ ① DB 설계 5요소 인트로 (인포그래픽)              -->
+<!-- ============================================================ -->
+<section class="slide" data-notes="ⓑ ① DB 설계는 5요소로 구성. 다음 5장에 걸쳐 각 요소를 풀이. 13~17 슬라이드 모두 동일한 인포그래픽이 왼쪽에 있고, 해당 요소만 강조됨.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">E. ⓑ ① DB 설계</div>
+      <h1 class="slide-title">5요소 · 3개월 · M1~M3<small>창고 짓기 전 평면도 — 저장 구조 청사진</small></h1>
+    </div>
+    <div class="slide-progress">13 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="db-infographic-panel">
+  <div class="db-info-titlebar"><span>ⓑ ① DB 설계 · 5요소</span><span class="db-info-meta">전체 보기</span></div>
+  <div class="db-info-svg-wrap"><svg viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="display:block"><defs><marker id="arrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D97706"/></marker></defs><path d="M 281.5 155.1 A 100 100 0 0 1 330.6 190.7" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="1" marker-end="url(#arrowHead)"/><path d="M 350.0 250.6 A 100 100 0 0 1 331.2 308.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="1" marker-end="url(#arrowHead)"/><path d="M 280.3 345.3 A 100 100 0 0 1 219.7 345.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="1" marker-end="url(#arrowHead)"/><path d="M 168.8 308.3 A 100 100 0 0 1 150.0 250.6" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="1" marker-end="url(#arrowHead)"/><path d="M 169.4 190.7 A 100 100 0 0 1 218.5 155.1" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="1" marker-end="url(#arrowHead)"/><circle cx="250" cy="250" r="58" fill="#FFF7ED" stroke="#F59E0B" stroke-width="2" stroke-dasharray="3 4"/><text x="250" y="238" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="13" font-weight="800" fill="#92400E">DB 설계</text><text x="250" y="256" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#D97706">M1~M3</text><text x="250" y="272" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="11" font-weight="600" fill="#92400E">3개월 5요소</text><g opacity="1"><circle cx="250.0" cy="92.0" r="64" fill="#F59E0B" stroke="#B45309" stroke-width="3"/><circle cx="200.0" cy="42.0" r="14" fill="#B45309"/><text x="200.0" y="47.0" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">1</text><text x="250.0" y="92.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">소스 인벤토리</text><text x="250.0" y="110.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">데이터 위치·관리자</text></g><g opacity="1"><circle cx="400.3" cy="201.2" r="64" fill="#F59E0B" stroke="#B45309" stroke-width="3"/><circle cx="350.3" cy="151.2" r="14" fill="#B45309"/><text x="350.3" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">2</text><text x="400.3" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">ERD 모델링</text><text x="400.3" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">엔티티·관계 정의</text></g><g opacity="1"><circle cx="342.9" cy="377.8" r="64" fill="#F59E0B" stroke="#B45309" stroke-width="3"/><circle cx="292.9" cy="327.8" r="14" fill="#B45309"/><text x="292.9" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">3</text><text x="342.9" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">스키마 + 인덱스</text><text x="342.9" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">테이블·검색</text></g><g opacity="1"><circle cx="157.1" cy="377.8" r="64" fill="#F59E0B" stroke="#B45309" stroke-width="3"/><circle cx="107.1" cy="327.8" r="14" fill="#B45309"/><text x="107.1" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">4</text><text x="157.1" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">품질 기준</text><text x="157.1" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">좋은 데이터 명시</text></g><g opacity="1"><circle cx="99.7" cy="201.2" r="64" fill="#F59E0B" stroke="#B45309" stroke-width="3"/><circle cx="49.7" cy="151.2" r="14" fill="#B45309"/><text x="49.7" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">5</text><text x="99.7" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">마이그레이션</text><text x="99.7" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">변경 대응</text></g></svg></div>
+</div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 비유</div>
+        <div class="eb-title">창고 짓기 전 평면도</div>
+        <div class="eb-text">데이터 수집 전 — <b>"무엇을 · 어디에"</b> 결정<br>오류 시 — 전면 재구축 필요</div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">5개 요소</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>① 소스 인벤토리</b> — 데이터 위치 · 관리자 조사</div></div>
+          <div class="eb-li"><div><b>② ERD 모델링</b> — 엔티티 · 관계 정의</div></div>
+          <div class="eb-li"><div><b>③ 스키마 + 인덱스</b> — 테이블 · 검색 최적화</div></div>
+          <div class="eb-li"><div><b>④ 품질 기준</b> — 좋은 데이터 명시화</div></div>
+          <div class="eb-li"><div><b>⑤ 마이그레이션</b> — 변경 대응 체계</div></div>
+        </div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">중요 — 사람의 일</div>
+        <div class="eb-text">5요소 모두 <strong>AI가 아닌 사람·부서 협업</strong> 작업.<br><br>· 사내 정책 · 조직 컨텍스트 · 부서 협상<br>→ AI 학습 데이터 부재 · 자동화 불가</div>
+      </div>
+      <div class="explain-block teal">
+        <div class="eb-eyebrow">V1 → 점진 진화</div>
+        <div class="eb-text">3개월 = "완벽 설계" 아님<br>M1~M3 — <b>핵심 엔티티만 V1</b><br>M4~M9 — <b>⑤ 마이그레이션으로 점진 추가</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">13 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 15 — ⓑ ① 요소 1 · 데이터 소스 인벤토리                  -->
+<!-- ============================================================ -->
+<section class="slide" data-notes="ⓑ ① DB 설계의 첫 요소. 사내 데이터 위치·관리자 조사. 부서 협업 시작점.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">E-1-1. ⓑ ① DB 설계 · 요소 1</div>
+      <h1 class="slide-title">데이터 소스 인벤토리<small>사내 데이터 위치 · 관리자 조사</small></h1>
+    </div>
+    <div class="slide-progress">14 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="db-infographic-panel">
+  <div class="db-info-titlebar"><span>ⓑ ① DB 설계 · 5요소</span><span class="db-info-meta">요소 1 강조</span></div>
+  <div class="db-info-svg-wrap"><svg viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="display:block"><defs><marker id="arrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D97706"/></marker></defs><path d="M 281.5 155.1 A 100 100 0 0 1 330.6 190.7" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 350.0 250.6 A 100 100 0 0 1 331.2 308.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 280.3 345.3 A 100 100 0 0 1 219.7 345.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 168.8 308.3 A 100 100 0 0 1 150.0 250.6" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 169.4 190.7 A 100 100 0 0 1 218.5 155.1" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><circle cx="250" cy="250" r="58" fill="#FFF7ED" stroke="#F59E0B" stroke-width="2" stroke-dasharray="3 4"/><text x="250" y="238" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="13" font-weight="800" fill="#92400E">DB 설계</text><text x="250" y="256" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#D97706">M1~M3</text><text x="250" y="272" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="11" font-weight="600" fill="#92400E">3개월 5요소</text><g opacity="1"><circle cx="250.0" cy="92.0" r="64" fill="#D97706" stroke="#78350F" stroke-width="5"/><circle cx="200.0" cy="42.0" r="14" fill="#78350F"/><text x="200.0" y="47.0" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">1</text><text x="250.0" y="92.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF">소스 인벤토리</text><text x="250.0" y="110.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#FED7AA">데이터 위치·관리자</text></g><g opacity="0.7"><circle cx="400.3" cy="201.2" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="350.3" cy="151.2" r="14" fill="#B45309"/><text x="350.3" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">2</text><text x="400.3" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">ERD 모델링</text><text x="400.3" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">엔티티·관계 정의</text></g><g opacity="0.7"><circle cx="342.9" cy="377.8" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="292.9" cy="327.8" r="14" fill="#B45309"/><text x="292.9" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">3</text><text x="342.9" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">스키마 + 인덱스</text><text x="342.9" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">테이블·검색</text></g><g opacity="0.7"><circle cx="157.1" cy="377.8" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="107.1" cy="327.8" r="14" fill="#B45309"/><text x="107.1" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">4</text><text x="157.1" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">품질 기준</text><text x="157.1" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">좋은 데이터 명시</text></g><g opacity="0.7"><circle cx="99.7" cy="201.2" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="49.7" cy="151.2" r="14" fill="#B45309"/><text x="49.7" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">5</text><text x="99.7" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">마이그레이션</text><text x="99.7" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">변경 대응</text></g></svg></div>
+</div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">"어디에 · 무엇이 · 누가 관리"</div>
+        <div class="eb-text">사내 분산 데이터 → <strong>전수 조사 · 목록화</strong><br>10+ 데이터 소스 · 부서별 책임자 식별</div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">예시 인벤토리</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>사내 모델 카탈로그</b> — 양산·개발 중 모델 리스트</div></div>
+          <div class="eb-li"><div><b>부품 사양시트</b> — 압축기·HX·팬·EEV 성능 곡선</div></div>
+          <div class="eb-li"><div><b>시험 보고서</b> — 과거 모델 시험 결과 (SMER·소음·전력)</div></div>
+          <div class="eb-li"><div><b>시험 규격</b> — IEC · EN · ISO 인증 요건</div></div>
+          <div class="eb-li"><div><b>사내 설계 가이드</b> — 표준 · 체크리스트 · 노하우</div></div>
+          <div class="eb-li"><div><b>타겟 시장 지표</b> — 지역 · 인증별 목표 (효율 · 소음)</div></div>
+        </div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">필요성</div>
+        <div class="eb-text">미실시 — 6개월 후 누락 데이터 발견 → <b>스키마 재설계</b><br>실시 — 사전 식별 · 부서 승인 절차 미리 시작<br><br>민감도 분류 시작점 — 단가 · 도면 등 사전 표시</div>
+      </div>
+      <div class="explain-block teal">
+        <div class="eb-eyebrow">산출물</div>
+        <div class="eb-list">
+          <div class="eb-li"><div>데이터 소스 카탈로그 (스프레드시트)</div></div>
+          <div class="eb-li"><div>부서별 책임자 연락 목록</div></div>
+          <div class="eb-li"><div>접근 권한 요청 우선순위</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">14 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 16 — ⓑ ① 요소 2 · ERD 모델링                            -->
+<!-- ============================================================ -->
+<section class="slide" data-notes="ⓑ ① DB 설계의 두번째 요소. 데이터 항목 관계도. 검색 효율과 직결.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">E-1-2. ⓑ ① DB 설계 · 요소 2</div>
+      <h1 class="slide-title">ERD 모델링<small>엔티티 · 관계도 정의</small></h1>
+    </div>
+    <div class="slide-progress">15 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="db-infographic-panel">
+  <div class="db-info-titlebar"><span>ⓑ ① DB 설계 · 5요소</span><span class="db-info-meta">요소 2 강조</span></div>
+  <div class="db-info-svg-wrap"><svg viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="display:block"><defs><marker id="arrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D97706"/></marker></defs><path d="M 281.5 155.1 A 100 100 0 0 1 330.6 190.7" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 350.0 250.6 A 100 100 0 0 1 331.2 308.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 280.3 345.3 A 100 100 0 0 1 219.7 345.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 168.8 308.3 A 100 100 0 0 1 150.0 250.6" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 169.4 190.7 A 100 100 0 0 1 218.5 155.1" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><circle cx="250" cy="250" r="58" fill="#FFF7ED" stroke="#F59E0B" stroke-width="2" stroke-dasharray="3 4"/><text x="250" y="238" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="13" font-weight="800" fill="#92400E">DB 설계</text><text x="250" y="256" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#D97706">M1~M3</text><text x="250" y="272" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="11" font-weight="600" fill="#92400E">3개월 5요소</text><g opacity="0.7"><circle cx="250.0" cy="92.0" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="200.0" cy="42.0" r="14" fill="#B45309"/><text x="200.0" y="47.0" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">1</text><text x="250.0" y="92.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">소스 인벤토리</text><text x="250.0" y="110.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">데이터 위치·관리자</text></g><g opacity="1"><circle cx="400.3" cy="201.2" r="64" fill="#D97706" stroke="#78350F" stroke-width="5"/><circle cx="350.3" cy="151.2" r="14" fill="#78350F"/><text x="350.3" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">2</text><text x="400.3" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF">ERD 모델링</text><text x="400.3" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#FED7AA">엔티티·관계 정의</text></g><g opacity="0.7"><circle cx="342.9" cy="377.8" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="292.9" cy="327.8" r="14" fill="#B45309"/><text x="292.9" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">3</text><text x="342.9" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">스키마 + 인덱스</text><text x="342.9" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">테이블·검색</text></g><g opacity="0.7"><circle cx="157.1" cy="377.8" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="107.1" cy="327.8" r="14" fill="#B45309"/><text x="107.1" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">4</text><text x="157.1" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">품질 기준</text><text x="157.1" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">좋은 데이터 명시</text></g><g opacity="0.7"><circle cx="99.7" cy="201.2" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="49.7" cy="151.2" r="14" fill="#B45309"/><text x="49.7" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">5</text><text x="99.7" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">마이그레이션</text><text x="99.7" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">변경 대응</text></g></svg></div>
+</div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">데이터 단위와 연결 구조 청사진</div>
+        <div class="eb-text"><b>E</b>ntity-<b>R</b>elationship <b>D</b>iagram<br>엔티티 식별 · 속성 정의 · 관계 표현</div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">관계 예시</div>
+        <div class="eb-text" style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8">
+          [모델] ──1:N── [컴포넌트]<br>
+          &nbsp;&nbsp;│<br>
+          &nbsp;&nbsp;1:N<br>
+          &nbsp;&nbsp;▼<br>
+          [실험 시리즈] ──1:N── [시계열 데이터]
+        </div>
+      </div>
+      <div class="explain-block purple">
+        <div class="eb-eyebrow">엔티티 속성 예시</div>
+        <div class="eb-text" style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7">
+          <b>모델</b><br>
+          · model_id (PK)<br>
+          · model_name<br>
+          · 인증 등급 · 양산 시작일 · 담당 부서<br><br>
+          <b>컴포넌트</b><br>
+          · component_id (PK)<br>
+          · type (압축기 / HX / 팬 / EEV)<br>
+          · model_id (FK → 모델)<br>
+          · 사양 JSON
+        </div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">필요성</div>
+        <div class="eb-text"><b>검색 효율 결정</b> — "X 모델 압축기" 쿼리 속도가 여기서 정해짐<br><b>중복 방지</b> — 단일 진실 원천 (Single Source of Truth)<br><b>확장성</b> — 새 도메인 추가 위치 사전 정의</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">15 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 17 — ⓑ ① 요소 3 · 스키마 + 인덱스 설계                   -->
+<!-- ============================================================ -->
+<section class="slide" data-notes="ⓑ ① DB 설계의 세번째 요소. 실제 테이블·인덱스 설계. 쿼리 속도 결정.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">E-1-3. ⓑ ① DB 설계 · 요소 3</div>
+      <h1 class="slide-title">스키마 + 인덱스 설계<small>테이블 정의 · 검색 최적화</small></h1>
+    </div>
+    <div class="slide-progress">16 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="db-infographic-panel">
+  <div class="db-info-titlebar"><span>ⓑ ① DB 설계 · 5요소</span><span class="db-info-meta">요소 3 강조</span></div>
+  <div class="db-info-svg-wrap"><svg viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="display:block"><defs><marker id="arrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D97706"/></marker></defs><path d="M 281.5 155.1 A 100 100 0 0 1 330.6 190.7" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 350.0 250.6 A 100 100 0 0 1 331.2 308.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 280.3 345.3 A 100 100 0 0 1 219.7 345.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 168.8 308.3 A 100 100 0 0 1 150.0 250.6" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 169.4 190.7 A 100 100 0 0 1 218.5 155.1" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><circle cx="250" cy="250" r="58" fill="#FFF7ED" stroke="#F59E0B" stroke-width="2" stroke-dasharray="3 4"/><text x="250" y="238" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="13" font-weight="800" fill="#92400E">DB 설계</text><text x="250" y="256" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#D97706">M1~M3</text><text x="250" y="272" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="11" font-weight="600" fill="#92400E">3개월 5요소</text><g opacity="0.7"><circle cx="250.0" cy="92.0" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="200.0" cy="42.0" r="14" fill="#B45309"/><text x="200.0" y="47.0" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">1</text><text x="250.0" y="92.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">소스 인벤토리</text><text x="250.0" y="110.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">데이터 위치·관리자</text></g><g opacity="0.7"><circle cx="400.3" cy="201.2" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="350.3" cy="151.2" r="14" fill="#B45309"/><text x="350.3" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">2</text><text x="400.3" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">ERD 모델링</text><text x="400.3" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">엔티티·관계 정의</text></g><g opacity="1"><circle cx="342.9" cy="377.8" r="64" fill="#D97706" stroke="#78350F" stroke-width="5"/><circle cx="292.9" cy="327.8" r="14" fill="#78350F"/><text x="292.9" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">3</text><text x="342.9" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF">스키마 + 인덱스</text><text x="342.9" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#FED7AA">테이블·검색</text></g><g opacity="0.7"><circle cx="157.1" cy="377.8" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="107.1" cy="327.8" r="14" fill="#B45309"/><text x="107.1" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">4</text><text x="157.1" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">품질 기준</text><text x="157.1" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">좋은 데이터 명시</text></g><g opacity="0.7"><circle cx="99.7" cy="201.2" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="49.7" cy="151.2" r="14" fill="#B45309"/><text x="49.7" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">5</text><text x="99.7" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">마이그레이션</text><text x="99.7" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">변경 대응</text></g></svg></div>
+</div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">ERD → 실제 DB 테이블 + 인덱스</div>
+        <div class="eb-text">테이블 · 컬럼 · 데이터 타입 · 외래키 · 인덱스 · 파티셔닝 정의</div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">구성 요소</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>테이블 정의</b> — 엔티티 → 테이블 · 속성 → 컬럼</div></div>
+          <div class="eb-li"><div><b>데이터 타입</b> — VARCHAR · INTEGER · TIMESTAMP · JSONB</div></div>
+          <div class="eb-li"><div><b>외래키</b> — DB 레벨 관계 강제</div></div>
+          <div class="eb-li"><div><b>인덱스</b> — 검색 빈번 컬럼 (model_id · type · 날짜)</div></div>
+          <div class="eb-li"><div><b>파티셔닝</b> — 시계열 = 월별 분할 (TimescaleDB)</div></div>
+        </div>
+      </div>
+      <div class="explain-block red">
+        <div class="eb-eyebrow">인덱스 효과 — 100×</div>
+        <div class="eb-text"><b>인덱스 없음</b> — "X 모델 압축기" 검색 5초<br><b>인덱스 있음</b> — 같은 쿼리 50ms<br><br>→ 사용자 체감 큰 차이 · AI 응답 속도 직결</div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">DB 엔진 선정</div>
+        <div class="eb-text"><b>PostgreSQL</b> — 정형 데이터 · 관계형<br><b>TimescaleDB</b> — 시계열 확장<br><b>Qdrant · Chroma</b> — 벡터 검색 (RAG용)<br><br>보안 · 확장성 · 비용 종합 결정</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">16 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 18 — ⓑ ① 요소 4 · 품질 기준 정의                         -->
+<!-- ============================================================ -->
+<section class="slide" data-notes="ⓑ ① DB 설계의 네번째 요소. 좋은 데이터 vs 나쁜 데이터 기준. ⑥ 검증 트랙 자동 룰의 입력.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">E-1-4. ⓑ ① DB 설계 · 요소 4</div>
+      <h1 class="slide-title">품질 기준 정의<small>좋은 데이터 vs 나쁜 데이터 명시화</small></h1>
+    </div>
+    <div class="slide-progress">17 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="db-infographic-panel">
+  <div class="db-info-titlebar"><span>ⓑ ① DB 설계 · 5요소</span><span class="db-info-meta">요소 4 강조</span></div>
+  <div class="db-info-svg-wrap"><svg viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="display:block"><defs><marker id="arrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D97706"/></marker></defs><path d="M 281.5 155.1 A 100 100 0 0 1 330.6 190.7" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 350.0 250.6 A 100 100 0 0 1 331.2 308.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 280.3 345.3 A 100 100 0 0 1 219.7 345.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 168.8 308.3 A 100 100 0 0 1 150.0 250.6" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 169.4 190.7 A 100 100 0 0 1 218.5 155.1" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><circle cx="250" cy="250" r="58" fill="#FFF7ED" stroke="#F59E0B" stroke-width="2" stroke-dasharray="3 4"/><text x="250" y="238" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="13" font-weight="800" fill="#92400E">DB 설계</text><text x="250" y="256" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#D97706">M1~M3</text><text x="250" y="272" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="11" font-weight="600" fill="#92400E">3개월 5요소</text><g opacity="0.7"><circle cx="250.0" cy="92.0" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="200.0" cy="42.0" r="14" fill="#B45309"/><text x="200.0" y="47.0" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">1</text><text x="250.0" y="92.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">소스 인벤토리</text><text x="250.0" y="110.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">데이터 위치·관리자</text></g><g opacity="0.7"><circle cx="400.3" cy="201.2" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="350.3" cy="151.2" r="14" fill="#B45309"/><text x="350.3" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">2</text><text x="400.3" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">ERD 모델링</text><text x="400.3" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">엔티티·관계 정의</text></g><g opacity="0.7"><circle cx="342.9" cy="377.8" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="292.9" cy="327.8" r="14" fill="#B45309"/><text x="292.9" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">3</text><text x="342.9" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">스키마 + 인덱스</text><text x="342.9" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">테이블·검색</text></g><g opacity="1"><circle cx="157.1" cy="377.8" r="64" fill="#D97706" stroke="#78350F" stroke-width="5"/><circle cx="107.1" cy="327.8" r="14" fill="#78350F"/><text x="107.1" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">4</text><text x="157.1" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF">품질 기준</text><text x="157.1" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#FED7AA">좋은 데이터 명시</text></g><g opacity="0.7"><circle cx="99.7" cy="201.2" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="49.7" cy="151.2" r="14" fill="#B45309"/><text x="49.7" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">5</text><text x="99.7" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">마이그레이션</text><text x="99.7" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">변경 대응</text></g></svg></div>
+</div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">자동 검증 가능한 명시적 룰</div>
+        <div class="eb-text">"좋은 데이터" 판단 기준 → 코드화 → ⑥ 검증·품질 트랙의 입력</div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">4가지 차원</div>
+        <div class="eb-list">
+          <div class="eb-li"><div><b>완결성 (Completeness)</b> — 필수 필드 채워짐? 미충족 시 reject</div></div>
+          <div class="eb-li"><div><b>일관성 (Consistency)</b> — 같은 의미 = 같은 형식? cc · ㎤ 통일 강제</div></div>
+          <div class="eb-li"><div><b>정확성 (Accuracy)</b> — 값이 사실과 일치? 음수 압력 자동 검출</div></div>
+          <div class="eb-li"><div><b>최신성 (Timeliness)</b> — 데이터 수명? 5년 이상 → "오래됨" 라벨</div></div>
+        </div>
+      </div>
+      <div class="explain-block purple">
+        <div class="eb-eyebrow">구체 룰 예시</div>
+        <div class="eb-text" style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7">
+          · 실험 온도 −40°C ~ 60°C 외 → reject<br>
+          · 압축기 RPM 0 ~ 7000 외 → flag<br>
+          · 시계열 샘플링 변동 30% 초과 → warning<br>
+          · 시험 보고서 12개월 미갱신 → "오래됨"
+        </div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">필요성</div>
+        <div class="eb-text"><b>AI 답변 품질 = 데이터 품질</b><br>잘못된 데이터 학습 → AI 잘못된 답변<br><br><b>자동 검증</b> — 룰 코드화 시 신규 데이터 자동 체크<br><b>부서 간 데이터 거래 기준</b> — "이 형식으로 주세요" 근거</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">17 / 18</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 19 — ⓑ ① 요소 5 · 마이그레이션 체계                      -->
+<!-- ============================================================ -->
+<section class="slide" data-notes="ⓑ ① DB 설계의 마지막 요소. 스키마 변경 대응 체계. 운영 중 변경 필연.">
+  <div class="slide-header">
+    <div>
+      <div class="slide-eyebrow">E-1-5. ⓑ ① DB 설계 · 요소 5</div>
+      <h1 class="slide-title">마이그레이션 체계<small>스키마 변경 대응 방법론</small></h1>
+    </div>
+    <div class="slide-progress">18 / 18</div>
+  </div>
+  <div class="slide-body">
+    <div class="db-infographic-panel">
+  <div class="db-info-titlebar"><span>ⓑ ① DB 설계 · 5요소</span><span class="db-info-meta">요소 5 강조</span></div>
+  <div class="db-info-svg-wrap"><svg viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="display:block"><defs><marker id="arrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D97706"/></marker></defs><path d="M 281.5 155.1 A 100 100 0 0 1 330.6 190.7" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 350.0 250.6 A 100 100 0 0 1 331.2 308.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 280.3 345.3 A 100 100 0 0 1 219.7 345.3" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 168.8 308.3 A 100 100 0 0 1 150.0 250.6" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><path d="M 169.4 190.7 A 100 100 0 0 1 218.5 155.1" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" opacity="0.4" marker-end="url(#arrowHead)"/><circle cx="250" cy="250" r="58" fill="#FFF7ED" stroke="#F59E0B" stroke-width="2" stroke-dasharray="3 4"/><text x="250" y="238" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="13" font-weight="800" fill="#92400E">DB 설계</text><text x="250" y="256" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#D97706">M1~M3</text><text x="250" y="272" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="11" font-weight="600" fill="#92400E">3개월 5요소</text><g opacity="0.7"><circle cx="250.0" cy="92.0" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="200.0" cy="42.0" r="14" fill="#B45309"/><text x="200.0" y="47.0" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">1</text><text x="250.0" y="92.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">소스 인벤토리</text><text x="250.0" y="110.0" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">데이터 위치·관리자</text></g><g opacity="0.7"><circle cx="400.3" cy="201.2" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="350.3" cy="151.2" r="14" fill="#B45309"/><text x="350.3" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">2</text><text x="400.3" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">ERD 모델링</text><text x="400.3" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">엔티티·관계 정의</text></g><g opacity="0.7"><circle cx="342.9" cy="377.8" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="292.9" cy="327.8" r="14" fill="#B45309"/><text x="292.9" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">3</text><text x="342.9" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">스키마 + 인덱스</text><text x="342.9" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">테이블·검색</text></g><g opacity="0.7"><circle cx="157.1" cy="377.8" r="64" fill="#FCD34D" stroke="#B45309" stroke-width="3"/><circle cx="107.1" cy="327.8" r="14" fill="#B45309"/><text x="107.1" y="332.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">4</text><text x="157.1" y="377.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#1A1A2E">품질 기준</text><text x="157.1" y="395.8" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#78350F">좋은 데이터 명시</text></g><g opacity="1"><circle cx="99.7" cy="201.2" r="64" fill="#D97706" stroke="#78350F" stroke-width="5"/><circle cx="49.7" cy="151.2" r="14" fill="#78350F"/><text x="49.7" y="156.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="800" fill="#FFF">5</text><text x="99.7" y="201.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="14" font-weight="800" fill="#FFFFFF">마이그레이션</text><text x="99.7" y="219.2" text-anchor="middle" font-family="Pretendard, sans-serif" font-size="10" font-weight="500" fill="#FED7AA">변경 대응</text></g></svg></div>
+</div>
+    <div class="explain">
+      <div class="explain-block accent">
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">스키마 변경 시 데이터 보존</div>
+        <div class="eb-text">한 번 설계로 끝 ≠ DB. 운영 중 5~10회 변경 필연 → <strong>변경 절차 사전 표준화</strong></div>
+      </div>
+      <div class="explain-block green">
+        <div class="eb-eyebrow">전형 시나리오</div>
+        <div class="eb-list">
+          <div class="eb-li"><div>"부품 카탈로그 친환경 등급 컬럼 추가"</div></div>
+          <div class="eb-li"><div>"부품 카탈로그 신규 컬럼 추가 (예: 인증등급)"</div></div>
+          <div class="eb-li"><div>"시계열 샘플링 간격 변경 — 기존 데이터?"</div></div>
+          <div class="eb-li"><div>"신 도메인 (소음 · 진동) 추가"</div></div>
+          <div class="eb-li"><div>"시험 규격 룰셋 구조 개편"</div></div>
+        </div>
+      </div>
+      <div class="explain-block purple">
+        <div class="eb-eyebrow">도구 · 버전 관리</div>
+        <div class="eb-text"><b>Alembic</b> (Python) · <b>Flyway</b> (Java/SQL)<br>스키마 변경 = 코드로 버전 관리<br><br>예시 마이그레이션 파일</div>
+        <div class="eb-text" style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;margin-top:8px">
+          V1__initial_schema.sql<br>
+          V2__add_certification_grade.sql<br>
+          V3__add_acoustics_domain.sql
+        </div>
+      </div>
+      <div class="explain-block warm">
+        <div class="eb-eyebrow">필요성</div>
+        <div class="eb-text"><b>변경은 필연</b> — Phase 1 9개월 = 5~10회 변경<br><b>데이터 손실 방지</b> — 변경 시 재수집 비용 막대<br><b>롤백 가능</b> — 실수 시 직전 버전 복원</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">18 / 18</div>
+</section>
+
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar" id="toolbar">
+  <button class="tb-btn" id="btnPrev">←</button>
+  <span class="tb-progress" id="progress">1 / 7</span>
+  <button class="tb-btn" id="btnNext">→</button>
+  <button class="tb-btn" id="btnNotes" title="노트 (N)">🗒</button>
+  <button class="tb-btn" id="btnFull" title="전체화면 (F)">⛶</button>
+</div>
+
+<div class="notes" id="notes">
+  <div class="notes-title">📝 발표자 노트</div>
+  <div class="notes-body" id="notesBody"></div>
+</div>
+
+<script>
+// ============================================================
+// ROADMAP DATA (matches the actual roadmap structure)
+// ============================================================
+const TRACKS = [
+  {type:'section', label:'PHASE 1 — Design Guide Agent (9개월)', phase:'p1'},
+  {label:'ⓐ 외부 LLM API', icon:'🗣️', cat:'cat-sllm', phase:'p1', tid:'a',
+   bars:[
+    {s:0,e:3,c:'c-blue',t:'기반 구축'},
+    {s:3,e:5,c:'c-blue',t:'에이전트 MVP'},
+    {s:5,e:7,c:'c-blue',t:'멀티도메인 + 로그'},
+    {s:7,e:9,c:'c-blue-l',t:'통합 완성'},
+   ], ms:[{m:3,c:'ms-blue'},{m:9,c:'ms-blue'}],
+   detail:{
+     subtracks:[
+       {label:'① 질문 이해', icon:'🎧', cat:'cat-sllm', sid:'1', bars:[
+         {s:0,e:1.5,c:'c-blue',t:'의도 분류'},
+         {s:1,e:2.5,c:'c-blue',t:'역질문 로직'},
+         {s:1.5,e:3,c:'c-blue',t:'용어 사전'},
+         {s:2.5,e:4,c:'c-blue-l',t:'쿼리 생성'},
+         {s:4,e:5,c:'c-blue-l',t:'튜닝'},
+       ], ms:[{m:3,c:'ms-blue'}]},
+       {label:'② 자료 검색', icon:'📚', cat:'cat-sllm', sid:'2', bars:[
+         {s:0,e:1,c:'c-blue',t:'문서 수집'},
+         {s:0.5,e:1.5,c:'c-blue',t:'임베딩'},
+         {s:1,e:2,c:'c-blue',t:'벡터 DB'},
+         {s:1.5,e:3,c:'c-blue',t:'검색'},
+         {s:3,e:4.5,c:'c-blue',t:'멀티 소스'},
+         {s:4.5,e:6,c:'c-blue-l',t:'하이브리드'},
+         {s:6,e:7.5,c:'c-blue-l',t:'재랭킹'},
+       ], ms:[]},
+       {label:'③ AI 답변', icon:'🧩', cat:'cat-sllm', sid:'3', bars:[
+         {s:0,e:1,c:'c-blue-l',t:'API 보안'},
+         {s:0.5,e:1.5,c:'c-blue-l',t:'마스킹'},
+         {s:1.5,e:3,c:'c-blue',t:'Prompt 설계'},
+         {s:2.5,e:4,c:'c-blue',t:'JSON Schema'},
+         {s:3.5,e:5,c:'c-blue',t:'Tool 등록'},
+         {s:4.5,e:6,c:'c-blue',t:'Orchestrator'},
+         {s:5.5,e:7,c:'c-blue-l',t:'에러 복구'},
+       ], ms:[]},
+       {label:'④ 답변 표시', icon:'🗣️', cat:'cat-ui', sid:'4', bars:[
+         {s:2,e:3.5,c:'c-red',t:'JSON→UI'},
+         {s:3,e:4.5,c:'c-red',t:'전문가 모드'},
+         {s:4,e:5.5,c:'c-red',t:'근거 인용'},
+         {s:5,e:7,c:'c-red',t:'1D 시각화'},
+         {s:7,e:8.5,c:'c-red-l',t:'음성·그래프'},
+       ], ms:[]},
+       {label:'⑤ 로그 수집', icon:'📊', cat:'cat-db', sid:'5', bars:[
+         {s:3,e:4.5,c:'c-amber',t:'로그 파이프'},
+         {s:4,e:5.5,c:'c-amber',t:'피드백 UI'},
+         {s:5,e:6.5,c:'c-amber',t:'품질 필터'},
+         {s:6,e:8,c:'c-amber',t:'라벨링'},
+         {s:7,e:9,c:'c-amber-l',t:'증강'},
+       ], ms:[]},
+     ]
+   }
+  },
+  {label:'ⓑ 검증 DB', icon:'📦', cat:'cat-db', phase:'p1', tid:'b',
+   bars:[
+    {s:0,e:3,c:'c-amber',t:'스키마 정의'},
+    {s:2,e:5,c:'c-amber',t:'데이터 수집'},
+    {s:4,e:8,c:'c-amber',t:'룰 + API'},
+    {s:6,e:9,c:'c-amber-l',t:'검증 + 품질'},
+   ], ms:[{m:3,c:'ms-green'},{m:9,c:'ms-red'}],
+   detail:{
+     subtracks:[
+       {label:'① DB 설계', icon:'🗂️', cat:'cat-db', sid:'b1', bars:[
+         {s:0,e:1,c:'c-amber',t:'소스 인벤토리',bid:'b1-1'},
+         {s:0.5,e:1.5,c:'c-amber',t:'ERD 모델링',bid:'b1-2'},
+         {s:1,e:2,c:'c-amber',t:'스키마 설계',bid:'b1-3'},
+         {s:1.5,e:2.5,c:'c-amber-l',t:'품질 기준',bid:'b1-4'},
+         {s:2,e:3,c:'c-amber-l',t:'마이그레이션',bid:'b1-5'},
+       ], ms:[{m:2,c:'ms-green'}]},
+       {label:'② 실험 데이터', icon:'🧪', cat:'cat-db', sid:'b2', bars:[
+         {s:1,e:2.5,c:'c-amber',t:'사내 수집'},
+         {s:2,e:3.5,c:'c-amber',t:'클렌징·단위'},
+         {s:3,e:4.5,c:'c-amber',t:'정규화'},
+         {s:4,e:5.5,c:'c-amber',t:'결측·이상치'},
+         {s:5,e:6.5,c:'c-amber-l',t:'ETL'},
+       ], ms:[{m:5,c:'ms-green'}]},
+       {label:'③ 규격 추출', icon:'📜', cat:'cat-sllm', sid:'b3', bars:[
+         {s:3,e:4.5,c:'c-blue',t:'IEC·EN 디지털화'},
+         {s:4,e:5.5,c:'c-blue',t:'룰 추출 프롬프트'},
+         {s:5,e:7,c:'c-blue',t:'사내 가이드 추출'},
+         {s:6,e:7.5,c:'c-blue',t:'전문가 검증'},
+         {s:7,e:8.5,c:'c-blue-l',t:'룰 검색 인덱스'},
+       ], ms:[{m:7,c:'ms-blue'}]},
+       {label:'④ 부품 카탈로그', icon:'🔧', cat:'cat-db', sid:'b4', bars:[
+         {s:2,e:4,c:'c-amber',t:'압축기·HX·팬·EEV'},
+         {s:3.5,e:5.5,c:'c-amber',t:'BOM·도면 메타'},
+         {s:5,e:7,c:'c-amber',t:'성능 곡선·AHRI'},
+         {s:6.5,e:8,c:'c-amber-l',t:'벤더·단가'},
+       ], ms:[]},
+       {label:'⑤ API + 권한', icon:'🔌', cat:'cat-route', sid:'b5', bars:[
+         {s:3,e:4.5,c:'c-teal',t:'REST/GraphQL'},
+         {s:4,e:6,c:'c-teal',t:'벡터·정형 쿼리'},
+         {s:5.5,e:7,c:'c-teal',t:'RBAC'},
+         {s:6.5,e:8,c:'c-teal-l',t:'캐싱'},
+       ], ms:[]},
+       {label:'⑥ 검증·품질', icon:'✅', cat:'cat-phys2', sid:'b6', bars:[
+         {s:5,e:6.5,c:'c-teal',t:'테스트 시나리오 100+'},
+         {s:6,e:7.5,c:'c-teal',t:'Ground Truth 대조'},
+         {s:7,e:8.5,c:'c-teal',t:'회귀 테스트'},
+         {s:8,e:9,c:'c-teal-l',t:'품질 모니터링'},
+       ], ms:[{m:9,c:'ms-red'}]},
+     ]
+   }
+  },
+  {label:'ⓒ 1D 물리', icon:'🌡️', cat:'cat-phys', phase:'p1', tid:'c',
+   bars:[
+    {s:0,e:2,c:'c-green',t:'HPWD 통합'},
+    {s:2,e:5,c:'c-green',t:'사이클 1D'},
+    {s:5,e:8,c:'c-green',t:'전 도메인'},
+    {s:8,e:9,c:'c-green-l',t:'검증'},
+   ], ms:[{m:5,c:'ms-green'}]},
+  {label:'ⓓ 요소 검증', icon:'✅', cat:'cat-phys2', phase:'p1', tid:'d',
+   bars:[
+    {s:2,e:4,c:'c-teal',t:'단일 검증'},
+    {s:4,e:7,c:'c-teal',t:'교차 검증'},
+    {s:7,e:9,c:'c-teal-l',t:'정확도 평가'},
+   ], ms:[{m:7,c:'ms-green'}]},
+  {label:'ⓔ 최적화 툴', icon:'⚙️', cat:'cat-route', phase:'p1', tid:'e',
+   bars:[
+    {s:3,e:5,c:'c-teal',t:'목적함수'},
+    {s:5,e:7,c:'c-teal',t:'BO + 감도'},
+    {s:7,e:9,c:'c-teal',t:'에이전트 연동'},
+   ], ms:[{m:9,c:'ms-red'}]},
+  {type:'section', label:'PHASE 2 — Full Agent (12개월)', phase:'p2'},
+  {label:'ⓐ 자체 sLLM', icon:'🗣️', cat:'cat-sllm', phase:'p2', tid:'a2',
+   bars:[
+    {s:9,e:12,c:'c-blue',t:'데이터·Base'},
+    {s:12,e:15,c:'c-blue',t:'파인튜닝'},
+    {s:15,e:18,c:'c-blue',t:'A/B 테스트'},
+    {s:18,e:21,c:'c-blue-l',t:'전환'},
+   ], ms:[{m:21,c:'ms-blue'}]},
+  {label:'ⓑ Surrogate AI', icon:'🌀', cat:'cat-phys2', phase:'p2', tid:'b2',
+   bars:[
+    {s:9,e:12,c:'c-green',t:'CFD 데이터'},
+    {s:12,e:15,c:'c-green',t:'학습'},
+    {s:15,e:18,c:'c-green',t:'튜닝'},
+    {s:18,e:21,c:'c-green-l',t:'3D 검증'},
+   ], ms:[{m:21,c:'ms-green'}]},
+  {label:'ⓒ 배치 최적화', icon:'🧠', cat:'cat-ai', phase:'p2', tid:'c2',
+   bars:[
+    {s:9,e:11,c:'c-purple',t:'GNN 인코더'},
+    {s:11,e:14,c:'c-purple',t:'PPO RL'},
+    {s:14,e:17,c:'c-purple',t:'Diffusion'},
+    {s:17,e:21,c:'c-purple',t:'동시 최적화'},
+   ], ms:[]},
+  {label:'ⓓ Co-design', icon:'📐', cat:'cat-ai', phase:'p2', tid:'d2',
+   bars:[
+    {s:12,e:15,c:'c-indigo',t:'파라미터'},
+    {s:15,e:18,c:'c-indigo',t:'BO 최적화'},
+    {s:18,e:21,c:'c-indigo',t:'RLHF 루프'},
+   ], ms:[]},
+  {label:'ⓔ 시스템 검증', icon:'🔎', cat:'cat-db', phase:'p2', tid:'e2',
+   bars:[
+    {s:9,e:12,c:'c-amber',t:'DB 확장'},
+    {s:12,e:16,c:'c-amber',t:'통합 검증'},
+    {s:16,e:21,c:'c-amber-l',t:'레지스트리'},
+   ], ms:[]},
+];
+
+const MONTHS = 21;
+const P1_END = 9;
+
+// ============================================================
+// Render roadmap into a canvas with spotlight config
+// ============================================================
+function renderRoadmap(canvasEl, opts = {}) {
+  const spotlight = opts.spotlight || 'all';
+
+  canvasEl.innerHTML = '';
+
+  // Detail mode for ⓐ
+  if (spotlight === 'detail-a' || (spotlight.startsWith('sub-') && !spotlight.startsWith('sub-b'))) {
+    renderDetailMode(canvasEl, spotlight, 'a');
+    return;
+  }
+  // Detail mode for ⓑ (also handles bar-b{N}-{M} bar-level focus)
+  if (spotlight === 'detail-b' || spotlight.startsWith('sub-b') || spotlight.startsWith('bar-b')) {
+    renderDetailMode(canvasEl, spotlight, 'b');
+    return;
+  }
+  // Dual view for spotlight=all (P1 above, P2 below, with separate time axes)
+  if (spotlight === 'all') {
+    renderDualMode(canvasEl);
+    return;
+  }
+
+  // Title bar
+  const titleBar = document.createElement('div');
+  titleBar.className = 'canvas-title';
+  titleBar.innerHTML = `<span>HPWD-GPT 개발 로드맵 v5</span><span class="canvas-meta">${getCanvasMeta(spotlight)}</span>`;
+  canvasEl.appendChild(titleBar);
+
+  // Phase tabs
+  const tabs = document.createElement('div');
+  tabs.className = 'rm-phase-tabs';
+  const isP1View = spotlight === 'phase1' || spotlight.startsWith('track-') && !spotlight.endsWith('-a2') && !spotlight.endsWith('-b2') && !spotlight.endsWith('-c2') && !spotlight.endsWith('-d2') && !spotlight.endsWith('-e2');
+  const isP2View = spotlight === 'phase2' || spotlight === 'phase2-overview';
+  const p1Active = spotlight === 'all' || isP1View;
+  const p2Active = spotlight === 'all' || isP2View;
+  tabs.innerHTML = `
+    <div class="rm-phase-tab ${p1Active && !isP2View ? 'active p1' : ''} ${isP2View ? 'dim' : ''}">
+      <span class="pt-num">P1</span>
+      <span>Design Guide Agent · M1~M9</span>
+    </div>
+    <div class="rm-phase-tab ${p2Active && !isP1View ? 'active p2' : ''} ${isP1View ? 'dim' : ''}">
+      <span class="pt-num">P2</span>
+      <span>Full Agent · M10~M21</span>
+    </div>
+  `;
+  canvasEl.appendChild(tabs);
+
+  // Months row
+  const monthsRow = document.createElement('div');
+  monthsRow.className = 'rm-months';
+  let viewStart = 0, viewEnd = MONTHS;
+  if (isP1View) {
+    viewEnd = P1_END;
+  } else if (isP2View) {
+    viewStart = P1_END;
+  }
+  const span = viewEnd - viewStart;
+
+  monthsRow.innerHTML = `<div class="rm-label-col">TRACK</div>`;
+  const cells = document.createElement('div');
+  cells.className = 'rm-month-cells';
+  for (let i = viewStart; i < viewEnd; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'rm-month' + ((i - viewStart) % 3 === 0 ? ' q-start' : '');
+    cell.textContent = 'M' + (i + 1);
+    cells.appendChild(cell);
+  }
+  monthsRow.appendChild(cells);
+  canvasEl.appendChild(monthsRow);
+
+  // Tracks
+  const tracksWrap = document.createElement('div');
+  tracksWrap.className = 'rm-tracks';
+
+  TRACKS.forEach(tr => {
+    if (tr.type === 'section') {
+      const isP1Section = tr.phase === 'p1';
+      if (isP1View && !isP1Section) return;
+      if (isP2View && isP1Section) return;
+      const sec = document.createElement('div');
+      sec.className = 'rm-section';
+      if (shouldDim(tr, spotlight)) sec.classList.add('dim');
+      sec.textContent = tr.label;
+      tracksWrap.appendChild(sec);
+      return;
+    }
+
+    if (isP1View && tr.phase !== 'p1') return;
+    if (isP2View && tr.phase !== 'p2') return;
+
+    const row = document.createElement('div');
+    row.className = 'rm-track';
+    if (shouldDim(tr, spotlight)) row.classList.add('dim');
+    if (shouldHighlight(tr, spotlight)) row.classList.add('highlight');
+
+    const lab = document.createElement('div');
+    lab.className = 'rm-track-label';
+    lab.innerHTML = `<span class="cat ${tr.cat}">${tr.icon || '▪'}</span><span class="label-text">${tr.label}</span>`;
+    row.appendChild(lab);
+
+    const barsArea = document.createElement('div');
+    barsArea.className = 'rm-track-bars';
+
+    (tr.bars || []).forEach(b => {
+      const bs = Math.max(b.s, viewStart);
+      const be = Math.min(b.e, viewEnd);
+      if (be <= bs) return;
+      const bar = document.createElement('div');
+      bar.className = 'bar ' + b.c;
+      bar.style.left = ((bs - viewStart) / span * 100) + '%';
+      bar.style.width = ((be - bs) / span * 100) + '%';
+      bar.textContent = b.t;
+      if (shouldDim(tr, spotlight)) bar.classList.add('dim');
+      if (shouldHighlight(tr, spotlight)) bar.classList.add('highlight');
+      barsArea.appendChild(bar);
+    });
+
+    (tr.ms || []).forEach(m => {
+      if (m.m < viewStart || m.m > viewEnd) return;
+      const ms = document.createElement('div');
+      ms.className = 'milestone ' + m.c;
+      ms.style.left = `calc(${(m.m - viewStart) / span * 100}% - 7px)`;
+      if (shouldDim(tr, spotlight)) ms.classList.add('dim');
+      if (shouldHighlight(tr, spotlight)) ms.classList.add('highlight');
+      barsArea.appendChild(ms);
+    });
+
+    row.appendChild(barsArea);
+    tracksWrap.appendChild(row);
+  });
+
+  canvasEl.appendChild(tracksWrap);
+}
+
+function getCanvasMeta(spotlight) {
+  const meta = {
+    'all': '전체 21개월 · 10트랙',
+    'phase1': 'PHASE 1 · 9개월 · 5트랙',
+    'phase2': 'PHASE 2 · 12개월 · 5트랙',
+    'phase2-overview': 'PHASE 2 · 미리보기',
+    'track-a': 'P1 ⓐ 외부 LLM API 강조',
+    'track-b': 'P1 ⓑ 검증 DB 강조',
+    'track-c': 'P1 ⓒ 1D 물리 모델 강조',
+    'track-d': 'P1 ⓓ 개별 요소 검증 강조',
+    'track-e': 'P1 ⓔ 최적화 툴 강조',
+    'detail-a': 'ⓐ 외부 LLM API · 세부 보기',
+    'detail-b': 'ⓑ 검증 DB · 세부 보기',
+  };
+  if (spotlight.startsWith('sub-b')) return 'ⓑ 세부 · ' + spotlight.slice(4);
+  if (spotlight.startsWith('sub-')) return 'ⓐ 세부 · 서브트랙 ' + spotlight.slice(4);
+  return meta[spotlight] || '';
+}
+
+function shouldDim(tr, spotlight) {
+  if (spotlight === 'all' || spotlight === 'phase1' || spotlight === 'phase2' || spotlight === 'phase2-overview') return false;
+  if (spotlight === 'track-a') return tr.tid !== 'a';
+  if (spotlight === 'track-b') return tr.tid !== 'b';
+  if (spotlight === 'track-c') return tr.tid !== 'c';
+  if (spotlight === 'track-d') return tr.tid !== 'd';
+  if (spotlight === 'track-e') return tr.tid !== 'e';
+  return false;
+}
+
+function shouldHighlight(tr, spotlight) {
+  if (spotlight === 'track-a') return tr.tid === 'a';
+  if (spotlight === 'track-b') return tr.tid === 'b';
+  if (spotlight === 'track-c') return tr.tid === 'c';
+  if (spotlight === 'track-d') return tr.tid === 'd';
+  if (spotlight === 'track-e') return tr.tid === 'e';
+  return false;
+}
+
+// ============================================================
+// Detail mode (subtrack render) — works for any track with detail data
+// ============================================================
+function renderDualMode(canvasEl) {
+  // Title bar (stays at top, doesn't scroll)
+  const titleBar = document.createElement('div');
+  titleBar.className = 'canvas-title';
+  titleBar.innerHTML = `<span>HPWD-GPT 개발 로드맵 v5</span><span class="canvas-meta">전체 21개월 · 10트랙 (P1/P2 분리 뷰)</span>`;
+  canvasEl.appendChild(titleBar);
+
+  // Scrollable inner wrapper that contains both phases
+  const scrollWrap = document.createElement('div');
+  scrollWrap.style.flex = '1';
+  scrollWrap.style.overflowY = 'auto';
+  scrollWrap.style.overflowX = 'hidden';
+  scrollWrap.style.paddingRight = '4px';
+  // custom scrollbar matches existing rm-tracks
+  scrollWrap.className = 'rm-tracks';
+  scrollWrap.style.display = 'block';
+  canvasEl.appendChild(scrollWrap);
+
+  // Render P1 section, then P2 section, both inside scrollWrap
+  renderPhaseSection(scrollWrap, 'p1', 0, P1_END);
+  // Spacer between phases
+  const spacer = document.createElement('div');
+  spacer.style.height = '12px';
+  spacer.style.flexShrink = '0';
+  scrollWrap.appendChild(spacer);
+  renderPhaseSection(scrollWrap, 'p2', P1_END, MONTHS);
+}
+
+function renderPhaseSection(canvasEl, phaseKey, viewStart, viewEnd) {
+  const span = viewEnd - viewStart;
+  const isP1 = phaseKey === 'p1';
+
+  // Phase header tab (single, full-width, clearly labeled)
+  const tabWrap = document.createElement('div');
+  tabWrap.className = 'rm-phase-tabs';
+  tabWrap.style.marginBottom = '6px';
+  tabWrap.innerHTML = `
+    <div class="rm-phase-tab active ${phaseKey === 'p1' ? 'p1' : 'p2'}">
+      <span class="pt-num">${isP1 ? 'P1' : 'P2'}</span>
+      <span>${isP1 ? 'Design Guide Agent · 9개월 · M1~M9' : 'Full Agent · 12개월 · M10~M21'}</span>
+    </div>
+  `;
+  canvasEl.appendChild(tabWrap);
+
+  // Months row
+  const monthsRow = document.createElement('div');
+  monthsRow.className = 'rm-months';
+  monthsRow.innerHTML = `<div class="rm-label-col">TRACK</div>`;
+  const cells = document.createElement('div');
+  cells.className = 'rm-month-cells';
+  for (let i = viewStart; i < viewEnd; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'rm-month' + ((i - viewStart) % 3 === 0 ? ' q-start' : '');
+    cell.textContent = 'M' + (i + 1);
+    cells.appendChild(cell);
+  }
+  monthsRow.appendChild(cells);
+  canvasEl.appendChild(monthsRow);
+
+  // Tracks for this phase only
+  const tracksWrap = document.createElement('div');
+  tracksWrap.className = 'rm-tracks';
+  tracksWrap.style.flex = 'none';
+  tracksWrap.style.overflow = 'visible';
+
+  TRACKS.forEach(tr => {
+    if (tr.type === 'section') return; // skip section dividers in dual view
+    if (tr.phase !== phaseKey) return;
+
+    const row = document.createElement('div');
+    row.className = 'rm-track';
+
+    const lab = document.createElement('div');
+    lab.className = 'rm-track-label';
+    lab.innerHTML = `<span class="cat ${tr.cat}">${tr.icon || '▪'}</span><span class="label-text">${tr.label}</span>`;
+    row.appendChild(lab);
+
+    const barsArea = document.createElement('div');
+    barsArea.className = 'rm-track-bars';
+
+    (tr.bars || []).forEach(b => {
+      const bs = Math.max(b.s, viewStart);
+      const be = Math.min(b.e, viewEnd);
+      if (be <= bs) return;
+      const bar = document.createElement('div');
+      bar.className = 'bar ' + b.c;
+      bar.style.left = ((bs - viewStart) / span * 100) + '%';
+      bar.style.width = ((be - bs) / span * 100) + '%';
+      bar.textContent = b.t;
+      barsArea.appendChild(bar);
+    });
+
+    row.appendChild(barsArea);
+    tracksWrap.appendChild(row);
+  });
+
+  canvasEl.appendChild(tracksWrap);
+}
+
+
+// ============================================================
+// Detail mode (subtrack render) — works for any track with detail data
+// ============================================================
+function renderDetailMode(canvasEl, spotlight, trackTid) {
+  const tr = TRACKS.find(t => t.tid === trackTid);
+  if (!tr || !tr.detail) return;
+  const subs = tr.detail.subtracks;
+
+  // Determine focused subtrack and (optionally) focused bar from spotlight
+  let subFocus = null;
+  let barFocus = null;
+  if (spotlight.startsWith('bar-')) {
+    // 'bar-b1-3' -> barFocus='b1-3', subFocus='b1'
+    barFocus = spotlight.slice(4);  // 'b1-3'
+    subFocus = barFocus.split('-')[0];  // 'b1'
+  } else if (spotlight.startsWith('sub-b')) {
+    subFocus = spotlight.slice(4); // 'b1' .. 'b6'
+  } else if (spotlight.startsWith('sub-')) {
+    subFocus = spotlight.slice(4); // '1' .. '6'
+  }
+
+  // Compute range
+  const allBars = subs.flatMap(s => s.bars);
+  const tStart = Math.min(...allBars.map(b => b.s));
+  const tEnd = Math.max(...allBars.map(b => b.e));
+  const tSpan = tEnd - tStart;
+
+  // Header
+  const header = document.createElement('div');
+  header.className = 'rm-detail-header';
+  // Find bar text if bar-focused
+  let barText = '';
+  if (barFocus) {
+    for (const st of subs) {
+      const found = (st.bars || []).find(b => b.bid === barFocus);
+      if (found) { barText = found.t; break; }
+    }
+  }
+  header.innerHTML = `
+    <div class="rm-detail-title">${tr.icon} ${tr.label} <span style="color:var(--accent);font-weight:600;font-size:11px">· 세부 로드맵${barText ? ' · ' + barText : ''}</span></div>
+    <div class="rm-detail-meta">M${Math.round(tStart+1)}~M${Math.round(tEnd)} · ${Math.round(tEnd-tStart)}개월 · ${subs.length}개 컴포넌트</div>
+  `;
+  canvasEl.appendChild(header);
+
+  // Months
+  const monthsRow = document.createElement('div');
+  monthsRow.className = 'rm-months';
+  monthsRow.innerHTML = `<div class="rm-label-col">서브트랙</div>`;
+  const cells = document.createElement('div');
+  cells.className = 'rm-month-cells';
+  const startInt = Math.floor(tStart);
+  const endInt = Math.ceil(tEnd);
+  for (let i = startInt; i < endInt; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'rm-month' + ((i - startInt) % 3 === 0 ? ' q-start' : '');
+    cell.textContent = 'M' + (i + 1);
+    cells.appendChild(cell);
+  }
+  monthsRow.appendChild(cells);
+  canvasEl.appendChild(monthsRow);
+
+  // Subtracks
+  const wrap = document.createElement('div');
+  wrap.className = 'rm-tracks';
+  subs.forEach(st => {
+    const row = document.createElement('div');
+    row.className = 'rm-track detail-mode';
+    if (barFocus) {
+      // bar-level focus: dim other rows but don't highlight whole row (keep it neutral so bar pops)
+      if (subFocus !== st.sid) row.classList.add('dim');
+    } else {
+      if (subFocus && subFocus !== st.sid) row.classList.add('dim');
+      if (subFocus === st.sid) row.classList.add('highlight');
+    }
+
+    const lab = document.createElement('div');
+    lab.className = 'rm-track-label';
+    lab.innerHTML = `<span class="cat ${st.cat}">${st.icon}</span><span class="label-text">${st.label}</span>`;
+    row.appendChild(lab);
+
+    const barsArea = document.createElement('div');
+    barsArea.className = 'rm-track-bars';
+
+    // Lane packing
+    const bars = (st.bars || []).map(b => ({...b}));
+    bars.sort((a,b) => a.s - b.s);
+    const lanes = [];
+    const barLane = [];
+    bars.forEach((b, i) => {
+      let placed = false;
+      for (let li = 0; li < lanes.length; li++) {
+        const last = lanes[li][lanes[li].length - 1];
+        if (last.e <= b.s + 0.01) {
+          lanes[li].push(b);
+          barLane[i] = li;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) { lanes.push([b]); barLane[i] = lanes.length - 1; }
+    });
+
+    const laneEls = [];
+    for (let li = 0; li < Math.max(1, lanes.length); li++) {
+      const lane = document.createElement('div');
+      lane.className = 'lane';
+      barsArea.appendChild(lane);
+      laneEls.push(lane);
+    }
+
+    bars.forEach((b, i) => {
+      const bs = Math.max(b.s, tStart);
+      const be = Math.min(b.e, tEnd);
+      if (be <= bs) return;
+      const bar = document.createElement('div');
+      bar.className = 'bar ' + b.c;
+      bar.style.left = ((bs - tStart) / tSpan * 100) + '%';
+      bar.style.width = ((be - bs) / tSpan * 100) + '%';
+      bar.textContent = b.t;
+      if (barFocus) {
+        // bar-level focus: only the matching bar is highlighted; everything else dims
+        if (b.bid === barFocus) bar.classList.add('highlight');
+        else bar.classList.add('dim');
+      } else {
+        if (subFocus && subFocus !== st.sid) bar.classList.add('dim');
+        if (subFocus === st.sid) bar.classList.add('highlight');
+      }
+      laneEls[barLane[i]].appendChild(bar);
+    });
+
+    // Milestones for the focused subtrack
+    (st.ms || []).forEach(m => {
+      if (m.m < tStart || m.m > tEnd) return;
+      const ms = document.createElement('div');
+      ms.className = 'milestone ' + m.c;
+      ms.style.left = `calc(${(m.m - tStart) / tSpan * 100}% - 7px)`;
+      ms.style.top = '50%';
+      if (subFocus && subFocus !== st.sid) ms.classList.add('dim');
+      if (subFocus === st.sid) ms.classList.add('highlight');
+      laneEls[0].appendChild(ms);
+    });
+
+    row.appendChild(barsArea);
+    wrap.appendChild(row);
+  });
+  canvasEl.appendChild(wrap);
+}
+
+
+// ============================================================
+// Slide navigation
+// ============================================================
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+let notesVisible = false;
+
+function show(i) {
+  current = Math.max(0, Math.min(total - 1, i));
+  slides.forEach((s, idx) => s.classList.toggle('active', idx === current));
+  document.getElementById('progress').textContent = `${current + 1} / ${total}`;
+
+  // Render the roadmap inside this slide if it has a canvas
+  const slide = slides[current];
+  const canvas = slide.querySelector('.roadmap-canvas');
+  if (canvas) {
+    renderRoadmap(canvas, { spotlight: slide.dataset.spotlight || 'all' });
+  }
+
+  if (notesVisible) updateNotes();
+}
+function next() { show(current + 1); }
+function prev() { show(current - 1); }
+
+document.getElementById('btnNext').addEventListener('click', next);
+document.getElementById('btnPrev').addEventListener('click', prev);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  else if (e.key === 'n' || e.key === 'N') toggleNotes();
+  else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+  else if (e.key === 'Home') show(0);
+  else if (e.key === 'End') show(total - 1);
+});
+
+function toggleNotes() {
+  notesVisible = !notesVisible;
+  document.getElementById('notes').classList.toggle('visible', notesVisible);
+  if (notesVisible) updateNotes();
+}
+function updateNotes() {
+  const note = slides[current].dataset.notes || '(이 슬라이드에 노트 없음)';
+  document.getElementById('notesBody').textContent = note;
+}
+document.getElementById('btnNotes').addEventListener('click', toggleNotes);
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+document.getElementById('btnFull').addEventListener('click', toggleFullscreen);
+
+let toolbarTimeout;
+function showToolbar() {
+  document.getElementById('toolbar').classList.remove('hidden');
+  clearTimeout(toolbarTimeout);
+  toolbarTimeout = setTimeout(() => {
+    document.getElementById('toolbar').classList.add('hidden');
+  }, 3000);
+}
+document.addEventListener('mousemove', showToolbar);
+showToolbar();
+
+// Initial render
+show(0);
+</script>
+</body>
+</html>
