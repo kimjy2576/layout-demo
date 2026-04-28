@@ -721,8 +721,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
       <div class="explain-block green">
         <div class="eb-eyebrow">5트랙 구성</div>
         <div class="eb-list">
-          <div class="eb-li"><div><b>ⓐ 외부 LLM API</b> — AI 두뇌 (외부 LLM API)</div></div>
-          <div class="eb-li"><div><b>ⓑ 검증 DB</b> — 사내 데이터 창고</div></div>
+          <div class="eb-li"><div><b>ⓐ 외부 LLM API</b> — AI 답변 엔진 (외부 LLM API)</div></div>
+          <div class="eb-li"><div><b>ⓑ 검증 DB</b> — 사내 데이터 통합 저장소</div></div>
           <div class="eb-li"><div><b>ⓒ 1D 물리 모델</b> — 기존 시뮬레이터 통합·확장</div></div>
           <div class="eb-li"><div><b>ⓓ 개별 요소 검증</b> — 시뮬 ↔ 실험 비교</div></div>
           <div class="eb-li"><div><b>ⓔ 최적화 툴</b> — AI 호출 가능 자동 최적화</div></div>
@@ -744,7 +744,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
   <div class="slide-header">
     <div>
       <div class="slide-eyebrow">C. Phase 1 ⓐ 트랙</div>
-      <h1 class="slide-title">ⓐ 외부 LLM API 구축<small>9개월 · 4단계 · AI 두뇌</small></h1>
+      <h1 class="slide-title">ⓐ 외부 LLM API 구축<small>9개월 · 4단계 · AI 답변 엔진</small></h1>
     </div>
     <div class="slide-progress">04 / 18</div>
   </div>
@@ -753,7 +753,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
     <div class="explain">
       <div class="explain-block accent">
         <div class="eb-eyebrow">왜 가장 먼저인가</div>
-        <div class="eb-title">시스템의 얼굴 — 사용자 직접 접점</div>
+        <div class="eb-title">사용자 직접 접점 컴포넌트</div>
         <div class="eb-text"><b>ⓐ</b> = 답변 시스템 (사용자 노출)<br><b>ⓑⓒⓓⓔ</b> = ⓐ의 재료 공급<br><br>ⓐ 부재 시 — 결과 전달 채널 없음</div>
       </div>
       <div class="explain-block green">
@@ -790,8 +790,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
     <div class="explain">
       <div class="explain-block accent">
         <div class="eb-eyebrow">데이터 흐름</div>
-        <div class="eb-title">4박자 파이프라인 + 보조 1</div>
-        <div class="eb-text">실행 — 4박자 순차<br>개발 — 5트랙 동시<br>로그(⑤) — 전 과정 수집</div>
+        <div class="eb-title">4단계 파이프라인 + 보조 1</div>
+        <div class="eb-text">실행 — 4단계 순차<br>개발 — 5트랙 동시<br>로그(⑤) — 전 과정 수집</div>
         <div class="mini-flow">
           <div class="mini-step"><span class="step-num">1</span>질문 이해</div>
           <div class="mini-arrow">→</div>
@@ -834,8 +834,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
     <div class="roadmap-canvas" id="rm-5"></div>
     <div class="explain">
       <div class="explain-block accent">
-        <div class="eb-eyebrow">한 줄 비유</div>
-        <div class="eb-title">모호한 질문 정리 비서</div>
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">모호한 질문의 정형화</div>
         <div class="eb-text"><b>입력</b> — "빨래가 안말라"<br><b>출력</b> — "VX 모델 · FMC 저하 진단 요청"<br><br>AI가 받기 전 정형화 단계</div>
       </div>
       <div class="explain-block green">
@@ -875,8 +875,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
     <div class="roadmap-canvas"></div>
     <div class="explain">
       <div class="explain-block accent">
-        <div class="eb-eyebrow">한 줄 비유</div>
-        <div class="eb-title">의미를 이해하는 도서관 사서</div>
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">의미 기반 사내 자료 검색</div>
         <div class="eb-text"><b>"빨래가 안말라"</b> → "건조 효율 저하" · "FMC 부족" · "응축기 성능" 자료 동시 검색<br><br>키워드 검색 — <b>실패</b><br>RAG — <b>의미 기반 검색</b></div>
         <div class="term">
           <div class="term-title">RAG</div>
@@ -931,8 +931,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
         <div class="eb-eyebrow">알고리즘 vs AI</div>
         <div class="eb-text"><b>"빨래가 안말라"</b> ≡ <b>"건조 효율 저하"</b><br>→ 단어 미일치 · 의미 일치<br><br>키워드 · 통계 · 사전 — <b>의미 처리 불가</b><br>"의미" = <strong>명시적 규칙화 불가능 추상 개념</strong><br>→ 학습된 AI 필요</div>
         <div class="term">
-          <div class="term-title">비유 — GPS</div>
-          <div class="term-body"><b>알고리즘</b> · 사람이 적은 명시적 좌표 필요<br><b>임베딩 AI</b> · 수십억 문장 쌍 학습 → 의미 좌표 자동 부여</div>
+          <div class="term-title">차이점 — 의미 좌표</div>
+          <div class="term-body"><b>알고리즘</b> · 사람이 명시적 규칙·사전·좌표 직접 입력<br><b>임베딩 AI</b> · 수십억 문장 쌍 학습 → 의미 좌표 자동 부여</div>
         </div>
       </div>
 
@@ -940,8 +940,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
         <div class="eb-eyebrow">LLM vs 작은 모델</div>
         <div class="eb-text">임베딩·재랭킹 = <b>"의미 거리 측정" 단일 작업</b><br>LLM 기능(생성·요약·번역) 불필요<br><br><strong>특화 = 작음 · 빠름 · 정확함</strong><br>LLM 사용 시 — 100~1000× 느림 · 정확도↓</div>
         <div class="term">
-          <div class="term-title">비유 — 패스트푸드</div>
-          <div class="term-body"><b>LLM</b> · 1만 가지 요리하는 호텔 셰프 (수백 GB)<br><b>임베딩 모델</b> · 햄버거만 굽는 직원 (수백 MB) — 햄버거는 더 빠르고 정확</div>
+          <div class="term-title">차이점 — 모델 크기·범용성</div>
+          <div class="term-body"><b>LLM</b> · 범용 다목적 (생성·요약·번역 등 만능, 수백 GB)<br><b>임베딩 모델</b> · 의미 거리 측정 단일 작업 특화 (수백 MB) — 임베딩은 더 빠르고 정확</div>
         </div>
       </div>
 
@@ -967,7 +967,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
   <div class="slide-header">
     <div>
       <div class="slide-eyebrow">D-3. 서브트랙 ③</div>
-      <h1 class="slide-title">③ 외부 LLM API + Tool-use · AI 답변<small>도구 호출형 AI 엔지니어</small></h1>
+      <h1 class="slide-title">③ 외부 LLM API + Tool-use · AI 답변<small>외부 도구 호출형 AI 모델</small></h1>
     </div>
     <div class="slide-progress">09 / 18</div>
   </div>
@@ -975,8 +975,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
     <div class="roadmap-canvas"></div>
     <div class="explain">
       <div class="explain-block accent">
-        <div class="eb-eyebrow">한 줄 비유</div>
-        <div class="eb-title">도구를 쓰는 AI 엔지니어</div>
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">외부 도구 호출형 AI</div>
         <div class="eb-text">단순 텍스트 생성 ≠ 외부 LLM<br><br><b>호출 가능</b> — 시뮬레이터 · DB · 최적화 도구<br>예 — "응축기 UA 14% 증가 시?" → 1D 시뮬 호출 → 결과 → 답변</div>
         <div class="term">
           <div class="term-title">Tool-use</div>
@@ -995,7 +995,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
       </div>
       <div class="explain-block warm">
         <div class="eb-eyebrow">필요성</div>
-        <div class="eb-text">설계자 질의 — "변경 적용 시 결과?"<br>→ <b>실시간 시뮬 실행 필수</b><br><br>Tool-use = <strong>"말하는 비서" → "행동하는 엔지니어"</strong></div>
+        <div class="eb-text">설계자 질의 — "변경 적용 시 결과?"<br>→ <b>실시간 시뮬 실행 필수</b><br><br>Tool-use = <strong>텍스트 생성 + 외부 도구 직접 실행</strong></div>
         <div class="term">
           <div class="term-title">Structured Output</div>
           <div class="term-body">자유 텍스트 → 고정 JSON. 누락 · 환각 방지. 예 — <code style="font-family:'JetBrains Mono',monospace;font-size:11px">{conclusion, evidence, confidence}</code></div>
@@ -1021,8 +1021,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
     <div class="roadmap-canvas"></div>
     <div class="explain">
       <div class="explain-block accent">
-        <div class="eb-eyebrow">한 줄 비유</div>
-        <div class="eb-title">청중 적응형 디자이너</div>
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">사용자별 맞춤 답변 표시</div>
         <div class="eb-text">동일 데이터 · 다른 표현<br><br><b>전문가</b> — "FMC 0.62 kg/kWh · UAcond 145 W/K"<br><b>비전문가</b> — "건조 효율 12%↓ · 라디에이터 부족"</div>
       </div>
       <div class="explain-block green">
@@ -1059,8 +1059,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
     <div class="roadmap-canvas"></div>
     <div class="explain">
       <div class="explain-block accent">
-        <div class="eb-eyebrow">한 줄 비유</div>
-        <div class="eb-title">미래 AI 양식 창고</div>
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">자체 sLLM 학습 데이터 축적</div>
         <div class="eb-text">9개월 동안 — 대화 · 검색 · 답변 · 피드백 전수 저장<br>→ Phase 2 자체 sLLM <strong>학습 데이터셋</strong></div>
         <div class="term">
           <div class="term-title">데이터 라벨링</div>
@@ -1093,7 +1093,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
   <div class="slide-header">
     <div>
       <div class="slide-eyebrow">E. Phase 1 ⓑ 트랙</div>
-      <h1 class="slide-title">ⓑ 검증 DB 구축<small>AI · 시뮬 공용 사내 데이터 창고</small></h1>
+      <h1 class="slide-title">ⓑ 검증 DB 구축<small>AI · 시뮬 공용 사내 데이터 통합 저장소</small></h1>
     </div>
     <div class="slide-progress">12 / 18</div>
   </div>
@@ -1116,7 +1116,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
       </div>
       <div class="explain-block green">
         <div class="eb-eyebrow">ⓐ와의 관계</div>
-        <div class="eb-text">ⓐ ② RAG 자료 출처 = ⓑ<br>ⓐ ③ Tool-use DB API 제공처 = ⓑ<br><br><strong>ⓐ ↔ ⓑ 짝꿍 트랙</strong> — 한 쪽 부재 시 시스템 정지</div>
+        <div class="eb-text">ⓐ ② RAG 자료 출처 = ⓑ<br>ⓐ ③ Tool-use DB API 제공처 = ⓑ<br><br><strong>ⓐ ↔ ⓑ 상호 의존</strong> — 한 쪽 부재 시 시스템 정지</div>
       </div>
     </div>
   </div>
@@ -1130,7 +1130,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
   <div class="slide-header">
     <div>
       <div class="slide-eyebrow">E. ⓑ ① DB 설계</div>
-      <h1 class="slide-title">5요소 · 3개월 · M1~M3<small>창고 짓기 전 평면도 — 저장 구조 청사진</small></h1>
+      <h1 class="slide-title">5요소 · 3개월 · M1~M3<small>데이터 저장 구조 사전 설계 — 청사진</small></h1>
     </div>
     <div class="slide-progress">13 / 18</div>
   </div>
@@ -1141,8 +1141,8 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
 </div>
     <div class="explain">
       <div class="explain-block accent">
-        <div class="eb-eyebrow">한 줄 비유</div>
-        <div class="eb-title">창고 짓기 전 평면도</div>
+        <div class="eb-eyebrow">한 줄 정리</div>
+        <div class="eb-title">데이터 수집 전 사전 설계</div>
         <div class="eb-text">데이터 수집 전 — <b>"무엇을 · 어디에"</b> 결정<br>오류 시 — 전면 재구축 필요</div>
       </div>
       <div class="explain-block green">
