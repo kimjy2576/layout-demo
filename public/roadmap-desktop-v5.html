@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HPWD-GPT 개발 로드맵 v5 · Editable</title>
+<title>HPWD AI Agent 개발 로드맵</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <style>
@@ -330,7 +330,7 @@ body.panel-open .side-panel{right:0}
 
 <div class="header">
   <div>
-    <h1>HPWD<span>-GPT</span> 개발 로드맵 v5</h1>
+    <h1>HPWD <span>AI Agent</span> 개발 로드맵</h1>
     <div class="header-sub">Phase 1: Design Guide Agent (1D+API) · 9개월 · ⓐ + ⓑ ① DB 설계까지</div>
   </div>
   <div class="toolbar">
@@ -2338,7 +2338,7 @@ function exportToPPT() {
 
   const pptx = new PptxGenJS();
   pptx.layout = 'LAYOUT_WIDE'; // 13.33 x 7.5 inch
-  pptx.title = 'HPWD-GPT 개발 로드맵 v5';
+  pptx.title = 'HPWD AI Agent 개발 로드맵';
   pptx.author = '건조기선행연구팀';
 
   // === Slide 1: Title / Overview ===
@@ -2358,7 +2358,7 @@ function exportToPPT() {
   });
 
   // Save
-  const fname = `HPWD-GPT-Roadmap-${new Date().toISOString().slice(0,10)}.pptx`;
+  const fname = `HPWD-AI-Agent-Roadmap-${new Date().toISOString().slice(0,10)}.pptx`;
   pptx.writeFile({ fileName: fname }).then(() => {
     showToast('✓ PPT 다운로드 완료');
   }).catch(err => {
@@ -2373,7 +2373,7 @@ function buildOverviewSlide(pptx) {
   s.background = { fill: 'FFFFFF' };
 
   // Title
-  s.addText('HPWD-GPT 개발 로드맵 v5', {
+  s.addText('HPWD AI Agent 개발 로드맵', {
     x: 0.5, y: 0.3, w: 12.3, h: 0.6,
     fontSize: 32, fontFace: 'Malgun Gothic', bold: true, color: '1A1A2E'
   });
