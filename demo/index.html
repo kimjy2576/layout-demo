@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HPWD AI Agent — 시현</title>
+<style>
+:root{
+  --bg:#FAF8F3;
+  --paper:#FFFFFF;
+  --ink:#1A1A2E;
+  --ink-soft:#475569;
+  --muted:#94A3B8;
+  --line:#E2E8F0;
+  --accent:#2563EB;
+  --accent-l:#EFF6FF;
+  --accent-d:#1D4ED8;
+  --warm:#D97706;
+  --warm-l:#FFF7ED;
+  --green:#059669;
+  --green-l:#ECFDF5;
+  --red:#DC2626;
+  --red-l:#FEF2F2;
+  --purple:#7C3AED;
+  --purple-l:#F5F3FF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Pretendard','Apple SD Gothic Neo',sans-serif;
+  background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;
+}
+
+/* ========== AUTH GATE ========== */
+.auth-overlay{
+  position:fixed;inset:0;
+  background:linear-gradient(135deg,#0F172A,#1E1B4B);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;
+}
+.auth-card{
+  background:var(--paper);
+  border-radius:16px;
+  padding:40px 36px;
+  max-width:420px;
+  width:90%;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+}
+.auth-tag{
+  font-family:ui-monospace,SF Mono,Consolas,monospace;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:var(--accent);
+  text-transform:uppercase;
+}
+.auth-title{
+  font-size:24px;font-weight:900;
+  margin:6px 0 8px;
+  letter-spacing:-0.02em;
+}
+.auth-desc{
+  font-size:13px;color:var(--ink-soft);
+  margin-bottom:24px;
+  line-height:1.6;
+}
+.auth-input{
+  width:100%;
+  padding:12px 14px;
+  border:2px solid var(--line);
+  border-radius:10px;
+  font-size:15px;
+  font-family:inherit;
+  margin-bottom:14px;
+  transition:border-color 0.15s;
+}
+.auth-input:focus{
+  outline:none;
+  border-color:var(--accent);
+}
+.auth-btn{
+  width:100%;
+  padding:12px;
+  background:var(--accent);
+  color:#fff;border:none;border-radius:10px;
+  font-size:14px;font-weight:700;
+  font-family:inherit;
+  cursor:pointer;
+  transition:background 0.15s;
+}
+.auth-btn:hover{background:var(--accent-d)}
+.auth-btn:disabled{opacity:0.5;cursor:not-allowed}
+.auth-error{
+  color:var(--red);font-size:12px;
+  margin-top:10px;text-align:center;
+  min-height:18px;
+}
+.auth-back{
+  display:block;text-align:center;
+  margin-top:18px;font-size:12px;
+  color:var(--muted);text-decoration:none;
+}
+.auth-back:hover{color:var(--ink-soft)}
+
+/* ========== MAIN APP ========== */
+.app{
+  max-width:1400px;
+  margin:0 auto;
+  padding:24px;
+  display:grid;
+  grid-template-columns:380px 1fr;
+  gap:24px;
+  min-height:100vh;
+}
+@media (max-width:1100px){
+  .app{grid-template-columns:1fr;padding:16px}
+}
+
+.panel{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.04);
+}
+
+.header{margin-bottom:18px}
+.header-tag{
+  font-family:ui-monospace,SF Mono,Consolas,monospace;
+  font-size:10px;font-weight:700;letter-spacing:2px;
+  color:var(--accent);text-transform:uppercase;
+}
+.header-title{font-size:24px;font-weight:900;letter-spacing:-0.02em;margin:4px 0}
+.header-sub{font-size:12px;color:var(--muted)}
+
+.h{
+  font-family:ui-monospace,SF Mono,Consolas,monospace;
+  font-size:10px;font-weight:700;letter-spacing:1.5px;
+  color:var(--muted);text-transform:uppercase;
+  margin:18px 0 10px;padding-bottom:4px;border-bottom:1px solid var(--line);
+}
+
+.scenarios{display:flex;flex-direction:column;gap:8px}
+.scenario{
+  padding:12px 14px;border:1px solid var(--line);border-radius:10px;
+  cursor:pointer;transition:all 0.15s;background:var(--paper);
+}
+.scenario:hover{border-color:var(--accent);background:var(--accent-l)}
+.scenario-title{font-weight:700;font-size:13px}
+.scenario-desc{font-size:11px;color:var(--muted);margin-top:2px}
+
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;display:block}
+.input,.textarea,.select{
+  width:100%;padding:10px 12px;border:1px solid var(--line);
+  border-radius:8px;font-family:inherit;font-size:13px;
+  background:var(--paper);color:var(--ink);
+}
+.input:focus,.textarea:focus,.select:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(37,99,235,0.1);
+}
+.textarea{resize:vertical;min-height:80px;line-height:1.5}
+
+.btn-row{display:flex;gap:8px}
+.btn{
+  flex:1;padding:10px 14px;border:none;border-radius:8px;
+  font-family:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all 0.15s;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-d)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink-soft)}
+.btn-ghost:hover{border-color:var(--ink-soft);color:var(--ink)}
+
+.status-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:ui-monospace,SF Mono,Consolas,monospace;font-size:10px;
+  padding:6px 10px;background:var(--bg);border-radius:6px;margin-bottom:8px;
+}
+.status-bar .status-key{color:var(--muted);font-weight:700}
+.status-bar .status-val{color:var(--ink);font-weight:700}
+.status-ok{color:var(--green) !important}
+.status-warn{color:var(--warm) !important}
+.status-bad{color:var(--red) !important}
+
+.pipeline{display:flex;flex-direction:column;gap:14px}
+.step{
+  border:1px solid var(--line);border-radius:10px;
+  background:var(--paper);overflow:hidden;
+  transition:all 0.3s;opacity:0.4;
+}
+.step.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.08)}
+.step.done{opacity:1;border-color:var(--green)}
+.step-header{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;background:#F8FAFC;border-bottom:1px solid var(--line);
+}
+.step-num{
+  font-family:ui-monospace,SF Mono,Consolas,monospace;
+  font-size:11px;font-weight:800;background:var(--ink);color:#fff;
+  padding:3px 8px;border-radius:5px;min-width:24px;text-align:center;
+}
+.step.active .step-num{background:var(--accent)}
+.step.done .step-num{background:var(--green)}
+.step-title{font-weight:700;font-size:14px;flex:1}
+.step-status{
+  font-family:ui-monospace,SF Mono,Consolas,monospace;
+  font-size:10px;font-weight:700;color:var(--muted);
+}
+.step.active .step-status{color:var(--accent)}
+.step.done .step-status{color:var(--green)}
+
+.spinner{
+  display:inline-block;width:12px;height:12px;
+  border:2px solid var(--line);border-top-color:var(--accent);
+  border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.step-body{padding:14px 16px;font-size:12px}
+.step-body[hidden]{display:none}
+
+.kv{display:flex;gap:12px;margin:6px 0;font-size:12px}
+.kv-key{color:var(--muted);min-width:140px;font-weight:700}
+.kv-val{color:var(--ink)}
+
+.tag{
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:10px;font-weight:700;
+  font-family:ui-monospace,SF Mono,Consolas,monospace;
+  background:var(--accent-l);color:var(--accent);margin-right:4px;
+}
+.tag.green{background:var(--green-l);color:var(--green)}
+.tag.warm{background:var(--warm-l);color:var(--warm)}
+.tag.red{background:var(--red-l);color:var(--red)}
+.tag.purple{background:var(--purple-l);color:var(--purple)}
+
+.tool-call{
+  border:1px solid var(--purple);border-left-width:4px;
+  border-radius:8px;background:var(--purple-l);
+  padding:10px 12px;margin:8px 0;font-size:12px;
+}
+.tool-call-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tool-call-name{
+  font-family:ui-monospace,SF Mono,Consolas,monospace;
+  font-weight:700;color:var(--purple);
+}
+.tool-call-args{
+  font-family:ui-monospace,SF Mono,Consolas,monospace;
+  font-size:11px;color:var(--ink-soft);
+  background:#fff;padding:6px 8px;border-radius:4px;margin-top:6px;
+  white-space:pre-wrap;word-break:break-all;
+}
+.tool-result{
+  margin-top:8px;padding-top:8px;
+  border-top:1px dashed var(--purple);
+  font-size:11px;color:var(--ink-soft);
+}
+
+.doc-card{
+  background:#fff;border:1px solid var(--line);
+  border-radius:6px;padding:8px 10px;margin:6px 0;font-size:12px;
+}
+.doc-card-title{font-weight:700;font-size:12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.doc-card-snippet{font-size:11px;color:var(--ink-soft);margin-top:4px;line-height:1.5}
+
+.final-answer{
+  background:linear-gradient(135deg,#EFF6FF,#F5F3FF);
+  border:2px solid var(--accent);border-radius:12px;
+  padding:18px;margin-top:14px;
+}
+.final-title{font-size:18px;font-weight:900;color:var(--ink);margin-bottom:8px}
+.final-summary{font-size:14px;color:var(--ink-soft);margin-bottom:14px;line-height:1.6}
+.findings-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:8px;margin-bottom:14px;
+}
+.finding{
+  background:#fff;border:1px solid var(--line);
+  border-radius:8px;padding:10px 12px;
+}
+.finding-label{font-size:11px;color:var(--muted);font-weight:700}
+.finding-value{font-size:16px;font-weight:800;margin-top:2px}
+.finding.good{border-left:4px solid var(--green)}
+.finding.good .finding-value{color:var(--green)}
+.finding.warning{border-left:4px solid var(--warm)}
+.finding.warning .finding-value{color:var(--warm)}
+.finding.fail{border-left:4px solid var(--red)}
+.finding.fail .finding-value{color:var(--red)}
+
+.action{
+  background:#fff;border-left:4px solid var(--accent);
+  border-radius:6px;padding:10px 12px;margin:6px 0;font-size:13px;
+}
+.action.high{border-left-color:var(--red)}
+.action.medium{border-left-color:var(--warm)}
+.action.low{border-left-color:var(--muted)}
+.action-priority{
+  font-family:ui-monospace,SF Mono,Consolas,monospace;
+  font-size:10px;font-weight:700;text-transform:uppercase;
+  color:var(--accent);margin-right:6px;
+}
+.action.high .action-priority{color:var(--red)}
+.action.medium .action-priority{color:var(--warm)}
+
+.evidence-list{font-size:11px;color:var(--muted);margin-top:8px}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
+.empty-state .empty-icon{font-size:48px;margin-bottom:14px;opacity:0.5}
+
+.error-box{
+  background:var(--red-l);border:1px solid var(--red);
+  border-radius:8px;padding:12px 14px;color:var(--red);
+  font-size:13px;margin-bottom:12px;
+}
+
+#mainApp{display:none}
+</style>
+</head>
+<body>
+
+<!-- ========== AUTH GATE ========== -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-tag">DEMO ACCESS</div>
+    <h1 class="auth-title">🔒 HPWD AI Agent 시현</h1>
+    <p class="auth-desc">
+      이 데모는 외부 LLM API를 실시간으로 호출합니다.<br>
+      비용 보호를 위해 키워드 인증이 필요합니다.
+    </p>
+    <input id="passwordInput" type="password" class="auth-input" placeholder="키워드 입력" autofocus>
+    <button id="authBtn" class="auth-btn">접속</button>
+    <div id="authError" class="auth-error"></div>
+    <a href="/" class="auth-back">← 인덱스로 돌아가기</a>
+  </div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div class="app" id="mainApp">
+
+  <aside class="panel">
+    <div class="header">
+      <div class="header-tag">DEMO · Tool-use Pipeline</div>
+      <h1 class="header-title">HPWD AI Agent</h1>
+      <div class="header-sub">설계 도우미 시현 — ⓐ 외부 LLM API 5컴포넌트</div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+      <span><span class="status-key">API</span>: <span id="apiStatus" class="status-val">확인중</span></span>
+      <span><span class="status-key">사용량</span>: <span id="usageStatus" class="status-val">-</span></span>
+    </div>
+
+    <div class="h">시나리오</div>
+    <div class="scenarios" id="scenarios"></div>
+
+    <div class="h">질문</div>
+    <div class="form-group">
+      <textarea id="userInput" class="textarea" placeholder="설계자처럼 질문 — 예: 'X100 모델인데 빨래가 안 말라'"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">답변 형식</label>
+      <select id="audienceSelect" class="select">
+        <option value="expert">전문가 모드 (도메인 용어 · 수치)</option>
+        <option value="non_expert">비전문가 모드 (풀어 설명)</option>
+      </select>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="runBtn">▶ 시현 시작</button>
+      <button class="btn btn-ghost" id="resetBtn">초기화</button>
+    </div>
+
+    <div style="margin-top:16px;font-size:11px;color:var(--muted);text-align:center">
+      <a href="/" style="color:var(--muted);text-decoration:none">← 메인으로</a>
+    </div>
+  </aside>
+
+  <main class="panel">
+    <div id="output">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">▶</div>
+        왼쪽에서 시나리오를 고르거나 직접 질문을 입력하세요<br>
+        시현 시작 시 5단계 파이프라인이 차례로 진행됩니다
+      </div>
+      <div id="errorBox" class="error-box" style="display:none"></div>
+      <div class="pipeline" id="pipeline" style="display:none"></div>
+      <div id="finalAnswer"></div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+const state = {isRunning: false, scenarios: [], authenticated: false};
+
+// ============================================================
+// AUTH FLOW
+// ============================================================
+async function checkAuthAndInit() {
+  try {
+    const health = await fetch(`${API_BASE}/api/demo/health`).then(r => r.json());
+    if (health.authenticated) {
+      // Already authenticated via cookie
+      showMainApp(health);
+      return;
+    }
+  } catch (e) {
+    document.getElementById('authError').textContent = '서버 연결 실패';
+    return;
+  }
+  // Show auth gate
+  document.getElementById('authOverlay').style.display = 'flex';
+  document.getElementById('passwordInput').focus();
+}
+
+async function authenticate() {
+  const password = document.getElementById('passwordInput').value.trim();
+  if (!password) return;
+
+  const btn = document.getElementById('authBtn');
+  const errBox = document.getElementById('authError');
+  btn.disabled = true;
+  btn.textContent = '확인 중...';
+  errBox.textContent = '';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/demo/auth`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'include',
+      body: JSON.stringify({password}),
+    });
+    if (res.ok) {
+      // Re-check health to get full state
+      const health = await fetch(`${API_BASE}/api/demo/health`).then(r => r.json());
+      showMainApp(health);
+    } else if (res.status === 401) {
+      errBox.textContent = '키워드가 올바르지 않습니다';
+    } else if (res.status === 503) {
+      errBox.textContent = '서버 설정 미완료 (DEMO_PASSWORD 미설정)';
+    } else {
+      errBox.textContent = `오류: HTTP ${res.status}`;
+    }
+  } catch (e) {
+    errBox.textContent = `네트워크 오류: ${e.message}`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '접속';
+  }
+}
+
+function showMainApp(health) {
+  state.authenticated = true;
+  document.getElementById('authOverlay').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'grid';
+  updateHealth(health);
+  loadScenarios();
+}
+
+function updateHealth(health) {
+  const apiEl = document.getElementById('apiStatus');
+  if (health.llm_configured) {
+    apiEl.textContent = '연결됨';
+    apiEl.className = 'status-val status-ok';
+  } else {
+    apiEl.textContent = '키 미설정';
+    apiEl.className = 'status-val status-bad';
+  }
+
+  const usageEl = document.getElementById('usageStatus');
+  usageEl.textContent = `${health.daily_used}/${health.daily_limit}`;
+  if (health.daily_used >= health.daily_limit * 0.9) {
+    usageEl.className = 'status-val status-warn';
+  } else {
+    usageEl.className = 'status-val';
+  }
+}
+
+async function loadScenarios() {
+  try {
+    const data = await fetch(`${API_BASE}/api/demo/scenarios`).then(r => r.json());
+    state.scenarios = data.scenarios;
+    renderScenarios();
+  } catch (e) {
+    console.error('scenarios load failed:', e);
+  }
+}
+
+function renderScenarios() {
+  const container = document.getElementById('scenarios');
+  container.innerHTML = '';
+  state.scenarios.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'scenario';
+    div.innerHTML = `<div class="scenario-title">${s.title}</div><div class="scenario-desc">${s.description}</div>`;
+    div.onclick = () => {
+      document.getElementById('userInput').value = s.user_message;
+    };
+    container.appendChild(div);
+  });
+}
+
+// ============================================================
+// PIPELINE RUNNER
+// ============================================================
+const STEP_DEFINITIONS = [
+  {step: 1, name: 'Interpreter', title: '① Interpreter — 의도 정형화'},
+  {step: 2, name: 'RAG', title: '② RAG — 사내 자료 검색'},
+  {step: 3, name: 'Tool-use Agent', title: '③ 외부 LLM API + Tool-use'},
+  {step: 4, name: 'Explainer', title: '④ Explainer — 답변 형식화'},
+  {step: 5, name: 'Logger', title: '⑤ 로그 저장'},
+];
+
+function buildEmptyPipeline() {
+  const p = document.getElementById('pipeline');
+  p.innerHTML = '';
+  STEP_DEFINITIONS.forEach(def => {
+    const step = document.createElement('div');
+    step.className = 'step';
+    step.id = `step-${def.step}`;
+    step.innerHTML = `
+      <div class="step-header">
+        <span class="step-num">${def.step}</span>
+        <div class="step-title">${def.title}</div>
+        <span class="step-status">대기</span>
+      </div>
+      <div class="step-body" hidden></div>
+    `;
+    p.appendChild(step);
+  });
+}
+
+function setStepActive(stepNum) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  const step = document.getElementById(`step-${stepNum}`);
+  if (step) {
+    step.classList.add('active');
+    step.querySelector('.step-status').innerHTML = '<span class="spinner"></span> 진행중';
+  }
+}
+
+function setStepDone(stepNum) {
+  const step = document.getElementById(`step-${stepNum}`);
+  if (step) {
+    step.classList.remove('active');
+    step.classList.add('done');
+    step.querySelector('.step-status').textContent = '완료 ✓';
+  }
+}
+
+function appendToStep(stepNum, html) {
+  const step = document.getElementById(`step-${stepNum}`);
+  if (!step) return;
+  const body = step.querySelector('.step-body');
+  body.hidden = false;
+  body.insertAdjacentHTML('beforeend', html);
+}
+
+function renderStepData(stepNum, data) {
+  if (stepNum === 1) {
+    const html = `
+      <div class="kv"><div class="kv-key">의도 (intent)</div><div class="kv-val"><span class="tag green">${data.intent || '-'}</span></div></div>
+      <div class="kv"><div class="kv-key">증상 (symptom)</div><div class="kv-val">${escapeHtml(data.symptom || '-')}</div></div>
+      <div class="kv"><div class="kv-key">모델 (model_hint)</div><div class="kv-val">${data.model_hint || '<span style="color:var(--muted)">미식별</span>'}</div></div>
+      <div class="kv"><div class="kv-key">검색 키워드</div><div class="kv-val">${(data.search_keywords||[]).map(k=>`<span class="tag">${escapeHtml(k)}</span>`).join('')}</div></div>
+      ${data.needs_clarification ? `<div class="kv"><div class="kv-key">⚠ 명확화</div><div class="kv-val">${escapeHtml(data.clarification_question||'')}</div></div>` : ''}
+    `;
+    appendToStep(1, html);
+  } else if (stepNum === 2) {
+    const docs = data.documents || [];
+    const docsHtml = docs.length === 0 ? '<div style="color:var(--muted);font-size:12px">매칭 문서 없음</div>' :
+      docs.map(d => `
+        <div class="doc-card">
+          <div class="doc-card-title">
+            <span class="tag">${d.doc_id}</span>
+            <span>${escapeHtml(d.title)}</span>
+            <span class="tag warm">${escapeHtml(d.category)}</span>
+          </div>
+          <div class="doc-card-snippet">${escapeHtml(d.snippet)}</div>
+        </div>
+      `).join('');
+    appendToStep(2, `
+      <div class="kv"><div class="kv-key">검색어</div><div class="kv-val"><code>${escapeHtml(data.query || '')}</code></div></div>
+      <div class="kv"><div class="kv-key">결과</div><div class="kv-val">${data.result_count}건 매칭</div></div>
+      ${docsHtml}
+    `);
+  } else if (stepNum === 4) {
+    if (!data.parse_error) {
+      renderFinalAnswer(data);
+      appendToStep(4, `<div style="color:var(--green);font-size:12px">✓ 답변 형식화 완료 — 아래 최종 답변 카드 참조</div>`);
+    } else {
+      appendToStep(4, `<div style="color:var(--red);font-size:12px">⚠ JSON 파싱 실패</div>`);
+    }
+  } else if (stepNum === 5) {
+    appendToStep(5, `
+      <div class="kv"><div class="kv-key">상태</div><div class="kv-val"><span class="tag green">저장됨</span></div></div>
+      <div class="kv"><div class="kv-key">도구 호출 수</div><div class="kv-val">${data.tool_call_count}회</div></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">${escapeHtml(data.note || '')}</div>
+    `);
+  }
+}
+
+function renderToolCall(callData) {
+  const argStr = JSON.stringify(callData.tool_input, null, 2);
+  appendToStep(3, `
+    <div class="tool-call" id="tc-${callData.tool_use_id}">
+      <div class="tool-call-header">
+        <span class="tag purple">호출 ${callData.iteration}</span>
+        <span class="tool-call-name">${escapeHtml(callData.tool_name)}</span>
+        <span class="spinner"></span>
+      </div>
+      <div class="tool-call-args">${escapeHtml(argStr)}</div>
+    </div>
+  `);
+}
+
+function renderToolResult(resultData) {
+  const card = document.getElementById(`tc-${resultData.tool_use_id}`);
+  if (!card) return;
+  card.querySelector('.spinner').outerHTML = '<span class="tag green">결과 ✓</span>';
+  const summary = summarizeToolResult(resultData.tool_name, resultData.result);
+  const resultEl = document.createElement('div');
+  resultEl.className = 'tool-result';
+  resultEl.innerHTML = summary;
+  card.appendChild(resultEl);
+}
+
+function summarizeToolResult(toolName, result) {
+  if (!result) return '';
+  if (result.error) return `<span style="color:var(--red)">에러 — ${escapeHtml(result.error)}</span>`;
+  if (toolName === 'search_documents') {
+    return `${result.result_count}건 검색됨: ${(result.documents||[]).map(d=>d.doc_id).join(', ')}`;
+  }
+  if (toolName === 'query_components') {
+    return `<b>${result.model_id}</b> · ${escapeHtml(result.model_name)} · 컴포넌트 ${result.components?.length || 0}종` +
+           (result.recent_test ? ` · 최근 시험 ${result.recent_test.test_id} ${result.recent_test.result}` : '');
+  }
+  if (toolName === 'run_simulation') {
+    const r = result.results || {};
+    const status = r.smer_pass ? 'good' : 'fail';
+    return `SMER <b style="color:var(--${status==='good'?'green':'red'})">${r.smer_kg_per_kwh}</b> kg/kWh (목표 ${r.smer_target}) · 건조 ${r.drying_time_min}분 · UA ${r.effective_condenser_ua_w_per_k} W/K`;
+  }
+  if (toolName === 'suggest_optimization') {
+    const top = result.primary_recommendation;
+    return top ? `1순위: ${escapeHtml(top.change)} → 예상 SMER ${top.predicted_smer}, 비용 +${top.estimated_cost_increase_pct}%` : '제안 없음';
+  }
+  return JSON.stringify(result).slice(0, 200);
+}
+
+function renderFinalAnswer(d) {
+  const findings = (d.key_findings || []).map(f =>
+    `<div class="finding ${f.status || ''}">
+      <div class="finding-label">${escapeHtml(f.label)}</div>
+      <div class="finding-value">${escapeHtml(f.value)}</div>
+    </div>`
+  ).join('');
+  const actions = (d.recommended_actions || []).map(a =>
+    `<div class="action ${a.priority || ''}">
+      <span class="action-priority">${(a.priority || '').toUpperCase()}</span>
+      <strong>${escapeHtml(a.action)}</strong>
+      ${a.expected_impact ? `<div style="font-size:11px;color:var(--muted);margin-top:3px">→ ${escapeHtml(a.expected_impact)}</div>` : ''}
+    </div>`
+  ).join('');
+  const evidence = (d.evidence || []).map(e =>
+    `<span class="tag">${escapeHtml(e.source_id)}</span> ${escapeHtml(e.summary)}`
+  ).join(' · ');
+  document.getElementById('finalAnswer').innerHTML = `
+    <div class="final-answer">
+      <div class="final-title">${escapeHtml(d.title || '최종 답변')}</div>
+      <div class="final-summary">${escapeHtml(d.summary || '')}</div>
+      ${findings ? `<div class="findings-grid">${findings}</div>` : ''}
+      ${actions ? `<div style="margin-top:10px">${actions}</div>` : ''}
+      ${evidence ? `<div class="evidence-list"><strong>근거:</strong> ${evidence}</div>` : ''}
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function runPipeline() {
+  const userMessage = document.getElementById('userInput').value.trim();
+  if (!userMessage) {alert('질문을 입력하세요'); return;}
+  if (state.isRunning) return;
+  state.isRunning = true;
+
+  const audience = document.getElementById('audienceSelect').value;
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('pipeline').style.display = 'flex';
+  document.getElementById('finalAnswer').innerHTML = '';
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('runBtn').textContent = '▶ 실행 중...';
+  buildEmptyPipeline();
+
+  try {
+    const response = await fetch(`${API_BASE}/api/demo/run`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'include',
+      body: JSON.stringify({user_message: userMessage, audience, max_tool_iterations: 6}),
+    });
+
+    if (response.status === 401) {
+      // Session expired
+      showError('세션 만료. 새로고침 후 다시 인증하세요.');
+      return;
+    }
+    if (response.status === 429) {
+      const data = await response.json().catch(() => ({}));
+      showError(data.detail || '호출 한도 초과');
+      return;
+    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, {stream: true});
+      let idx;
+      while ((idx = buffer.indexOf('\n\n')) >= 0) {
+        const eventBlock = buffer.slice(0, idx);
+        buffer = buffer.slice(idx + 2);
+        handleSSEEvent(eventBlock);
+      }
+    }
+  } catch (e) {
+    showError(`실행 실패 — ${e.message}`);
+  } finally {
+    state.isRunning = false;
+    document.getElementById('runBtn').disabled = false;
+    document.getElementById('runBtn').textContent = '▶ 시현 시작';
+    // Refresh usage display
+    fetch(`${API_BASE}/api/demo/health`).then(r => r.json()).then(updateHealth).catch(()=>{});
+  }
+}
+
+function handleSSEEvent(block) {
+  let event = '', data = '';
+  for (const line of block.split('\n')) {
+    if (line.startsWith('event:')) event = line.slice(6).trim();
+    else if (line.startsWith('data:')) data = line.slice(5).trim();
+  }
+  let parsed = {};
+  try { parsed = JSON.parse(data); } catch {}
+
+  switch (event) {
+    case 'step_start': setStepActive(parsed.step); break;
+    case 'step_data': renderStepData(parsed.step, parsed.data); break;
+    case 'step_done': setStepDone(parsed.step); break;
+    case 'tool_call': renderToolCall(parsed); break;
+    case 'tool_result': renderToolResult(parsed); break;
+    case 'agent_text':
+      appendToStep(3, `<div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:8px">에이전트: "${escapeHtml((parsed.text||'').slice(0,200))}${(parsed.text||'').length>200?'...':''}"</div>`);
+      break;
+    case 'clarification_needed': showError(`명확화 요청: ${parsed.question}`); break;
+    case 'error': showError(parsed.message || '알 수 없는 에러'); break;
+    case 'done': break;
+  }
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = '⚠ ' + msg;
+  box.style.display = 'block';
+}
+
+// ============================================================
+// WIRE UP
+// ============================================================
+document.getElementById('authBtn').addEventListener('click', authenticate);
+document.getElementById('passwordInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') authenticate();
+});
+
+document.getElementById('runBtn').addEventListener('click', runPipeline);
+document.getElementById('resetBtn').addEventListener('click', () => {
+  document.getElementById('userInput').value = '';
+  document.getElementById('finalAnswer').innerHTML = '';
+  document.getElementById('pipeline').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'block';
+  document.getElementById('errorBox').style.display = 'none';
+});
+document.getElementById('userInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) runPipeline();
+});
+
+checkAuthAndInit();
+</script>
+</body>
+</html>
