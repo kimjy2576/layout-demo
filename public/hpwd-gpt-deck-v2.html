@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HPWD-GPT 로드맵 발표</title>
+<title>HPWD AI Agent 로드맵 발표</title>
 <style>
 @font-face {
   font-family: 'Pretendard';
@@ -596,7 +596,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
   font-size:96px;
   font-weight:900;
   letter-spacing:-0.04em;
-  line-height:1;
+  line-height:1.05;
   background:linear-gradient(135deg,#fff,#A78BFA);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
@@ -723,7 +723,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
 <!-- ============================================================ -->
 <section class="slide cover active" data-notes="발표 시작. 청중에게 인사하고, 60분 워크샵임을 안내. 로드맵을 보면서 단계별로 설명해 나갈 것임을 예고.">
   <div class="cover-mark">PRESENTATION · 2026</div>
-  <h1 class="cover-title">HPWD-GPT</h1>
+  <h1 class="cover-title">HPWD<br>AI Agent</h1>
   <p class="cover-tagline">개발 로드맵 일정 발표</p>
   <div class="cover-meta">
     <span><b>Phase 1</b> · 9개월 · Design Guide Agent</span>
@@ -1057,7 +1057,7 @@ html,body{font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);backgro
       </div>
       <div class="explain-block red">
         <div class="eb-eyebrow">필요성</div>
-        <div class="eb-text">정확 답변 ≠ 유용한 답변<br><b>비전문가 사용 가능성</b> = HPWD-GPT 차별점<br><br><strong>근거 인용</strong> = 신뢰성 핵심 ("왜 이렇게 답했나" 추적)</div>
+        <div class="eb-text">정확 답변 ≠ 유용한 답변<br><b>비전문가 사용 가능성</b> = HPWD AI Agent 차별점<br><br><strong>근거 인용</strong> = 신뢰성 핵심 ("왜 이렇게 답했나" 추적)</div>
       </div>
     </div>
   </div>
@@ -1646,7 +1646,7 @@ function renderRoadmap(canvasEl, opts = {}) {
   // Title bar
   const titleBar = document.createElement('div');
   titleBar.className = 'canvas-title';
-  titleBar.innerHTML = `<span>HPWD-GPT 개발 로드맵 v5</span><span class="canvas-meta">${getCanvasMeta(spotlight)}</span>`;
+  titleBar.innerHTML = `<span>HPWD AI Agent 개발 로드맵 v5</span><span class="canvas-meta">${getCanvasMeta(spotlight)}</span>`;
   canvasEl.appendChild(titleBar);
 
   // Phase tabs
@@ -1800,7 +1800,7 @@ function renderDualMode(canvasEl) {
   // Title bar (stays at top, doesn't scroll)
   const titleBar = document.createElement('div');
   titleBar.className = 'canvas-title';
-  titleBar.innerHTML = `<span>HPWD-GPT 개발 로드맵 v5</span><span class="canvas-meta">전체 21개월 · 10트랙 (P1/P2 분리 뷰)</span>`;
+  titleBar.innerHTML = `<span>HPWD AI Agent 개발 로드맵 v5</span><span class="canvas-meta">전체 21개월 · 10트랙 (P1/P2 분리 뷰)</span>`;
   canvasEl.appendChild(titleBar);
 
   // Scrollable inner wrapper that contains both phases
