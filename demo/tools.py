@@ -51,7 +51,7 @@ TOOL_DEFINITIONS = [
             "properties": {
                 "model_id": {
                     "type": "string",
-                    "description": "모델 식별자 (예: X100, X200, Y50)"
+                    "description": "모델 식별자 (예: HPWD-24-EU, HPWD-27-KR, HPWD-29-UN)"
                 },
                 "include_recent_test": {
                     "type": "boolean",

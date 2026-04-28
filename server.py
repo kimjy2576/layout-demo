@@ -130,19 +130,19 @@ SCENARIOS = [
         "id": "sc_diagnose",
         "title": "1. 진단 — 빨래가 안 말라요",
         "description": "증상 입력 → 자동 진단 → 원인 → 조치 권장",
-        "user_message": "X100 모델인데 빨래가 안 말라. 왜 그런 거지?",
+        "user_message": "HPWD-24-EU 모델인데 빨래가 안 말라. 왜 그런 거지?",
     },
     {
         "id": "sc_simulate",
         "title": "2. 시뮬 — 응축기 UA 14% 변경 시?",
         "description": "What-if 변경 시뮬레이션",
-        "user_message": "X100에서 응축기 UA를 14% 늘리면 SMER이 어떻게 변할까?",
+        "user_message": "HPWD-24-EU에서 응축기 UA를 14% 늘리면 SMER이 어떻게 변할까?",
     },
     {
         "id": "sc_query",
         "title": "3. 조회 — 시험 보고서 해석",
         "description": "단순 데이터 조회 + 의미 해석",
-        "user_message": "X100 최근 시험 결과 보여줘. 통과했어?",
+        "user_message": "HPWD-24-EU 최근 시험 결과 보여줘. 통과했어?",
     },
 ]
 

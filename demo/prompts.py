@@ -25,7 +25,7 @@ INTERPRETER_SYSTEM_PROMPT = """당신은 가정용 세탁건조기(HPWD) 설계 
 - "소음 큼" → symptom: "팬 또는 압축기 소음 이상"
 - 사용자가 모델명 없이 증상만 말하면 → needs_clarification: true, "어떤 모델 검토하고 계신가요?" 질문
 - 모델명 명확하면 → needs_clarification: false
-- 영문/축약어 (X100, Y50 등)는 model_hint에 그대로 보존
+- 모델명 (HPWD-24-EU, HPWD-27-KR, HPWD-29-UN 등)은 model_hint에 그대로 보존
 - search_keywords는 다음 단계 RAG 검색에 쓸 도메인 키워드"""
 
 

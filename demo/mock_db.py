@@ -5,39 +5,39 @@
 
 # 모델 카탈로그
 MODELS = {
-    "X100": {
-        "model_id": "X100",
-        "model_name": "HPWD-X100 (양산)",
+    "HPWD-24-EU": {
+        "model_id": "HPWD-24-EU",
+        "model_name": "HPWD-24-EU (양산)",
         "category": "프리미엄",
         "launch_date": "2024-01-15",
         "department": "R&D 1팀",
-        "components": ["X100-CMP", "X100-HX", "X100-FAN", "X100-EEV"],
+        "components": ["HPWD-24-EU-CMP", "HPWD-24-EU-HX", "HPWD-24-EU-FAN", "HPWD-24-EU-EEV"],
         "spec": {
             "rated_capacity_kg": 10.0,
             "smer_target": 0.55,
             "noise_db_target": 65,
         }
     },
-    "X200": {
-        "model_id": "X200",
-        "model_name": "HPWD-X200 (양산)",
+    "HPWD-27-KR": {
+        "model_id": "HPWD-27-KR",
+        "model_name": "HPWD-27-KR (양산)",
         "category": "프리미엄+",
         "launch_date": "2024-06-01",
         "department": "R&D 1팀",
-        "components": ["X200-CMP", "X200-HX", "X200-FAN", "X200-EEV"],
+        "components": ["HPWD-27-KR-CMP", "HPWD-27-KR-HX", "HPWD-27-KR-FAN", "HPWD-27-KR-EEV"],
         "spec": {
             "rated_capacity_kg": 12.0,
             "smer_target": 0.60,
             "noise_db_target": 63,
         }
     },
-    "Y50": {
-        "model_id": "Y50",
-        "model_name": "HPWD-Y50 (개발 중)",
+    "HPWD-29-UN": {
+        "model_id": "HPWD-29-UN",
+        "model_name": "HPWD-29-UN (개발 중)",
         "category": "보급형",
         "launch_date": "2025-03-10",
         "department": "R&D 2팀",
-        "components": ["Y50-CMP", "Y50-HX", "Y50-FAN", "Y50-EEV"],
+        "components": ["HPWD-29-UN-CMP", "HPWD-29-UN-HX", "HPWD-29-UN-FAN", "HPWD-29-UN-EEV"],
         "spec": {
             "rated_capacity_kg": 9.0,
             "smer_target": 0.50,
@@ -48,27 +48,27 @@ MODELS = {
 
 # 컴포넌트 카탈로그
 COMPONENTS = {
-    "X100-CMP": {"id": "X100-CMP", "type": "압축기", "capacity_cc": 8.0, "rpm_range": "1500-3500", "vendor": "벤더A"},
-    "X100-HX": {"id": "X100-HX", "type": "응축기/증발기", "ua_w_per_k": 124, "fin_density": "high"},
-    "X100-FAN": {"id": "X100-FAN", "type": "팬", "max_cfm": 280},
-    "X100-EEV": {"id": "X100-EEV", "type": "EEV", "max_step": 480},
+    "HPWD-24-EU-CMP": {"id": "HPWD-24-EU-CMP", "type": "압축기", "capacity_cc": 8.0, "rpm_range": "1500-3500", "vendor": "벤더A"},
+    "HPWD-24-EU-HX": {"id": "HPWD-24-EU-HX", "type": "응축기/증발기", "ua_w_per_k": 124, "fin_density": "high"},
+    "HPWD-24-EU-FAN": {"id": "HPWD-24-EU-FAN", "type": "팬", "max_cfm": 280},
+    "HPWD-24-EU-EEV": {"id": "HPWD-24-EU-EEV", "type": "EEV", "max_step": 480},
 
-    "X200-CMP": {"id": "X200-CMP", "type": "압축기", "capacity_cc": 10.0, "rpm_range": "1500-3800", "vendor": "벤더A"},
-    "X200-HX": {"id": "X200-HX", "type": "응축기/증발기", "ua_w_per_k": 152, "fin_density": "ultra-high"},
-    "X200-FAN": {"id": "X200-FAN", "type": "팬", "max_cfm": 320},
-    "X200-EEV": {"id": "X200-EEV", "type": "EEV", "max_step": 480},
+    "HPWD-27-KR-CMP": {"id": "HPWD-27-KR-CMP", "type": "압축기", "capacity_cc": 10.0, "rpm_range": "1500-3800", "vendor": "벤더A"},
+    "HPWD-27-KR-HX": {"id": "HPWD-27-KR-HX", "type": "응축기/증발기", "ua_w_per_k": 152, "fin_density": "ultra-high"},
+    "HPWD-27-KR-FAN": {"id": "HPWD-27-KR-FAN", "type": "팬", "max_cfm": 320},
+    "HPWD-27-KR-EEV": {"id": "HPWD-27-KR-EEV", "type": "EEV", "max_step": 480},
 
-    "Y50-CMP": {"id": "Y50-CMP", "type": "압축기", "capacity_cc": 7.0, "rpm_range": "1500-3000", "vendor": "벤더B"},
-    "Y50-HX": {"id": "Y50-HX", "type": "응축기/증발기", "ua_w_per_k": 108, "fin_density": "medium"},
-    "Y50-FAN": {"id": "Y50-FAN", "type": "팬", "max_cfm": 240},
-    "Y50-EEV": {"id": "Y50-EEV", "type": "EEV", "max_step": 360},
+    "HPWD-29-UN-CMP": {"id": "HPWD-29-UN-CMP", "type": "압축기", "capacity_cc": 7.0, "rpm_range": "1500-3000", "vendor": "벤더B"},
+    "HPWD-29-UN-HX": {"id": "HPWD-29-UN-HX", "type": "응축기/증발기", "ua_w_per_k": 108, "fin_density": "medium"},
+    "HPWD-29-UN-FAN": {"id": "HPWD-29-UN-FAN", "type": "팬", "max_cfm": 240},
+    "HPWD-29-UN-EEV": {"id": "HPWD-29-UN-EEV", "type": "EEV", "max_step": 360},
 }
 
 # 시험 보고서
 TESTS = {
-    "T-X100-001": {
-        "test_id": "T-X100-001",
-        "model_id": "X100",
+    "T-HPWD24EU-001": {
+        "test_id": "T-HPWD24EU-001",
+        "model_id": "HPWD-24-EU",
         "test_date": "2024-03-15",
         "result": "PASS",
         "smer_kg_per_kwh": 0.62,
@@ -76,9 +76,9 @@ TESTS = {
         "noise_db": 64.2,
         "summary": "정상 — SMER 목표 0.55 초과 달성"
     },
-    "T-X100-002": {
-        "test_id": "T-X100-002",
-        "model_id": "X100",
+    "T-HPWD24EU-002": {
+        "test_id": "T-HPWD24EU-002",
+        "model_id": "HPWD-24-EU",
         "test_date": "2024-04-22",
         "result": "FAIL",
         "smer_kg_per_kwh": 0.45,
@@ -86,9 +86,9 @@ TESTS = {
         "noise_db": 64.8,
         "summary": "FAIL — SMER 0.45 (목표 0.55 대비 18% 부족) · 건조 시간 33% 초과 · 청구사항: '빨래가 안 말라'"
     },
-    "T-X100-003": {
-        "test_id": "T-X100-003",
-        "model_id": "X100",
+    "T-HPWD24EU-003": {
+        "test_id": "T-HPWD24EU-003",
+        "model_id": "HPWD-24-EU",
         "test_date": "2024-05-10",
         "result": "PASS",
         "smer_kg_per_kwh": 0.60,
@@ -96,9 +96,9 @@ TESTS = {
         "noise_db": 64.5,
         "summary": "응축기 UA 14% 증가 후 재시험 — PASS"
     },
-    "T-X200-001": {
-        "test_id": "T-X200-001",
-        "model_id": "X200",
+    "T-HPWD27KR-001": {
+        "test_id": "T-HPWD27KR-001",
+        "model_id": "HPWD-27-KR",
         "test_date": "2024-08-03",
         "result": "PASS",
         "smer_kg_per_kwh": 0.65,
@@ -129,7 +129,7 @@ DESIGN_GUIDES = [
         "title": "응축기 UA 14% 증가 권장 사례",
         "category": "설계변경",
         "content": (
-            "X100 모델 SMER 저하 사례에서, 응축기 UA를 124 → 141 W/K (14% 증가)로 변경 후\n"
+            "HPWD-24-EU 모델 SMER 저하 사례에서, 응축기 UA를 124 → 141 W/K (14% 증가)로 변경 후\n"
             "SMER 0.45 → 0.60 kg/kWh로 회복. 변경 비용 ~5% 증가, 건조 시간 23% 단축.\n"
             "권장 — UA 증가는 응축기 면적 확대 또는 핀 밀도 강화로 구현."
         )
