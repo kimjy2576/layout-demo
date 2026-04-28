@@ -154,6 +154,85 @@ def sse_event(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
+def extract_json(text: str) -> dict | None:
+    """LLM 응답에서 JSON 객체만 추출. 주변 텍스트 무시.
+    
+    여러 시도 순서:
+    1. 코드 블록 제거 후 직접 파싱
+    2. 첫 `{` 부터 짝맞춘 마지막 `}` 까지 추출
+    3. trailing comma 제거 후 재시도
+    """
+    if not text:
+        return None
+    
+    # 1차: 코드 펜스 제거 후 직접 시도
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        # ```json ... ``` 또는 ``` ... ``` 제거
+        cleaned = cleaned.split("```", 2)
+        if len(cleaned) >= 3:
+            inner = cleaned[1]
+            # "json" 같은 언어 태그 제거
+            if inner.startswith("json"):
+                inner = inner[4:]
+            elif inner.startswith("JSON"):
+                inner = inner[4:]
+            cleaned = inner.strip()
+        else:
+            cleaned = text.strip()
+    cleaned = cleaned.replace("```json", "").replace("```", "").strip()
+    
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        pass
+    
+    # 2차: brace matching — 첫 { 부터 짝 맞춘 마지막 } 까지
+    start = cleaned.find("{")
+    if start < 0:
+        return None
+    depth = 0
+    in_string = False
+    escape = False
+    end = -1
+    for i in range(start, len(cleaned)):
+        ch = cleaned[i]
+        if escape:
+            escape = False
+            continue
+        if ch == "\\":
+            escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                end = i + 1
+                break
+    if end < 0:
+        return None
+    candidate = cleaned[start:end]
+    
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        pass
+    
+    # 3차: trailing comma 제거 + 재시도
+    import re
+    candidate2 = re.sub(r",(\s*[}\]])", r"\1", candidate)
+    try:
+        return json.loads(candidate2)
+    except json.JSONDecodeError:
+        return None
+
+
 async def stream_pipeline(user_message: str, audience: str, max_iter: int) -> AsyncIterator[str]:
     if client is None:
         yield sse_event("error", {
@@ -181,8 +260,9 @@ async def stream_pipeline(user_message: str, audience: str, max_iter: int) -> As
         interpreter_text = "".join(b.text for b in interpreter_response.content if b.type == "text").strip()
 
         try:
-            cleaned = interpreter_text.replace("```json", "").replace("```", "").strip()
-            interpreter_result = json.loads(cleaned)
+            interpreter_result = extract_json(interpreter_text)
+            if interpreter_result is None:
+                raise json.JSONDecodeError("extract_json returned None", interpreter_text, 0)
         except json.JSONDecodeError:
             interpreter_result = {
                 "intent": "ambiguous",
@@ -308,11 +388,44 @@ Agent 최종 답변:
         )
         explainer_text = "".join(b.text for b in explainer_response.content if b.type == "text").strip()
 
-        try:
-            cleaned = explainer_text.replace("```json", "").replace("```", "").strip()
-            explainer_result = json.loads(cleaned)
-        except json.JSONDecodeError:
-            explainer_result = {"title": "답변 형식화 실패", "raw_text": explainer_text, "parse_error": True}
+        # 1차 시도 — extract_json으로 강건하게
+        explainer_result = extract_json(explainer_text)
+
+        # 2차 — 실패 시 LLM에게 "JSON만으로 다시" 요청
+        if explainer_result is None:
+            retry_messages = [
+                {"role": "user", "content": explainer_input},
+                {"role": "assistant", "content": explainer_text},
+                {"role": "user", "content": (
+                    "위 응답에서 JSON 파싱이 실패했습니다. "
+                    "동일 내용을 단일 JSON 객체로만 다시 출력하세요. "
+                    "코드 블록·설명·머리말 일절 없이, '{' 부터 '}' 까지만."
+                )},
+            ]
+            try:
+                retry_response = await asyncio.to_thread(
+                    client.messages.create,
+                    model=LLM_MODEL,
+                    max_tokens=1500,
+                    system=get_explainer_prompt(audience),
+                    messages=retry_messages,
+                )
+                retry_text = "".join(b.text for b in retry_response.content if b.type == "text").strip()
+                explainer_result = extract_json(retry_text)
+                if explainer_result is None:
+                    explainer_result = {
+                        "title": "답변 형식화 실패",
+                        "summary": "JSON 파싱이 두 차례 실패했습니다. 원본 텍스트를 참고하세요.",
+                        "raw_text": retry_text[:1000],
+                        "parse_error": True,
+                    }
+            except APIError as e:
+                explainer_result = {
+                    "title": "답변 형식화 실패",
+                    "raw_text": explainer_text[:1000],
+                    "parse_error": True,
+                    "retry_error": str(e),
+                }
 
         yield sse_event("step_data", {"step": 4, "data": explainer_result})
         yield sse_event("step_done", {"step": 4})
