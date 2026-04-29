@@ -246,9 +246,12 @@ body{
   border-radius:12px;
   padding:14px 16px;
   cursor:help;
-  transition:all 0.2s;
+  transition:border-color 0.2s, box-shadow 0.2s;
   position:relative;
   z-index:2;
+}
+.block:hover{
+  z-index:300;
 }
 .block.indexing{border-color:#BFDBFE;background:#fff}
 .block.indexing:hover{border-color:var(--accent);box-shadow:0 4px 12px rgba(37,99,235,0.15)}
@@ -377,6 +380,7 @@ body{
 }
 .vector-db:hover{
   box-shadow:0 6px 16px rgba(37,99,235,0.15);
+  z-index:300;
 }
 .vector-db::before,
 .vector-db::after{
