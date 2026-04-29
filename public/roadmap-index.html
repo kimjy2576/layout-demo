@@ -7,27 +7,147 @@
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#f8fafc;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',system-ui,sans-serif;line-height:1.55;padding:24px 16px;max-width:720px;margin:0 auto;min-height:100vh}
+body{
+  background:#f8fafc;
+  color:#1a1a2e;
+  font-family:'Pretendard','Noto Sans KR',system-ui,sans-serif;
+  line-height:1.55;
+  padding:24px 16px 60px;
+  max-width:760px;
+  margin:0 auto;
+  min-height:100vh;
+}
+
 .header{margin-bottom:24px}
-.tag{display:inline-block;font-size:10px;font-weight:800;color:#fff;background:linear-gradient(135deg,#2563EB,#7C3AED);padding:4px 10px;border-radius:12px;letter-spacing:.5px;margin-bottom:10px}
-.title{font-size:26px;font-weight:900;line-height:1.2;margin-bottom:6px;letter-spacing:-.02em}
-.title span{background:linear-gradient(135deg,#2563EB,#7C3AED);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tag{
+  display:inline-block;
+  font-size:10px;
+  font-weight:800;
+  color:#fff;
+  background:linear-gradient(135deg,#2563EB,#7C3AED);
+  padding:4px 10px;
+  border-radius:12px;
+  letter-spacing:.5px;
+  margin-bottom:10px;
+}
+.title{
+  font-size:28px;
+  font-weight:900;
+  line-height:1.2;
+  margin-bottom:6px;
+  letter-spacing:-.02em;
+}
+.title span{
+  background:linear-gradient(135deg,#2563EB,#7C3AED);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
 .sub{font-size:13px;color:#64748b;font-weight:500}
-.section{margin-top:28px}
-.section-title{font-size:11px;font-weight:800;color:#64748b;letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.section-title::before{content:'';width:3px;height:12px;background:#1a1a2e;border-radius:2px}
-.card{display:block;padding:18px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;text-decoration:none;color:inherit;transition:all .15s;position:relative}
-.card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06);border-color:#cbd5e1}
-.card::after{content:'→';position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:20px;color:#94a3b8}
-.card-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.card-icon{font-size:22px}
-.card-name{font-size:15px;font-weight:800}
-.card-desc{font-size:12px;color:#64748b;line-height:1.5;padding-right:30px}
-.card-meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.chip{font-size:9px;font-weight:700;padding:3px 7px;border-radius:8px;background:#f1f5f9;color:#64748b;font-family:'JetBrains Mono',monospace;letter-spacing:.3px}
+
+/* Week sections */
+.week-section{margin-top:32px}
+.week-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+  padding-bottom:8px;
+  border-bottom:2px solid #e2e8f0;
+}
+.week-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  font-weight:800;
+  padding:5px 12px;
+  border-radius:8px;
+  letter-spacing:1px;
+  color:#fff;
+}
+.week-tag.wk1{background:#64748b}
+.week-tag.wk2{background:#2563EB}
+.week-title{
+  font-size:14px;
+  font-weight:800;
+  color:#1a1a2e;
+  flex:1;
+}
+.week-meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:#94a3b8;
+  font-weight:700;
+}
+
+/* Cards */
+.card{
+  display:block;
+  padding:16px 18px;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:12px;
+  margin-bottom:8px;
+  text-decoration:none;
+  color:inherit;
+  transition:all .15s;
+  position:relative;
+}
+.card:hover{
+  transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(0,0,0,.06);
+  border-color:#cbd5e1;
+}
+.card::after{
+  content:'→';
+  position:absolute;
+  right:18px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:18px;
+  color:#94a3b8;
+}
+
+.card-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:4px;
+}
+.card-icon{font-size:20px}
+.card-name{font-size:14px;font-weight:800}
+.card-desc{
+  font-size:12px;
+  color:#64748b;
+  line-height:1.5;
+  padding-right:30px;
+}
+.card-meta{
+  display:flex;
+  gap:5px;
+  margin-top:6px;
+  flex-wrap:wrap;
+}
+.chip{
+  font-size:9px;
+  font-weight:700;
+  padding:2px 6px;
+  border-radius:6px;
+  background:#f1f5f9;
+  color:#64748b;
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:.3px;
+}
 .chip.new{background:#DCFCE7;color:#166534}
 .chip.live{background:#FEF3C7;color:#92400E}
-.footer{margin-top:36px;text-align:center;font-size:10px;color:#94a3b8;font-family:'JetBrains Mono',monospace;padding-top:16px;border-top:1px solid #e2e8f0}
+
+.footer{
+  margin-top:36px;
+  text-align:center;
+  font-size:10px;
+  color:#94a3b8;
+  font-family:'JetBrains Mono',monospace;
+  padding-top:16px;
+  border-top:1px solid #e2e8f0;
+}
 </style>
 </head>
 <body>
@@ -38,8 +158,48 @@ body{background:#f8fafc;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',sy
   <div class="sub">Phase 1 ⓐ + ⓑ ① DB 설계 · 9개월 · 건조기선행연구팀</div>
 </div>
 
-<div class="section">
-  <div class="section-title">🎤 발표 자료</div>
+<!-- ============== WK2 (이번 주) ============== -->
+<div class="week-section">
+  <div class="week-header">
+    <span class="week-tag wk2">WK 2</span>
+    <span class="week-title">RAG 이해 + AI Agent 정의</span>
+    <span class="week-meta">2026-04 · 진행 중</span>
+  </div>
+
+  <a href="rag-architecture.html" class="card">
+    <div class="card-header">
+      <div class="card-icon">🔍</div>
+      <div class="card-name">RAG 구조도</div>
+    </div>
+    <div class="card-desc">사내 자료를 LLM에 주입하는 표준 방식. Indexing + Query 파이프라인 + 핵심 용어 4개. 호버 시 기술 상세.</div>
+    <div class="card-meta">
+      <span class="chip new">NEW</span>
+      <span class="chip">인터랙티브</span>
+      <span class="chip">고도 상세</span>
+    </div>
+  </a>
+
+  <a href="agent-definition.html" class="card">
+    <div class="card-header">
+      <div class="card-icon">🤝</div>
+      <div class="card-name">HPWD AI Agent 정의 — 반자율 동료</div>
+    </div>
+    <div class="card-desc">누가 / 무엇을 / 무엇은 안 + 자율성 4단계 + 사용자 확장 경로 + 타사 비교 + 운용 경계. 호버 시 단계별 상세.</div>
+    <div class="card-meta">
+      <span class="chip new">NEW</span>
+      <span class="chip">인터랙티브</span>
+      <span class="chip">L2 · 반자율</span>
+    </div>
+  </a>
+</div>
+
+<!-- ============== WK1 (지난 주) ============== -->
+<div class="week-section">
+  <div class="week-header">
+    <span class="week-tag wk1">WK 1</span>
+    <span class="week-title">개발 로드맵 발표 + 시현</span>
+    <span class="week-meta">2026-04 · 완료</span>
+  </div>
 
   <a href="hpwd-gpt-deck-v2.html" class="card">
     <div class="card-header">
@@ -48,14 +208,10 @@ body{background:#f8fafc;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',sy
     </div>
     <div class="card-desc">17장 키노트. ⓐ 외부 LLM API 5컴포넌트 + ⓑ ① DB 설계 5요소 인포그래픽.</div>
     <div class="card-meta">
-      <span class="chip new">LATEST</span>
       <span class="chip">17 slides</span>
+      <span class="chip">키노트</span>
     </div>
   </a>
-</div>
-
-<div class="section">
-  <div class="section-title">🤖 시현 (Live Demo)</div>
 
   <a href="/demo" class="card">
     <div class="card-header">
@@ -69,14 +225,10 @@ body{background:#f8fafc;color:#1a1a2e;font-family:'Pretendard','Noto Sans KR',sy
       <span class="chip">Tool-use</span>
     </div>
   </a>
-</div>
-
-<div class="section">
-  <div class="section-title">🗺️ 로드맵</div>
 
   <a href="roadmap-desktop-v5.html" class="card">
     <div class="card-header">
-      <div class="card-icon">📊</div>
+      <div class="card-icon">🗺️</div>
       <div class="card-name">HPWD AI Agent 개발 로드맵</div>
     </div>
     <div class="card-desc">Phase 1 ⓐ + ⓑ ① DB 설계 간트 차트.</div>
